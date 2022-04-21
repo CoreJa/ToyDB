@@ -24,6 +24,7 @@ public class SQLParser{
     public List<Statement> getStatementList() {
         return statementList;
     }
+
     public void parseStatements(String sqlQueries) throws JSQLParserException {
         Statements statements = CCJSqlParserUtil.parseStatements(sqlQueries);
         this.statementList = statements.getStatements();
@@ -32,34 +33,7 @@ public class SQLParser{
             parseStatement(statement);
         }
     }
-//    public void parseStatement(Statement statement) {
-//        // Deprecated, not good to use instanceof
-//        // Data Definition
-//        if(statement instanceof CreateTable) {
-//
-//        } else if (statement instanceof CreateIndex) {
-//
-//        } else if (statement instanceof Drop) {
-//            // Drop table or Drop index!
-//        }
-//        // Data Manipulation
-//        if(statement instanceof Insert) {
-//            //
-//        } else if(statement instanceof Delete) {
-//
-//        } else if(statement instanceof Update) {
-//
-//        } else if(statement instanceof Select) {
-//            Select selectStatement = (Select)statement;
-//            //adaptors.SQLVisitor tablesNamesFinder = new adaptors.SQLVisitor();
-//            TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-//            List tableList = tablesNamesFinder.getTableList(selectStatement);
-//            for (Iterator iter = tableList.iterator(); iter.hasNext();) {
-//                System.out.println(iter.next());
-//            }
-//        }
-//
-//    }
+
     public void parseStatement(Statement statement) {
         StatementVisitor sqlVisitorAdaptor = new StatementVisitorAdaptor();
         statement.accept(sqlVisitorAdaptor);

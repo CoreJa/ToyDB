@@ -35,6 +35,10 @@ public class StatementVisitorAdaptor implements StatementVisitor {
     //parameters
     private List<Table> tables;
 
+    @Override
+    public void visit(CreateTable createTable) {
+
+    }
     // example: get table names
     @Override
     public void visit(Select select) {
@@ -100,11 +104,6 @@ public class StatementVisitorAdaptor implements StatementVisitor {
 
     @Override
     public void visit(CreateSchema createSchema) {
-
-    }
-
-    @Override
-    public void visit(CreateTable createTable) {
 
     }
 

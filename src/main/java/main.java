@@ -17,14 +17,19 @@ public class main {
                 " on t2.f1 = t3.f1) as joinalias1\n" +
                 " on t1.f1 = t2.f1; ";
 
+        String createTableDemo = "CREATE TABLE EMPLOYEE\n" +
+                "(emp SMALLINT NOT NULL,\n" +
+                "name CHAR(20) NOT NULL,\n" +
+                "name CHAAAAAR(20) NOT NULL,\n" +
+                "primary key (emp));";
         SQLParser parser = new SQLParser();
 
         try{
-            parser.parseStatements(selectDemo1);
+            parser.parseStatements(createTableDemo);
             // see the hierarchy in debug mode.
         } catch (JSQLParserException e) {
             System.out.println("Invalid sql query. Please try again.");
-            throw new RuntimeException(e);//TODO: handle exceptions
+            //throw new RuntimeException(e);//TODO: handle exceptions
         }
 
         return;

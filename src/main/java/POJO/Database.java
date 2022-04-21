@@ -1,6 +1,7 @@
 package POJO;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,8 +34,9 @@ public class Database {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Table> Load() {
-        Map<String, Table> tables = null;
+        Map<String, Table> tables;
         try
         {
             FileInputStream fileIn = new FileInputStream(filename);
@@ -68,6 +70,10 @@ public class Database {
     }
 
     public static void main(String[] args) {
-
+        HashMap<String, DataRow> stringDataRowHashMap = new HashMap<>();
+        stringDataRowHashMap.put("a",new DataRow(Arrays.asList(Type.STRING,Type.INT),Arrays.asList("a",1)));
+        Database database=new Database();
+//        database.createTable("test",new Table(Arrays.asList("s","b"),stringDataRowHashMap));
+        database.Save();
     }
 }
