@@ -26,4 +26,20 @@ public class Database {
 
         return new HashMap<String, Table>();
     }
+
+    public Table getTable(String tableName) {
+        return tables.get(tableName);
+    }
+
+    public void createTable(String tableName, Table table) {
+        this.tables.put(tableName,table);
+    }
+
+    public static String getFilename() {
+        return filename;
+    }
+
+    public static void main(String[] args) {
+
+    }
 }
