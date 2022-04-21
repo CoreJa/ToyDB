@@ -1,3 +1,5 @@
+package utils;
+
 import adaptors.StatementVisitorAdaptor;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
