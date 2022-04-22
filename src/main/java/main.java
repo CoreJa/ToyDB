@@ -1,5 +1,8 @@
+import POJO.Database;
 import net.sf.jsqlparser.JSQLParserException;
-import utils.SQLParser;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.parser.CCJSqlParser;
 
 public class main {
     public static void main(String[] args) {
@@ -23,17 +26,16 @@ public class main {
                 "address VARCHAR NOT NULL,\n" +
                 "primary key (emp));";
 
+        String createIndexDemo = "create index indname on Tablename (ColName);";
 
-        SQLParser parser = new SQLParser();
 
-        try{
-            parser.parseStatements(selectDemo2);
-            System.out.println(parser);
-            // see the hierarchy in debug mode.
+        try {
+            Statement stmt = CCJSqlParserUtil.parse(createIndexDemo);
+            System.out.println(stmt);
         } catch (JSQLParserException e) {
-            System.out.println("Invalid sql query. Please try again.");
-            //throw new RuntimeException(e);//TODO: handle exceptions
+            throw new RuntimeException(e);
         }
+
 
         return;
     }

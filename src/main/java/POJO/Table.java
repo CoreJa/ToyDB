@@ -2,6 +2,7 @@ package POJO;
 
 
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
@@ -24,6 +25,10 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     private List<String> columnNames;
     private List<Type> types;
     private Map<String, DataRow> data;//key: primary key; value: data record
+
+    // Indexes of all columns, elements corresponding to PrimaryKey and None Indexed columns should be Null.
+    private List<Map<String, String>> indexes;
+
     //Constraints
     private Integer primaryKey; // index in columnNames
     private Set<String> primaryKeySet; // maintain a HashSet of primary keys. Always cast to String.
@@ -75,5 +80,10 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     public int insertTable(Insert insertStatement) throws SyntaxException {
 
         return 0;
+    }
+
+    @Override
+    public void visit(CreateIndex createIndex) {
+
     }
 }

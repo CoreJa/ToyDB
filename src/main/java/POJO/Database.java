@@ -1,7 +1,9 @@
 package POJO;
 
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.select.Select;
 
 import java.io.*;
 import java.util.Arrays;
@@ -12,6 +14,7 @@ import java.util.Set;
 public class Database extends StatementVisitorAdapter {
     private Map<String, Table> tables;
     static String filename = "./ToyDB.db"; // Where to save
+    Table returnValue;
 
 
     public Database(Map<String, Table> tables) {
@@ -72,6 +75,11 @@ public class Database extends StatementVisitorAdapter {
 
     public static String getFilename() {
         return filename;
+    }
+
+    @Override
+    public void visit(CreateIndex createIndex) {
+        createIndex.accept(tables.get(createIndex.getTable().getName()));
     }
 
     public static void main(String[] args) {
