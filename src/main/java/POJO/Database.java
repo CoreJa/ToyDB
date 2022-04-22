@@ -3,6 +3,7 @@ package POJO;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.select.Select;
 
 import java.io.*;
@@ -14,7 +15,7 @@ import java.util.Set;
 public class Database extends StatementVisitorAdapter {
     private Map<String, Table> tables;
     static String filename = "./ToyDB.db"; // Where to save
-    Table returnValue;
+    private Table returnValue;
 
 
     public Database(Map<String, Table> tables) {
@@ -79,7 +80,14 @@ public class Database extends StatementVisitorAdapter {
 
     @Override
     public void visit(CreateIndex createIndex) {
-        createIndex.accept(tables.get(createIndex.getTable().getName()));
+        Table table=tables.get(createIndex.getTable().getName());
+        createIndex.accept(table);
+        this.returnValue=table.getReturnValue();
+    }
+
+    @Override
+    public void visit(Drop drop) {
+
     }
 
     public static void main(String[] args) {

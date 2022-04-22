@@ -3,21 +3,25 @@ package POJO;
 import java.io.Serializable;
 
 public class DataGrid implements Serializable {
+    // type of the data cell
     private Object data;
-    private Type type;
+    private Type type; //enum type, a list of supported types
 
     public DataGrid(Type type, Object data) {
         this.data = data;
         this.type = type;
     }
 
+    public void setData(Object data) {
+        this.data = data;
+    }
+
     public Object getData() {
-        if (type == Type.INT) {
-            return (int) this.data;
-        } else if (type == Type.STRING) {
-            return (String) this.data;
-        } else {
-            return this.data;
-        }
+        return this.data;
+    }
+
+
+    public String toString(){//shi
+        return this.data.toString();
     }
 }
