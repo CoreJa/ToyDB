@@ -26,7 +26,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     private List<Type> types;
     private Map<String, DataRow> data;//key: primary key; value: data record
 
-    // Indexes of all columns, elements corresponding to PrimaryKey and None Indexed columns should be Null.
+    // Indexes of all columns, elements corresponding to PrimaryKey and None Indexed columns should be NULL.
     private List<Map<String, String>> indexes;
 
     //Constraints
@@ -47,6 +47,8 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     }
 
     public Table(CreateTable createTableStatement) throws SyntaxException {
+        // Initialize Indexes
+        this.indexes=new ArrayList<>();
         // define the name and dataType of each column
         this.tableName = createTableStatement.getTable().getName();
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
@@ -60,6 +62,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
             if (!check.contains(columnName)) {
                 check.add(columnName);
                 columnNames.add(columnName);
+                indexes.add(null);
             } else {
                 throw new SyntaxException("Duplicate column name.");
             }
