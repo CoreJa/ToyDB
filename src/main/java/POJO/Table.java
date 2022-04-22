@@ -1,11 +1,15 @@
 package POJO;
 
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Select;
 import utils.SyntaxException;
 
 
@@ -17,12 +21,15 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
+
     public String getTableName() {
         return tableName;
     }
 
     private String tableName;
     private List<String> columnNames;
+
+    private Map<String, Integer> columnIndexes;
     private List<Type> types;
     private Map<String, DataRow> data;//key: primary key; value: data record
 
@@ -83,6 +90,22 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     public int insertTable(Insert insertStatement) throws SyntaxException {
 
         return 0;
+    }
+
+    @Override
+    public void visit(Select selectStatement) throws SyntaxException {
+        System.out.println(selectStatement);
+    }
+
+    public static void main(String[] args) {
+        String selectDemo1 = "SELECT DISTINCT(c.address), c.date FROM customer c\n";
+        try {
+            Statement selectStmt = CCJSqlParserUtil.parse(selectDemo1);
+            Table table = new Table("test");
+            table.visit((Select) selectStmt);
+        } catch (JSQLParserException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
