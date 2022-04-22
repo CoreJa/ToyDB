@@ -23,10 +23,9 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     private Map<String, Integer> columnIndexes;
     private List<Type> types;
     private Map<String, DataRow> data;//key: primary key; value: data record
-
+    private Table returnValue;
     // Indexes of all columns, elements corresponding to PrimaryKey and None Indexed columns should be Null.
-    private List<Map<String, String>> indexes;
-
+    private List<Map<String, List<String>>> indexes;
     //Constraints
     private Integer primaryKey; // index in columnNames
     private Set<String> primaryKeySet; // maintain a HashSet of primary keys. Always cast to String.
@@ -65,6 +64,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
             if (!check.contains(columnName)) {
                 check.add(columnName);
                 columnNames.add(columnName);
+                columnIndexes.put(columnName,columnNames.size()-1);
             } else {
                 throw new SyntaxException("Duplicate column name.");
             }
@@ -82,10 +82,11 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         //primary key, foreign key constraints
     }
 
-    public int insertTable(Insert insertStatement) throws SyntaxException {
-
-        return 0;
+    public Table (boolean bool){
+        this.data=new HashMap<>();
+        data.put("result",new DataRow(Arrays.asList(Type.STRING), Arrays.asList(bool? "true": "false")));
     }
+
 
     //setters and getters
     public void setTableName(String tableName) {
@@ -132,5 +133,23 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         SelectBody selectBody=selectStatement.getSelectBody();
     }
 
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.tableName).append("\n")
+                .append(this.columnNames.toString()).append("\n")
+                .append(this.data.toString()).append("\n");
+        return new String(sb);
+    }
+
+    public static void main(String[] args) {
+        String selectDemo1 = "SELECT DISTINCT(c.address), c.date FROM customer c\n";
+        try {
+            Statement selectStmt = CCJSqlParserUtil.parse(selectDemo1);
+            Table table = new Table("test");
+            table.visit((Select) selectStmt);
+        } catch (JSQLParserException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

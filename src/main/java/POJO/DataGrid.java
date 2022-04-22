@@ -12,9 +12,8 @@ public class DataGrid implements Serializable {
         this.type = type;
     }
 
-    public DataGrid(Type type, Object data) {
+    public void setData(Object data) {
         this.data = data;
-        this.type = type;
     }
 
     public Object getData() {
