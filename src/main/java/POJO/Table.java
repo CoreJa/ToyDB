@@ -1,11 +1,9 @@
 package POJO;
 
-import adaptors.StatementVisitorAdaptor;
-import net.sf.jsqlparser.statement.Statement;
+import com.sun.tools.classfile.Dependencies;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.Select;
 import utils.SyntaxException;
 
 import java.io.Serializable;
@@ -19,7 +17,7 @@ public class Table implements Serializable {
     //Constraints
     private Integer primaryKey; // index in columnNames
     private Set<String> primaryKeySet; // maintain a HashSet of primary keys. Always cast to String.
-    private List<Map.Entry<String, Integer>> foreignKeys;
+    private List<Map.Entry<String, Integer>> foreignKeyList;
     private Map<String, DataRow> data;//key: primary key; value: data record
 
     public Table(String tableName, List<String> columnNames, Map<String, DataRow> data) {
