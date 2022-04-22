@@ -17,15 +17,6 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Table extends StatementVisitorAdapter implements Serializable {
-    //setters and getters
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
     private String tableName;
     private List<String> columnNames;
 
@@ -49,11 +40,18 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         this.data = data;
     }
 
+    public Table(Table table){
+        this.tableName=table.tableName;
+        this.columnNames=table.columnNames;
+
+    }
+
     public Table(String tableName) {
         this(tableName, new ArrayList<String>(), new HashMap<String, DataRow>());
     }
 
     public Table(CreateTable createTableStatement) throws SyntaxException {
+        //create table by statement
         // define the name and dataType of each column
         this.tableName = createTableStatement.getTable().getName();
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
@@ -106,7 +104,9 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     }
 
     @Override
-    public void visit(CreateIndex createIndex) {
+    public void visit(Select selectStatement) throws SyntaxException {
+        SelectBody selectBody=selectStatement.getSelectBody();
+    }
 
     }
 }

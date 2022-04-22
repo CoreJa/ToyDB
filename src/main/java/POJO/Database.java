@@ -14,7 +14,7 @@ import java.util.Set;
 public class Database extends StatementVisitorAdapter {
     private Map<String, Table> tables;
     static String filename = "./ToyDB.db"; // Where to save
-    Table returnValue;
+    private Table returnValue;
 
 
     public Database(Map<String, Table> tables) {
