@@ -7,24 +7,24 @@ Authors:
 
 # Checklist
 - [ ] Database
-  - [ ] create table
-    - [ ] create foreign key
-  - [ ] drop table 
+  - [ ] create table -yc
+    - [ ] create foreign key -yc
+  - [ ] drop table -yc
 - [ ] Tables
-  - [ ] insert
-  - [ ] update
-  - [ ] delete
-  - [ ] select
+  - [ ] insert -hy
+  - [ ] update -cr
+  - [ ] delete -cr
+  - [ ] select -cr
     - [ ] where
     - [ ] join
     - [ ] distinct
     - [ ] order by ()
     - [ ] limit ()
     - [ ] group by()
-  - [ ] Indexing
+  - [ ] Indexing -hy
     - [ ] create
     - [ ] delete
-  - [ ] check foreign key 
+  - [ ] check foreign key -hycr
 
 ## Constraints
 ### On the Structure
