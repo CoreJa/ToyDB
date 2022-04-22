@@ -10,6 +10,7 @@ import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import utils.SyntaxException;
 
 
@@ -19,7 +20,6 @@ import java.util.*;
 public class Table extends StatementVisitorAdapter implements Serializable {
     private String tableName;
     private List<String> columnNames;
-
     private Map<String, Integer> columnIndexes;
     private List<Type> types;
     private Map<String, DataRow> data;//key: primary key; value: data record
@@ -87,20 +87,44 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         return 0;
     }
 
-    @Override
-    public void visit(Select selectStatement) throws SyntaxException {
-        System.out.println(selectStatement);
+    //setters and getters
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
-    public static void main(String[] args) {
-        String selectDemo1 = "SELECT DISTINCT(c.address), c.date FROM customer c\n";
-        try {
-            Statement selectStmt = CCJSqlParserUtil.parse(selectDemo1);
-            Table table = new Table("test");
-            table.visit((Select) selectStmt);
-        } catch (JSQLParserException e) {
-            throw new RuntimeException(e);
+    public String getTableName() {
+        return tableName;
+    }
+
+    public Table getReturnValue() {
+        return returnValue;
+    }
+
+    public boolean createIndex(String columnName){
+        int colInd=columnIndexes.get(columnName); //get column index by column name
+
+        if (colInd == primaryKey) {
+            throw new SyntaxException("Can't create index on primary key.");
         }
+        if (indexes.get(colInd) != null) { // judge if index already exists
+            return false;
+        }
+        Map<String, List<String>> curIndex=new HashMap<>();
+        indexes.set(colInd,curIndex); // initialize new index object into table
+        data.forEach((k,v)->{ // constuct object
+            String fieldValue=v.getDataGrids().get(colInd).toString();
+            if (curIndex.containsKey(fieldValue)) {
+                curIndex.get(fieldValue).add(k);
+            }else{
+                curIndex.put(fieldValue, new ArrayList<>(Arrays.asList(k)));
+            }
+        });
+        return true;
+    }
+
+    @Override
+    public void visit(CreateIndex createIndex) {
+        this.returnValue=new Table(this.createIndex(createIndex.getIndex().getColumnsNames().get(0)));
     }
 
     @Override
