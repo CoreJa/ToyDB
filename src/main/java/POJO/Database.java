@@ -48,8 +48,7 @@ public class Database {
         {
             i.printStackTrace();
             return new HashMap<String, Table>();
-        }catch(ClassNotFoundException c)
-        {
+        } catch (ClassNotFoundException c) {
             System.out.println("Table Class not found");
             c.printStackTrace();
             return new HashMap<String, Table>();
@@ -62,7 +61,7 @@ public class Database {
     }
 
     public void createTable(String tableName, Table table) {
-        this.tables.put(tableName,table);
+        this.tables.put(tableName, table);
     }
 
     public static String getFilename() {
@@ -71,8 +70,8 @@ public class Database {
 
     public static void main(String[] args) {
         HashMap<String, DataRow> stringDataRowHashMap = new HashMap<>();
-        stringDataRowHashMap.put("a",new DataRow(Arrays.asList(Type.STRING,Type.INT),Arrays.asList("a",1)));
-        Database database=new Database();
+        stringDataRowHashMap.put("a", new DataRow(Arrays.asList(Type.STRING, Type.INT), Arrays.asList("a", 1)));
+        Database database = new Database();
 //        database.createTable("test",new Table(Arrays.asList("s","b"),stringDataRowHashMap));
         database.Save();
     }

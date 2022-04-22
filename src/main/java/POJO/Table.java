@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Table implements Serializable {
+
     private String tableName;
     private List<String> columnNames;
     private List<Type> types;
@@ -19,6 +20,13 @@ public class Table implements Serializable {
         this.data = data;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
     public Table(CreateTable createTableStatement) throws SyntaxException {
         // define the name and dataType of each column
         this.tableName = createTableStatement.getTable().getName();
