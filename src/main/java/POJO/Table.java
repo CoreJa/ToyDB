@@ -87,6 +87,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
 
     @Override
     public void visit(CreateIndex createIndex) {
-
+        int
+        data.forEach();
     }
 }
