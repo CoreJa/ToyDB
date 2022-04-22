@@ -1,4 +1,4 @@
-package adaptors;
+package analyzer;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.select.AllColumns;
@@ -9,11 +9,11 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SelectItemVisitorAdapter implements SelectItemVisitor {
+public class SelectAnalyzer implements SelectItemVisitor {
     // Return a list of column names
     private List<String> columns;
 
-    public SelectItemVisitorAdapter() {
+    public SelectAnalyzer() {
         this.columns = new ArrayList<>();
     }
 
