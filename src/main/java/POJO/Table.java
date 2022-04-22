@@ -11,7 +11,7 @@ import utils.SyntaxException;
 import java.io.Serializable;
 import java.util.*;
 
-public class Table implements Serializable extends {
+public class Table extends StatementVisitorAdapter implements Serializable {
     //setters and getters
     public void setTableName(String tableName) {
         this.tableName = tableName;
