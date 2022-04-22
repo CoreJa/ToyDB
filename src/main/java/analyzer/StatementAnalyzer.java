@@ -1,4 +1,4 @@
-package adaptors;
+package analyzer;
 
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.*;
@@ -31,42 +31,94 @@ import net.sf.jsqlparser.statement.values.ValuesStatement;
 
 import java.util.List;
 
-public class StatementVisitorAdaptor implements StatementVisitor {
-    //parameters
-    private List<Table> tables;
-    private Select select;
+public class StatementAnalyzer implements StatementVisitor {
+    //Getters
+    public CreateTable getCreateTable() {
+        return createTable;
+    }
+
+    public CreateIndex getCreateIndex() {
+        return createIndex;
+    }
+
+    public Drop getDrop() {
+        return drop;
+    }
+
+    public Select getSelect() {
+        return select;
+    }
+
+    public Insert getInsert() {
+        return insert;
+    }
+
+    public Delete getDelete() {
+        return delete;
+    }
+
+    public Update getUpdate() {
+        return update;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    //Types of statements
+    private String type; //lower case
+    //Data Definition Language (DDL)
     private CreateTable createTable;
+    private CreateIndex createIndex;
+    private Drop drop;
+    //Data Manipulation Language (DML)
+    private Select select;
     private Insert insert;
     private Delete delete;
     private Update update;
 
     @Override
     public void visit(CreateTable createTable) {
-
-        //new POJO.Table(createTable);
+        this.type = "createtable";
+        this.createTable = createTable;
     }
 
-    // example: get table names
+    @Override
+    public void visit(CreateIndex createIndex) {
+        this.type = "createindex";
+        this.createIndex = createIndex;
+    }
+
+    @Override
+    public void visit(Drop drop) {
+        this.type = "drop";
+        this.drop = drop;
+    }
+
     @Override
     public void visit(Select select) {
+        this.type = "select";
         this.select = select;
-        return;
     }
 
     @Override
     public void visit(Delete delete) {
-
+        this.type = "delete";
+        this.delete = delete;
     }
 
     @Override
     public void visit(Update update) {
-
+        this.type = "update";
+        this.update = update;
     }
 
     @Override
     public void visit(Insert insert) {
-
+        this.type = "insert";
+        this.insert = insert;
     }
+
     @Override
     public void visit(SavepointStatement savepointStatement) {
 
@@ -87,25 +139,13 @@ public class StatementVisitorAdaptor implements StatementVisitor {
 
     }
 
-
-
     @Override
     public void visit(Replace replace) {
 
     }
 
     @Override
-    public void visit(Drop drop) {
-
-    }
-
-    @Override
     public void visit(Truncate truncate) {
-
-    }
-
-    @Override
-    public void visit(CreateIndex createIndex) {
 
     }
 
