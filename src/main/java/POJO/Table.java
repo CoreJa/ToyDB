@@ -45,7 +45,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         // define the name and dataType of each column
         this.tableName = createTableStatement.getTable().getName();
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
-        List<String> columnNames = new ArrayList<>();
+        this.columnNames = new ArrayList<>();
         Set<String> check = new HashSet<>(); //check duplication of column names
         types = new ArrayList<>();
 
