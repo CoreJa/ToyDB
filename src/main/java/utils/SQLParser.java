@@ -35,7 +35,7 @@ public class SQLParser{
     }
 
     public void parseStatement(Statement statement) {
-        StatementVisitor sqlVisitorAdaptor = new StatementVisitorAdaptor();
+        StatementVisitorAdaptor sqlVisitorAdaptor = new StatementVisitorAdaptor();
         statement.accept(sqlVisitorAdaptor);
     }
 }

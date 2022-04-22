@@ -34,19 +34,39 @@ import java.util.List;
 public class StatementVisitorAdaptor implements StatementVisitor {
     //parameters
     private List<Table> tables;
+    private Select select;
+    private CreateTable createTable;
+    private Insert insert;
+    private Delete delete;
+    private Update update;
 
     @Override
     public void visit(CreateTable createTable) {
 
+        //new POJO.Table(createTable);
     }
+
     // example: get table names
     @Override
     public void visit(Select select) {
-        SelectBody body = select.getSelectBody();
+        this.select = select;
+        return;
+    }
 
+    @Override
+    public void visit(Delete delete) {
 
     }
 
+    @Override
+    public void visit(Update update) {
+
+    }
+
+    @Override
+    public void visit(Insert insert) {
+
+    }
     @Override
     public void visit(SavepointStatement savepointStatement) {
 
@@ -67,20 +87,7 @@ public class StatementVisitorAdaptor implements StatementVisitor {
 
     }
 
-    @Override
-    public void visit(Delete delete) {
 
-    }
-
-    @Override
-    public void visit(Update update) {
-
-    }
-
-    @Override
-    public void visit(Insert insert) {
-
-    }
 
     @Override
     public void visit(Replace replace) {

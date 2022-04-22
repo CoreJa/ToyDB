@@ -1,8 +1,11 @@
 package POJO;
 
+import adaptors.StatementVisitorAdaptor;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Select;
 import utils.SyntaxException;
 
 import java.io.Serializable;
@@ -13,11 +16,20 @@ public class Table implements Serializable {
     private String tableName;
     private List<String> columnNames;
     private List<Type> types;
+    //Constraints
+    private Integer primaryKey; // index in columnNames
+    private Set<String> primaryKeySet; // maintain a HashSet of primary keys. Always cast to String.
+    private List<Map.Entry<String, Integer>> foreignKeys;
     private Map<String, DataRow> data;//key: primary key; value: data record
 
-    public Table(List<String> columnNames, Map<String, DataRow> data) {
+    public Table(String tableName, List<String> columnNames, Map<String, DataRow> data) {
+        this.tableName = tableName;
         this.columnNames = columnNames;
         this.data = data;
+    }
+
+    public Table() {
+        this(null, null, null);
     }
 
     public String getTableName() {
@@ -55,7 +67,8 @@ public class Table implements Serializable {
         }
     }
 
-    public int insertT(Insert insertStatement) throws SyntaxException {
+    public int insertTable(Insert insertStatement) throws SyntaxException {
+
         return 0;
     }
 }

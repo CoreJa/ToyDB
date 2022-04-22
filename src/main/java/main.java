@@ -20,7 +20,7 @@ public class main {
         String createTableDemo = "CREATE TABLE EMPLOYEE\n" +
                 "(emp SMALLINT NOT NULL,\n" +
                 "name CHAR(20) NOT NULL,\n" +
-                "name CHAAAAAR(20) NOT NULL,\n" +
+                "address VARCHAR NOT NULL,\n" +
                 "primary key (emp));";
         SQLParser parser = new SQLParser();
 
