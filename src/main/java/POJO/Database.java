@@ -1,5 +1,7 @@
 package POJO;
 
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+
 import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,15 +39,13 @@ public class Database {
     @SuppressWarnings("unchecked")
     private Map<String, Table> Load() {
         Map<String, Table> tables;
-        try
-        {
+        try {
             FileInputStream fileIn = new FileInputStream(filename);
             ObjectInputStream in = new ObjectInputStream(fileIn);
             tables = (Map<String, Table>) in.readObject();
             in.close();
             fileIn.close();
-        }catch(IOException i)
-        {
+        } catch (IOException i) {
             i.printStackTrace();
             return new HashMap<String, Table>();
         } catch (ClassNotFoundException c) {
@@ -54,6 +54,11 @@ public class Database {
             return new HashMap<String, Table>();
         }
         return tables;
+    }
+
+    public void execute(CreateTable createTableStatement) {
+        Table t = new Table(createTableStatement);
+        tables.put(t.getTableName(), t);
     }
 
     public Table getTable(String tableName) {

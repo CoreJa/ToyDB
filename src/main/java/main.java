@@ -22,10 +22,13 @@ public class main {
                 "name CHAR(20) NOT NULL,\n" +
                 "address VARCHAR NOT NULL,\n" +
                 "primary key (emp));";
+
+
         SQLParser parser = new SQLParser();
 
         try{
-            parser.parseStatements(createTableDemo);
+            parser.parseStatements(selectDemo2);
+            System.out.println(parser);
             // see the hierarchy in debug mode.
         } catch (JSQLParserException e) {
             System.out.println("Invalid sql query. Please try again.");
