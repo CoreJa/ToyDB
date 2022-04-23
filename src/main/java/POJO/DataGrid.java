@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class DataGrid implements Serializable {
     // type of the data cell
+    private static final long serialVersionUID = 1L;
     private Object data;
     private Type type; //enum type, a list of supported types
 

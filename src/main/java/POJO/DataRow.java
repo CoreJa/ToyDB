@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DataRow implements Serializable {
+    private static final long serialVersionUID = 1L;
     private List<DataGrid> dataGrids;
 
     public DataRow(List<Type> types, List<Object> data) {

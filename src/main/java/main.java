@@ -1,46 +1,55 @@
 import POJO.Database;
+import POJO.Table;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.parser.CCJSqlParser;
-import net.sf.jsqlparser.statement.drop.Drop;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import utils.SyntaxException;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class main {
-    public static void main(String[] args) {
-        String selectDemo1 = "SELECT DISTINCT(c.address), c.date FROM customer c\n";
-
-        String selectDemo2 = "Select t1.f1\n" +
-                "from my.table1 t1\n" +
-                "join my.table2 t2\n" +
-                "on t1.f1 = t2.f1 ";
-
-        String selectDemo3 = "select t1.f1\n" +
-                "from my.table1 t1\n" +
-                " join (my.table2 t2\n" +
-                " left join my.table3 t3\n" +
-                " on t2.f1 = t3.f1) as joinalias1\n" +
-                " on t1.f1 = t2.f1; ";
-
-        String createTableDemo = "CREATE TABLE EMPLOYEE\n" +
-                "(emp SMALLINT NOT NULL,\n" +
-                "name CHAR(20) NOT NULL,\n" +
-                "address VARCHAR NOT NULL,\n" +
-                "primary key (emp));";
-
-        String createIndexDemo = "create index indname on Tablename (ColName);";
-
-        String dropIndexDemo = "drop index tablename.indname;";
-
-        String insertDemo = " insert into tableName values (value1,value2);";
-
-        try {
-            Statement stmt = CCJSqlParserUtil.parse(insertDemo);
-            System.out.println(stmt);
-        } catch (JSQLParserException e) {
-            throw new RuntimeException(e);
+    public static void main (String[] args)throws IOException{
+        //Initialization
+        Database db = new Database();
+        StringBuilder statementBuilder = new StringBuilder();
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
+        db.load();
+        for(String line = stdin.readLine();  line.compareTo("exit")!= 0;line = stdin.readLine()){//单语句
+            statementBuilder.delete(0, statementBuilder.capacity());
+            while (true) {//单行
+                if ((line = stdin.readLine()) == null || line.length() == 0) break;//用户输入空行时代表语句结束
+                statementBuilder.append(line + " ");
+            }
+            // Handle the statement
+            String command = statementBuilder.toString();
+            if(command.compareTo("exit ") == 0) {
+                System.out.println("Exit request sent.");
+                break;
+            }
+            try {
+                Statement statement = CCJSqlParserUtil.parse(command);
+                statement.accept(db);// TODO: what should we print if the statement is valid
+            } catch(JSQLParserException e) {
+                e.printStackTrace();
+            } catch(SyntaxException e) {
+                e.show();
+            }
         }
 
+        //尾处理
+        db.save();
+        try {
+            stdin.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Successfully exit.");
 
         return;
+
     }
 }
