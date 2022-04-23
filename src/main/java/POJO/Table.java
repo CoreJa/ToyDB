@@ -34,8 +34,8 @@ public class Table extends ExecuteEngine implements Serializable {
     private Indexes indexes;
     //Constraints
     private Integer primaryKey; // index in columnNames
-    private Set<String> primaryKeySet; // maintain a HashSet of value of . Always cast to String.
-    private List<Map.Entry<String, Integer>> foreignKeyList;
+    private List<Set<String>> uniqueSet; // maintain a HashSet of value of . Always cast to String.
+    private List<Pair<String, Integer>> foreignKeyList;
 
 
     //Constructors
@@ -89,18 +89,21 @@ public class Table extends ExecuteEngine implements Serializable {
                 throw new SyntaxException("Wrong or unsupported data type.");
             }
         }
-        // primary key, foreign key constraints
+        //constraints: primary key, foreign key
+        Collections.nCopies(columnNames.size(), uniqueSet);
         Collections.nCopies(columnNames.size(), foreignKeyList);
         for (Index index : createTableStatement.getIndexes()) {
-            if (index.getType().toLowerCase().compareTo("primary key") == 0) {
+            if (index.getType().toLowerCase().compareTo("primary key") == 0) {//check primary key
                 primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
+                uniqueSet.set(primaryKey, new HashSet<>());
             }
+
             if (index instanceof ForeignKeyIndex) {
                 int foreignKeyIndexHere = columnIndexes.get(index.getColumnsNames().get(0));
                 String tableName = ((ForeignKeyIndex) index).getTable().getName();
                 String foreignKeyReferenced = ((ForeignKeyIndex) index).getReferencedColumnNames().get(0);
-                foreignKeyList.set(foreignKeyIndexHere, new Map.Entry<String, Integer>(tableName, tableName.getcolumnIndex(foreignKeyReferenced)));
-
+                int foreignKeyIndexReferenced = this.db.getTable(tableName).columnIndexes.get(foreignKeyReferenced);
+                foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(tableName, foreignKeyIndexReferenced));
             }
         }
 
@@ -129,6 +132,7 @@ public class Table extends ExecuteEngine implements Serializable {
         return returnValue;
     }
 
+    //create index
     public boolean createIndex(String indexName, String columnName) {
         int colInd = columnIndexes.get(columnName); //get column index by column name
 
