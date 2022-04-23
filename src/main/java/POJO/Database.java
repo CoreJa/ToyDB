@@ -65,10 +65,6 @@ public class Database extends ExecuteEngine {
         return tables;
     }
 
-    public void execute(CreateTable createTableStatement) {
-        Table t = new Table(createTableStatement);
-        tables.put(t.getTableName(), t);
-    }
 
     public Table getTable(String tableName) {
         return tables.get(tableName);
@@ -86,6 +82,13 @@ public class Database extends ExecuteEngine {
     public void visit(CreateIndex createIndex) {
         Table table = tables.get(createIndex.getTable().getName());
         createIndex.accept(table);
+        this.returnValue = table.getReturnValue();
+    }
+
+    @Override
+    public void visit(Insert insert) {
+        Table table = tables.get(insert.getTable().getName());
+        insert.accept(table);
         this.returnValue = table.getReturnValue();
     }
 

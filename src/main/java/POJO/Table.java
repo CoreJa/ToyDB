@@ -2,6 +2,8 @@ package POJO;
 
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
@@ -20,7 +22,8 @@ import utils.SyntaxException;
 import java.io.Serializable;
 import java.util.*;
 
-public class Table extends StatementVisitorAdapter implements Serializable {
+public class Table extends ExecuteEngine implements Serializable {
+    private Database db;
     private String tableName;
     private List<String> columnNames;
     private Map<String, Integer> columnIndexes;
@@ -63,7 +66,6 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         this.indexes = new Indexes(columnDefinitionList.size());
 
         Set<String> check = new HashSet<>(); //check duplication of column names
-        types = new ArrayList<>();
 
         for (ColumnDefinition def : columnDefinitionList) {
             // column name
@@ -71,7 +73,9 @@ public class Table extends StatementVisitorAdapter implements Serializable {
             if (!check.contains(columnName)) {
                 check.add(columnName);
                 columnNames.add(columnName);
-                columnIndexes.put(columnName,columnNames.size()-1);
+                columnIndexes.put(columnName, columnNames.size() - 1);
+//                indexes.getIndexNames().add(null);
+//                indexes.getIndexes().add(null);
             } else {
                 throw new SyntaxException("Duplicate column name");
             }
@@ -124,19 +128,20 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         return returnValue;
     }
 
-    public boolean createIndex(String columnName){
-        int colInd=columnIndexes.get(columnName); //get column index by column name
+    public boolean createIndex(String indexName, String columnName) {
+        int colInd = columnIndexes.get(columnName); //get column index by column name
 
         if (colInd == primaryKey) {
             throw new SyntaxException("Can't create index on primary key.");
         }
-        if (indexes.get(colInd) != null) { // judge if index already exists
+        if (indexes.getIndexes().get(colInd) != null) { // judge if index already exists
             return false;
         }
-        Map<String, List<String>> curIndex=new HashMap<>();
-        indexes.set(colInd,curIndex); // initialize new index object into table
-        data.forEach((k,v)->{ // constuct object
-            String fieldValue=v.getDataGrids().get(colInd).toString();
+        indexes.getIndexNames().set(colInd, indexName); // store index name
+        Map<String, List<String>> curIndex = new HashMap<>();
+        indexes.getIndexes().set(colInd, curIndex); // initialize new index object into table
+        data.forEach((k, v) -> { // construct object
+            String fieldValue = v.getDataGrids().get(colInd).toString();
             if (curIndex.containsKey(fieldValue)) {
                 curIndex.get(fieldValue).add(k);
             } else {
@@ -148,7 +153,8 @@ public class Table extends StatementVisitorAdapter implements Serializable {
 
     @Override
     public void visit(CreateIndex createIndex) {
-        this.returnValue=new Table(this.createIndex(createIndex.getIndex().getColumnsNames().get(0)));
+        this.returnValue = new Table(this.createIndex(createIndex.getIndex().getName(), //index name
+                createIndex.getIndex().getColumnsNames().get(0))); // column name
     }
 
     @Override
