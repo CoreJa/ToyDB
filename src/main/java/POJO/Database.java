@@ -85,7 +85,8 @@ public class Database extends ExecuteEngine implements Serializable{
     @Override
     public void visit(CreateTable createTable){
         Table table = new Table(this, createTable);
-        this.tables.put(table.getTableName(), table); // TODO: table name already exists? return value?
+        this.tables.put(table.getTableName(), table);
+        this.returnValue = table.getReturnValue();
     }
 
     @Override
