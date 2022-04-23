@@ -48,6 +48,7 @@ public class Table extends ExecuteEngine implements Serializable {
         this(null, null, new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, null, null, new ArrayList<>(), new ArrayList<>());
 
     }
+
     public Table(Database db, String tableName, List<String> columnNames, Map<String, Integer> columnIndexes, List<Type> types, Map<String, DataRow> data, Table returnValue, Indexes indexes, Integer primaryKey, List<Set<String>> uniqueSet, List<Pair<String, Integer>> foreignKeyList) {
         this.db = db;
         this.tableName = tableName;
@@ -111,7 +112,7 @@ public class Table extends ExecuteEngine implements Serializable {
             }
             // column specs - unique
             uniqueSet.add(null);
-            if(def.getColumnSpecs()!= null
+            if (def.getColumnSpecs() != null
                     && def.getColumnSpecs().size() > 0
                     && def.getColumnSpecs().get(0).toLowerCase().compareTo("unique") == 0) {
                 this.uniqueSet.set(columnIndexes.get(columnName), new HashSet<>());
@@ -119,15 +120,15 @@ public class Table extends ExecuteEngine implements Serializable {
 
         }
         //constraints: primary key, foreign key
-        for(int i = 0; i < columnNames.size(); i++) {
+        for (int i = 0; i < columnNames.size(); i++) {
             foreignKeyList.add(null);
         }
-        if(createTableStatement.getIndexes() != null) {
+        if (createTableStatement.getIndexes() != null) {
             for (Index index : createTableStatement.getIndexes()) {
                 //check primary key
                 if (index.getType().toLowerCase().compareTo("primary key") == 0) {
                     primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
-                    if(uniqueSet.get(primaryKey) == null) {
+                    if (uniqueSet.get(primaryKey) == null) {
                         uniqueSet.set(primaryKey, new HashSet<>()); // primary key should be unique
                     }
                 }
@@ -137,13 +138,13 @@ public class Table extends ExecuteEngine implements Serializable {
                     int foreignKeyIndexHere = columnIndexes.get(index.getColumnsNames().get(0));
                     String foreignTableName = ((ForeignKeyIndex) index).getTable().getName();
                     String foreignKeyReferenced = ((ForeignKeyIndex) index).getReferencedColumnNames().get(0);
-                    if(this.db == null
+                    if (this.db == null
                             || this.db.getTable(foreignTableName) == null
                             || this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced) == null) {
                         throw new SyntaxException("Foreign key no references");
                     }
                     int foreignKeyIndexReferenced = this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced);
-                    if(this.db.getTable(foreignTableName).uniqueSet == null) {
+                    if (this.db.getTable(foreignTableName).uniqueSet == null) {
                         throw new SyntaxException("Foreign key not unique");
                     }
                     foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(foreignTableName, foreignKeyIndexReferenced));
@@ -257,7 +258,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 newRow.getDataGrids().set(i, refGrid);
             }
         }
-        this.data.put(newRow.getDataGrids().get(this.primaryKey).toString(),newRow); // write into main hashmap
+        this.data.put(newRow.getDataGrids().get(this.primaryKey).toString(), newRow); // write into main hashmap
         return new Table(true);
     }
 
@@ -330,14 +331,25 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(AndExpression andExpression) {
+        /*
+        * recursivelly calculate expressions
+        * */
         Expression leftExpression = andExpression.getLeftExpression();
         leftExpression.accept(this);
-        Table table = this.getReturnValue();
-        if (table.data.get("result").getDataGrids().get(0).toString().equals("true")) {
-
-        }
+        Table table_l = this.getReturnValue();
         Expression rightExpression = andExpression.getRightExpression();
         rightExpression.accept(this);
+        Table table_r = this.getReturnValue();
+
+        /*
+        * logically and two table
+        * */
+
+        for (Map.Entry<String, DataRow> entry : table_l.data.entrySet()) {
+            if (!table_r.data.containsKey(entry.getKey())) {
+                table_l.data.remove(entry.getKey());
+            }
+        }
 
     }
 

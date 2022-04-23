@@ -22,7 +22,11 @@ public class DataGrid implements Serializable {
     }
 
 
-    public String toString(){//shi
+    public String toString() {//shi
         return this.data.toString();
+    }
+
+    public boolean compareTo(DataGrid dataGrid) {
+        return (this.type == dataGrid.type) && (this.data.toString().compareTo(dataGrid.toString()) == 0);
     }
 }
