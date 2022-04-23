@@ -13,8 +13,8 @@ public class test {
         ArrayList<String> stmts=new ArrayList<>();
         stmts.add("create table tableName ("+
                 "    col1 int UNIQUE,\n" +
-                "    col2 int NOT NULL)\n"+
-                "    PRIMARY KEY (col1);");
+                "    col2 int NOT NULL,\n"+
+                "    PRIMARY KEY (col1));");
         stmts.add("insert into tableName "+
                 "  values (1,1);");
         stmts.add("create table table2 "+
