@@ -39,34 +39,44 @@ public class Table extends ExecuteEngine implements Serializable {
     private List<Set<String>> uniqueSet; // maintain a HashSet of value of . Always cast to String.
     private List<Pair<String, Integer>> foreignKeyList;
 
+    //Constructors (with DB)
+    public Table() {
+        this(null, null, new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, null, null, new ArrayList<>(), new ArrayList<>());
 
-    //Constructors
-    public Table(String tableName, List<String> columnNames, Map<String, DataRow> data) {
+    }
+    public Table(Database db, String tableName, List<String> columnNames, Map<String, Integer> columnIndexes, List<Type> types, Map<String, DataRow> data, Table returnValue, Indexes indexes, Integer primaryKey, List<Set<String>> uniqueSet, List<Pair<String, Integer>> foreignKeyList) {
+        this.db = db;
         this.tableName = tableName;
         this.columnNames = columnNames;
+        this.columnIndexes = columnIndexes;
+        this.types = types;
         this.data = data;
+        this.returnValue = returnValue;
+        this.indexes = indexes;
+        this.primaryKey = primaryKey;
+        this.uniqueSet = uniqueSet;
+        this.foreignKeyList = foreignKeyList;
     }
-
-    public Table(Table table) {
-        this.tableName = table.tableName;
-        this.columnNames = table.columnNames;
-
-    }
-
-    public Table(String tableName) {
+    public Table(Database db, String tableName) {
+        this.db = db;
+        this.tableName = tableName;
         this.data = new HashMap<>();
         data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(tableName)));
     }
 
-    public Table(CreateTable createTableStatement) throws SyntaxException {
+    public Table(Database db, CreateTable createTableStatement) throws SyntaxException {
         // create table by statement
         // define the name and dataType of each column
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
 
+        this.db = db;
         this.tableName = createTableStatement.getTable().getName();
         this.columnNames = new ArrayList<>();
         this.types = new ArrayList<>();
         this.indexes = new Indexes(columnDefinitionList.size());
+        this.columnIndexes = new HashMap<>();
+        this.uniqueSet = new ArrayList<>();
+        this.foreignKeyList = new ArrayList<>();
 
         Set<String> check = new HashSet<>(); //check duplication of column names
 
@@ -82,33 +92,73 @@ public class Table extends ExecuteEngine implements Serializable {
             } else {
                 throw new SyntaxException("Duplicate column name");
             }
-            // data type
+            // column data type
             String columnLowerCaseType = def.getColDataType().getDataType().toLowerCase();//string of type name
             if (columnLowerCaseType.compareTo("char") == 0 || columnLowerCaseType.compareTo("varchar") == 0) {
                 types.add(Type.STRING);
-            } else if (columnLowerCaseType.compareTo("integer") == 0 || columnLowerCaseType.compareTo("smallint") == 0) {
+            } else if (columnLowerCaseType.compareTo("int") == 0 || columnLowerCaseType.compareTo("integer") == 0 || columnLowerCaseType.compareTo("smallint") == 0) {
                 types.add(Type.INT);
             } else {
                 throw new SyntaxException("Wrong or unsupported data type.");
             }
-        }
-        //constraints: primary key, foreign key
-        Collections.nCopies(columnNames.size(), uniqueSet);
-        Collections.nCopies(columnNames.size(), foreignKeyList);
-        for (Index index : createTableStatement.getIndexes()) {
-            if (index.getType().toLowerCase().compareTo("primary key") == 0) {//check primary key
-                primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
-                uniqueSet.set(primaryKey, new HashSet<>());
+            // column specs - unique
+            uniqueSet.add(null);
+            if(def.getColumnSpecs()!= null
+                    && def.getColumnSpecs().size() > 0
+                    && def.getColumnSpecs().get(0).toLowerCase().compareTo("unique") == 0) {
+                this.uniqueSet.set(columnIndexes.get(columnName), new HashSet<>());
             }
 
+        }
+        //constraints: primary key, foreign key
+        for(int i = 0; i < columnNames.size(); i++) {
+            foreignKeyList.add(null);
+        }
+        for (Index index : createTableStatement.getIndexes()) {
+            //check primary key
+            if (index.getType().toLowerCase().compareTo("primary key") == 0) {
+                primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
+                if(uniqueSet.get(primaryKey) == null) {
+                    uniqueSet.set(primaryKey, new HashSet<>()); // primary key should be unique
+                }
+            }
+
+            //check foreign key(s)
             if (index instanceof ForeignKeyIndex) {
                 int foreignKeyIndexHere = columnIndexes.get(index.getColumnsNames().get(0));
-                String tableName = ((ForeignKeyIndex) index).getTable().getName();
+                String foreignTableName = ((ForeignKeyIndex) index).getTable().getName();
                 String foreignKeyReferenced = ((ForeignKeyIndex) index).getReferencedColumnNames().get(0);
-                int foreignKeyIndexReferenced = this.db.getTable(tableName).columnIndexes.get(foreignKeyReferenced);
-                foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(tableName, foreignKeyIndexReferenced));
+                if(this.db == null 
+                        || this.db.getTable(foreignTableName) == null
+                        || this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced) == null) {
+                    throw new SyntaxException("Foreign key no references");
+                }
+                int foreignKeyIndexReferenced = this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced);
+                if(this.db.getTable(foreignTableName).uniqueSet == null) {
+                    throw new SyntaxException("Foreign key not unique");
+                }
+                foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(foreignTableName, foreignKeyIndexReferenced));
             }
         }
+    }
+
+    //Constructors (without DB)
+
+    public Table(String tableName, List<String> columnNames, Map<String, DataRow> data) {
+        this.tableName = tableName;
+        this.columnNames = columnNames;
+        this.data = data;
+    }
+
+    public Table(Table table) {//TODO: copy other tables, deep copy
+        this.tableName = table.tableName;
+        this.columnNames = table.columnNames;
+
+    }
+
+    public Table(String tableName) {
+        this.data = new HashMap<>();
+        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(tableName)));
     }
 
     public Table(boolean bool) {
