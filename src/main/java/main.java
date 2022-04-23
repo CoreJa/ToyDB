@@ -41,7 +41,7 @@ public class main {
             } catch (JSQLParserException e) {
                 e.printStackTrace();
             } catch (SyntaxException e) {
-                e.show();
+                e.printStackTrace();
             } finally {
                 statementBuilder.delete(0, statementBuilder.capacity());
             }

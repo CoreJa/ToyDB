@@ -3,6 +3,8 @@ package POJO;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
@@ -81,6 +83,7 @@ public class Table extends ExecuteEngine implements Serializable {
         this.tableName = createTableStatement.getTable().getName();
         this.columnNames = new ArrayList<>();
         this.types = new ArrayList<>();
+        this.data = new HashMap<>();
         try {
             this.indexes = new Indexes(columnDefinitionList.size());
         } catch (NullPointerException e) {
@@ -172,9 +175,14 @@ public class Table extends ExecuteEngine implements Serializable {
 
     }
 
-    public Table(String tableName) {
+    public Table(String str) {
         this.data = new HashMap<>();
-        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(tableName)));
+        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str)));
+    }
+
+    public Table(int n) {
+        this.data = new HashMap<>();
+        data.put("result", new DataRow(Arrays.asList(Type.INT), Arrays.asList(n)));
     }
 
     public Table(boolean bool) {
@@ -391,6 +399,10 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(EqualsTo equalsTo) {
+        Expression leftExpression = equalsTo.getLeftExpression();
+        leftExpression.accept(this);
+        Table table = this.returnValue;
+        String columnName = table.data.get("result").getDataGrids().get(0).getData().toString();
 
     }
 
@@ -432,6 +444,16 @@ public class Table extends ExecuteEngine implements Serializable {
                     .append(this.data.toString()).append("\n");
         }
         return new String(sb);
+    }
+
+    @Override
+    public void visit(LongValue longValue) {
+        this.returnValue = new Table((int) longValue.getValue());
+    }
+
+    @Override
+    public void visit(StringValue stringValue) {
+        this.returnValue = new Table(stringValue.getValue());
     }
 
     public static void main(String[] args) {
