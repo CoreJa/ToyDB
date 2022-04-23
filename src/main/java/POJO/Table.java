@@ -120,6 +120,7 @@ public class Table extends ExecuteEngine implements Serializable {
     public int getColumnIndex(String columnName) {
         return this.columnIndexes.get(columnName);
     }
+
     public String getTableName() {
         return tableName;
     }
@@ -180,11 +181,54 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public void visit(Select select) {
         SelectBody selectBody = select.getSelectBody();
-        if (selectBody instanceof PlainSelect){
-            PlainSelect plainSelect=(PlainSelect) selectBody;
-            plainSelect.getWhere();
+        if (selectBody instanceof PlainSelect) {
+            PlainSelect plainSelect = (PlainSelect) selectBody;
+            Expression expression = plainSelect.getWhere();
+
         }
     }
+
+    @Override
+    public void visit(AndExpression andExpression) {
+        Expression leftExpression = andExpression.getLeftExpression();
+        leftExpression.accept(this);
+        Table table = this.getReturnValue();
+        table.data.get("result").getDataGrids().get(0).toString().equals("true");
+        Expression rightExpression = andExpression.getRightExpression();
+        rightExpression.accept(this);
+
+    }
+
+    @Override
+    public void visit(OrExpression orExpression) {
+
+    }
+
+    @Override
+    public void visit(Between between) {
+
+    }
+
+    @Override
+    public void visit(EqualsTo equalsTo) {
+
+    }
+
+    @Override
+    public void visit(GreaterThan greaterThan) {
+
+    }
+
+    @Override
+    public void visit(GreaterThanEquals greaterThanEquals) {
+
+    }
+
+    @Override
+    public void visit(InExpression inExpression) {
+
+    }
+
 
     @Override
     public void visit(Drop drop) {
@@ -215,8 +259,8 @@ public class Table extends ExecuteEngine implements Serializable {
         String selectDemo1 = "SELECT DISTINCT(c.address), c.date FROM customer c\n";
         try {
             Statement selectStmt = CCJSqlParserUtil.parse(selectDemo1);
-            Table table = new Table("test");
-            table.visit((Select) selectStmt);
+//            Table table = new Table("test");
+//            table.visit((Select) selectStmt);
         } catch (JSQLParserException e) {
             throw new RuntimeException(e);
         }
