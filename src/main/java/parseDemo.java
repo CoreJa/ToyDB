@@ -42,7 +42,7 @@ public class parseDemo {
         } catch (JSQLParserException e) {
             throw new RuntimeException(e);
         } catch (SyntaxException e) {
-            e.show();
+            e.printStackTrace();
         }
 
         System.out.println(tab);

@@ -11,7 +11,7 @@ public class test {
         Database db = new Database();
         db.load();
         ArrayList<String> stmts=new ArrayList<>();
-        stmts.add("creat table tableName "+
+        stmts.add("create table tableName ("+
                 "    col1 int UNIQUE,\n" +
                 "    col2 int NOT NULL)\n"+
                 "    PRIMARY KEY (col1);");
@@ -38,7 +38,7 @@ public class test {
             } catch (JSQLParserException e) {
                 e.printStackTrace();
             } catch (SyntaxException e) {
-                e.show();
+                e.printStackTrace();
             }
         }
     }

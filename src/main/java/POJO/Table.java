@@ -3,6 +3,8 @@ package POJO;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
@@ -442,6 +444,16 @@ public class Table extends ExecuteEngine implements Serializable {
                     .append(this.data.toString()).append("\n");
         }
         return new String(sb);
+    }
+
+    @Override
+    public void visit(LongValue longValue) {
+        this.returnValue = new Table((int) longValue.getValue());
+    }
+
+    @Override
+    public void visit(StringValue stringValue) {
+        this.returnValue = new Table(stringValue.getValue());
     }
 
     public static void main(String[] args) {
