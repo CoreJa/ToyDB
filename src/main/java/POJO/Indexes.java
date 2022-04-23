@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Indexes implements Serializable {
+    private static final long serialVersionUID = 1L;
     private List<String> indexNames;
     private List<Map<String, List<String>>> indexes;
     public Indexes(int n){

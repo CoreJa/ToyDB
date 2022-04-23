@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.*;
 
 public class Table extends ExecuteEngine implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Database db;
     private String tableName;
     private List<String> columnNames;

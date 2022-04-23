@@ -18,72 +18,70 @@ import java.util.Map;
 import java.util.Set;
 
 public class Database extends ExecuteEngine implements Serializable{
+    private static final long serialVersionUID = 1L;
     private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
     private Table returnValue;// ???
 
-    //Constructors
+    // Constructors
     public Database() {//Load from file
+        //无参构造方法是创建时默认调用的. 如果想要使用load(), 请在main里初始化过程中load
         this.tables = new HashMap<>();
-        //this.tables = this.Load();
     }
 
     public Database(Map<String, Table> tablesMap) {
         this.tables = tablesMap;
     }
 
-    //Storage
-    public void Save() {
-        try {
-            FileOutputStream fileOut =
-                    new FileOutputStream(filename);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-            out.writeObject(tables);
-            out.close();
-            fileOut.close();
+
+    // Storage
+    public boolean save(String filename) {
+        boolean flag = false;
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))){
+            out.writeObject(this.tables);
+            flag = true;
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            return flag;
         }
     }
+    public boolean save(){
+        return this.save(this.filename);
+    }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, Table> Load() {
-        Map<String, Table> tables;
-        try {
-            FileInputStream fileIn = new FileInputStream(filename);
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            tables = (Map<String, Table>) in.readObject();
-            in.close();
-            fileIn.close();
-        } catch (IOException i) {
-            i.printStackTrace();
-            return new HashMap<String, Table>();
-        } catch (ClassNotFoundException c) {
+    public boolean load(String filename) {//return if load successfully
+        boolean flag = false;
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(filename))) {
+            this.tables = (Map<String, Table>) in.readObject();
+            flag = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             System.out.println("Table Class not found");
-            c.printStackTrace();
-            return new HashMap<String, Table>();
+        } finally {
+            return flag;
         }
-        return tables;
+    }
+    public boolean load() {
+        return this.load(this.filename);
     }
 
 
+    // Getters, setters(putTable)
     public Table getTable(String tableName) {
         return tables.get(tableName);
     }
-
-    public void addTable(String tableName, Table table) {
-        this.tables.put(tableName, table);
+    public void putTable(Table table) {
+        tables.put(table.getTableName(), table);
     }
 
-    public static String getFilename() {
-        return filename;
-    }
 
     // visit
     @Override
     public void visit(CreateTable createTable){
-        Table table = new Table(createTable);
-        this.addTable(table.getTableName(), table);
+        Table table = new Table(this, createTable);
+        this.tables.put(table.getTableName(), table);
     }
 
     @Override
@@ -94,25 +92,30 @@ public class Database extends ExecuteEngine implements Serializable{
     }
 
     @Override
-    public void visit(Insert insert) {
-        Table table = tables.get(insert.getTable().getName());
-        insert.accept(table);
-        this.returnValue = table.getReturnValue();
-    }
-
-    @Override
     public void visit(Drop drop) {
         if (drop.getType().toLowerCase().compareTo("table") == 0) {//Drop Table
-
+            String tableName = drop.getName().getName(); //和下面的句式结构不一样, 注意
+            // use dropped to check if the statement is valid
+            if(this.tables.remove(tableName) == null) {
+                throw new SyntaxException("Drop table: TABLE " + tableName + " not exists");
+            }
         }
         if (drop.getType().toLowerCase().compareTo("index") == 0) {//Drop Index
-            // getSchemaName actually gets table name. e.g. drop index tableName.indexName
+            //DROP INDEX tableName.indexName
             String tableName = drop.getName().getSchemaName();
+            //String indexName = drop.getName().getName();
             Table table = tables.get(tableName);
             drop.accept(table);
             this.returnValue = table.getReturnValue();
         }
 
+    }
+
+    @Override
+    public void visit(Insert insert) {
+        Table table = tables.get(insert.getTable().getName());
+        insert.accept(table);
+        this.returnValue = table.getReturnValue();
     }
 
     @Override
@@ -153,6 +156,6 @@ public class Database extends ExecuteEngine implements Serializable{
         stringDataRowHashMap.put("a", new DataRow(Arrays.asList(Type.STRING, Type.INT), Arrays.asList("a", 1)));
         Database database = new Database();
 //        database.createTable("test",new Table(Arrays.asList("s","b"),stringDataRowHashMap));
-        database.Save();
+        database.save();
     }
 }

@@ -3,6 +3,7 @@ package POJO;
 import java.io.Serializable;
 
 public class Pair<K, V> implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final K first;
     private final V second;
     public Pair(K k, V v){
