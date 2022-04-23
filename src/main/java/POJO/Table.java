@@ -11,6 +11,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
+import utils.ExecuteEngine;
 import utils.SyntaxException;
 
 
@@ -25,7 +26,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     private Map<String, DataRow> data;//key: primary key; value: data record
     private Table returnValue;
     // Indexes of all columns, elements corresponding to PrimaryKey and None Indexed columns should be Null.
-    private List<Map<String, List<String>>> indexes;
+    private Indexes indexes;
     //Constraints
     private Integer primaryKey; // index in columnNames
     private Set<String> primaryKeySet; // maintain a HashSet of primary keys. Always cast to String.
@@ -39,9 +40,9 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         this.data = data;
     }
 
-    public Table(Table table){
-        this.tableName=table.tableName;
-        this.columnNames=table.columnNames;
+    public Table(Table table) {
+        this.tableName = table.tableName;
+        this.columnNames = table.columnNames;
 
     }
 
@@ -82,9 +83,9 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         //primary key, foreign key constraints
     }
 
-    public Table (boolean bool){
-        this.data=new HashMap<>();
-        data.put("result",new DataRow(Arrays.asList(Type.STRING), Arrays.asList(bool? "true": "false")));
+    public Table(boolean bool) {
+        this.data = new HashMap<>();
+        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(bool ? "true" : "false")));
     }
 
 
@@ -116,7 +117,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
             String fieldValue=v.getDataGrids().get(colInd).toString();
             if (curIndex.containsKey(fieldValue)) {
                 curIndex.get(fieldValue).add(k);
-            }else{
+            } else {
                 curIndex.put(fieldValue, new ArrayList<>(Arrays.asList(k)));
             }
         });
@@ -129,12 +130,52 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     }
 
     @Override
-    public void visit(Select selectStatement) throws SyntaxException {
-        SelectBody selectBody=selectStatement.getSelectBody();
+    public void visit(Insert insert) {
+        insert.getItemsList().accept(this);
+        DataRow newRow = returnValue.data.values().iterator().next();
+        if (newRow.getDataGrids().size() != this.columnNames.size()) {
+            throw new SyntaxException("Value count does not match.");
+        }
+
+
     }
 
     @Override
-    public String toString(){
+    public void visit(ExpressionList expressionList) {
+        HashMap<String, DataRow> newData = new HashMap<>();
+        List<Expression> exprs = expressionList.getExpressions();
+        newData.put("result", new DataRow(Collections.nCopies(exprs.size(), Type.STRING), exprs.forEach((k) -> {
+            k.accept(this);
+        })));
+    }
+
+    @Override
+    public void visit(Select select) {
+        SelectBody selectBody = select.getSelectBody();
+        if (selectBody instanceof PlainSelect){
+            PlainSelect plainSelect=(PlainSelect) selectBody;
+            plainSelect.getWhere();
+        }
+    }
+
+    @Override
+    public void visit(Drop drop) {
+        if (drop.getType().compareTo("index") == 0) {
+            String indexName = drop.getName().getName();
+            int index = indexes.getIndexNames().indexOf(indexName);
+            if (index == -1) {
+                throw new SyntaxException("No such index");
+            }
+            indexes.getIndexes().set(index, null);
+            indexes.getIndexNames().set(index, null);
+            this.returnValue = new Table(true);
+        } else {
+            throw new SyntaxException("Not Implemented yet");
+        }
+    }
+
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.tableName).append("\n")
                 .append(this.columnNames.toString()).append("\n")
