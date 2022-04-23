@@ -172,9 +172,14 @@ public class Table extends ExecuteEngine implements Serializable {
 
     }
 
-    public Table(String tableName) {
+    public Table(String str) {
         this.data = new HashMap<>();
-        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(tableName)));
+        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str)));
+    }
+
+    public Table(int n) {
+        this.data = new HashMap<>();
+        data.put("result", new DataRow(Arrays.asList(Type.INT), Arrays.asList(n)));
     }
 
     public Table(boolean bool) {
@@ -391,6 +396,10 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(EqualsTo equalsTo) {
+        Expression leftExpression = equalsTo.getLeftExpression();
+        leftExpression.accept(this);
+        Table table = this.returnValue;
+        String columnName = table.data.get("result").getDataGrids().get(0).getData().toString();
 
     }
 
