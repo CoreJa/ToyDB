@@ -1,10 +1,15 @@
 package POJO;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.drop.Drop;
-import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.*;
+import utils.ExecuteEngine;
+import utils.SyntaxException;
 
 import java.io.*;
 import java.util.Arrays;
@@ -12,22 +17,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class Database extends StatementVisitorAdapter {
-    private Map<String, Table> tables;
+public class Database extends ExecuteEngine {
+    private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
     private Table returnValue;
 
-
-    public Database(Map<String, Table> tables) {
-        this.tables = tables;
-    }
-
     //Constructors
-
     public Database() {
         this.tables = this.Load();
     }
 
+    public Database(Map<String, Table> tablesMap) {
+        this.tables = tablesMap;
+    }
+
+    //Storage
     public void Save() {
         try {
             FileOutputStream fileOut =
@@ -61,10 +65,6 @@ public class Database extends StatementVisitorAdapter {
         return tables;
     }
 
-    public void execute(CreateTable createTableStatement) {
-        Table t = new Table(createTableStatement);
-        tables.put(t.getTableName(), t);
-    }
 
     public Table getTable(String tableName) {
         return tables.get(tableName);
@@ -80,17 +80,67 @@ public class Database extends StatementVisitorAdapter {
 
     @Override
     public void visit(CreateIndex createIndex) {
-        Table table=tables.get(createIndex.getTable().getName());
+        Table table = tables.get(createIndex.getTable().getName());
         createIndex.accept(table);
-        this.returnValue=table.getReturnValue();
+        this.returnValue = table.getReturnValue();
+    }
+
+    @Override
+    public void visit(Insert insert) {
+        Table table = tables.get(insert.getTable().getName());
+        insert.accept(table);
+        this.returnValue = table.getReturnValue();
     }
 
     @Override
     public void visit(Drop drop) {
+        if (drop.getType().toLowerCase().compareTo("table") == 0) {//Drop Table
+
+        }
+        if (drop.getType().toLowerCase().compareTo("index") == 0) {//Drop Index
+            // getSchemaName actually gets table name. e.g. drop index tableName.indexName
+            String tableName = drop.getName().getSchemaName();
+            Table table = tables.get(tableName);
+            drop.accept(table);
+            this.returnValue = table.getReturnValue();
+        }
 
     }
 
+    @Override
+    public void visit(Select selectStatement) throws SyntaxException {
+        SelectBody selectBody = selectStatement.getSelectBody();
+        if (selectBody instanceof PlainSelect) {
+            PlainSelect stmt = (PlainSelect) selectBody;
+            FromItem fromItem = stmt.getFromItem();
+            if (fromItem instanceof net.sf.jsqlparser.schema.Table) {
+                net.sf.jsqlparser.schema.Table fromItemTable = (net.sf.jsqlparser.schema.Table) fromItem;
+                Table table = tables.get((fromItemTable.getSchemaName()));
+
+
+            } else if (fromItem instanceof SubSelect) {
+                SubSelect subSelect = (SubSelect) fromItem;
+                this.visit(subSelect);
+            } else if (fromItem instanceof SubJoin) {
+                //TODO: 暂时不知道subJoin
+            }
+
+
+
+        } else {
+            throw new SyntaxException(selectBody.toString());
+        }
+    }
+
     public static void main(String[] args) {
+        String selectDemo2 = "SELECT DISTINCT ID, ID2 " +
+                "FROM MY_TABLE1, MY_TABLE2, (SELECT * FROM MY_TABLE3) LEFT OUTER JOIN MY_TABLE4 " +
+                "WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";
+        try {
+            new Database().visit((Select) CCJSqlParserUtil.parse(selectDemo2));
+        } catch (JSQLParserException e) {
+            throw new RuntimeException(e);
+        }
         HashMap<String, DataRow> stringDataRowHashMap = new HashMap<>();
         stringDataRowHashMap.put("a", new DataRow(Arrays.asList(Type.STRING, Type.INT), Arrays.asList("a", 1)));
         Database database = new Database();

@@ -2,22 +2,32 @@ package POJO;
 
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
+import utils.ExecuteEngine;
 import utils.SyntaxException;
 
 
+import javax.swing.table.TableModel;
 import java.io.Serializable;
 import java.util.*;
 
-public class Table extends StatementVisitorAdapter implements Serializable {
+public class Table extends ExecuteEngine implements Serializable {
+    private Database db;
     private String tableName;
     private List<String> columnNames;
     private Map<String, Integer> columnIndexes;
@@ -25,11 +35,11 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     private Map<String, DataRow> data;//key: primary key; value: data record
     private Table returnValue;
     // Indexes of all columns, elements corresponding to PrimaryKey and None Indexed columns should be Null.
-    private List<Map<String, List<String>>> indexes;
+    private Indexes indexes;
     //Constraints
     private Integer primaryKey; // index in columnNames
-    private Set<String> primaryKeySet; // maintain a HashSet of primary keys. Always cast to String.
-    private List<Map.Entry<String, Integer>> foreignKeyList;
+    private List<Set<String>> uniqueSet; // maintain a HashSet of value of . Always cast to String.
+    private List<Pair<String, Integer>> foreignKeyList;
 
 
     //Constructors
@@ -39,24 +49,28 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         this.data = data;
     }
 
-    public Table(Table table){
-        this.tableName=table.tableName;
-        this.columnNames=table.columnNames;
+    public Table(Table table) {
+        this.tableName = table.tableName;
+        this.columnNames = table.columnNames;
 
     }
 
     public Table(String tableName) {
-        this(tableName, new ArrayList<String>(), new HashMap<String, DataRow>());
+        this.data = new HashMap<>();
+        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(tableName)));
     }
 
     public Table(CreateTable createTableStatement) throws SyntaxException {
-        //create table by statement
+        // create table by statement
         // define the name and dataType of each column
-        this.tableName = createTableStatement.getTable().getName();
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
+
+        this.tableName = createTableStatement.getTable().getName();
         this.columnNames = new ArrayList<>();
+        this.types = new ArrayList<>();
+        this.indexes = new Indexes(columnDefinitionList.size());
+
         Set<String> check = new HashSet<>(); //check duplication of column names
-        types = new ArrayList<>();
 
         for (ColumnDefinition def : columnDefinitionList) {
             // column name
@@ -64,9 +78,11 @@ public class Table extends StatementVisitorAdapter implements Serializable {
             if (!check.contains(columnName)) {
                 check.add(columnName);
                 columnNames.add(columnName);
-                columnIndexes.put(columnName,columnNames.size()-1);
+                columnIndexes.put(columnName, columnNames.size() - 1);
+//                indexes.getIndexNames().add(null);
+//                indexes.getIndexes().add(null);
             } else {
-                throw new SyntaxException("Duplicate column name.");
+                throw new SyntaxException("Duplicate column name");
             }
             // data type
             String columnLowerCaseType = def.getColDataType().getDataType().toLowerCase();//string of type name
@@ -78,19 +94,39 @@ public class Table extends StatementVisitorAdapter implements Serializable {
                 throw new SyntaxException("Wrong or unsupported data type.");
             }
         }
-        // StatementVisitorAdapter
-        //primary key, foreign key constraints
+        //constraints: primary key, foreign key
+        Collections.nCopies(columnNames.size(), uniqueSet);
+        Collections.nCopies(columnNames.size(), foreignKeyList);
+        for (Index index : createTableStatement.getIndexes()) {
+            if (index.getType().toLowerCase().compareTo("primary key") == 0) {//check primary key
+                primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
+                uniqueSet.set(primaryKey, new HashSet<>());
+            }
+
+            if (index instanceof ForeignKeyIndex) {
+                int foreignKeyIndexHere = columnIndexes.get(index.getColumnsNames().get(0));
+                String tableName = ((ForeignKeyIndex) index).getTable().getName();
+                String foreignKeyReferenced = ((ForeignKeyIndex) index).getReferencedColumnNames().get(0);
+                int foreignKeyIndexReferenced = this.db.getTable(tableName).columnIndexes.get(foreignKeyReferenced);
+                foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(tableName, foreignKeyIndexReferenced));
+            }
+        }
+
     }
 
-    public Table (boolean bool){
-        this.data=new HashMap<>();
-        data.put("result",new DataRow(Arrays.asList(Type.STRING), Arrays.asList(bool? "true": "false")));
+    public Table(boolean bool) {
+        this.data = new HashMap<>();
+        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(bool ? "true" : "false")));
     }
 
 
     //setters and getters
     public void setTableName(String tableName) {
         this.tableName = tableName;
+    }
+
+    public int getColumnIndex(String columnName) {
+        return this.columnIndexes.get(columnName);
     }
 
     public String getTableName() {
@@ -101,22 +137,24 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         return returnValue;
     }
 
-    public boolean createIndex(String columnName){
-        int colInd=columnIndexes.get(columnName); //get column index by column name
+    //create index
+    public boolean createIndex(String indexName, String columnName) {
+        int colInd = columnIndexes.get(columnName); //get column index by column name
 
         if (colInd == primaryKey) {
             throw new SyntaxException("Can't create index on primary key.");
         }
-        if (indexes.get(colInd) != null) { // judge if index already exists
+        if (indexes.getIndexes().get(colInd) != null) { // judge if index already exists
             return false;
         }
-        Map<String, List<String>> curIndex=new HashMap<>();
-        indexes.set(colInd,curIndex); // initialize new index object into table
-        data.forEach((k,v)->{ // constuct object
-            String fieldValue=v.getDataGrids().get(colInd).toString();
+        indexes.getIndexNames().set(colInd, indexName); // store index name
+        Map<String, List<String>> curIndex = new HashMap<>();
+        indexes.getIndexes().set(colInd, curIndex); // initialize new index object into table
+        data.forEach((k, v) -> { // construct object
+            String fieldValue = v.getDataGrids().get(colInd).toString();
             if (curIndex.containsKey(fieldValue)) {
                 curIndex.get(fieldValue).add(k);
-            }else{
+            } else {
                 curIndex.put(fieldValue, new ArrayList<>(Arrays.asList(k)));
             }
         });
@@ -125,16 +163,118 @@ public class Table extends StatementVisitorAdapter implements Serializable {
 
     @Override
     public void visit(CreateIndex createIndex) {
-        this.returnValue=new Table(this.createIndex(createIndex.getIndex().getColumnsNames().get(0)));
+        this.returnValue = new Table(this.createIndex(createIndex.getIndex().getName(), //index name
+                createIndex.getIndex().getColumnsNames().get(0))); // column name
     }
 
     @Override
-    public void visit(Select selectStatement) throws SyntaxException {
-        SelectBody selectBody=selectStatement.getSelectBody();
+    public void visit(Insert insert) {
+        insert.getItemsList().accept(this);
+        returnValue = insert(returnValue.data.values().iterator().next());
+    }
+
+    public Table insert(DataRow newRow){
+        if (newRow.getDataGrids().size() != this.columnNames.size()) {
+            throw new SyntaxException("Value count does not match.");
+        }
+        for (int i = 0; i < newRow.getDataGrids().size(); i++) {
+            DataGrid dataGrid = newRow.getDataGrids().get(i);
+            if (foreignKeyList.get(i) != null) {
+
+            } else if (types.get(i) == Type.INT) {
+                newRow.getDataGrids().set(i, new DataGrid(Type.INT, Integer.parseInt(dataGrid.toString())));
+            }
+        }
+        return new Table(true);
     }
 
     @Override
-    public String toString(){
+    public void visit(ExpressionList expressionList) {
+        HashMap<String, DataRow> newData = new HashMap<>();
+        List<Expression> exprs = expressionList.getExpressions();
+        List<Object> a = new ArrayList<>();
+        exprs.forEach((k) -> {
+            k.accept(this);
+            a.add((Object) this.returnValue.data.get("result").getDataGrids().get(0).toString());
+        });
+        newData.put("result", new DataRow(Collections.nCopies(exprs.size(), Type.STRING), a));
+    }
+
+    @Override
+    public void visit(Column tableColumn) {
+        this.returnValue = new Table(tableColumn.getColumnName());
+    }
+
+    @Override
+    public void visit(Select select) {
+        SelectBody selectBody = select.getSelectBody();
+        if (selectBody instanceof PlainSelect) {
+            PlainSelect plainSelect = (PlainSelect) selectBody;
+            Expression expression = plainSelect.getWhere();
+
+        }
+    }
+
+    @Override
+    public void visit(AndExpression andExpression) {
+        Expression leftExpression = andExpression.getLeftExpression();
+        leftExpression.accept(this);
+        Table table = this.getReturnValue();
+        table.data.get("result").getDataGrids().get(0).toString().equals("true");
+        Expression rightExpression = andExpression.getRightExpression();
+        rightExpression.accept(this);
+
+    }
+
+    @Override
+    public void visit(OrExpression orExpression) {
+
+    }
+
+    @Override
+    public void visit(Between between) {
+
+    }
+
+    @Override
+    public void visit(EqualsTo equalsTo) {
+
+    }
+
+    @Override
+    public void visit(GreaterThan greaterThan) {
+
+    }
+
+    @Override
+    public void visit(GreaterThanEquals greaterThanEquals) {
+
+    }
+
+    @Override
+    public void visit(InExpression inExpression) {
+
+    }
+
+
+    @Override
+    public void visit(Drop drop) {
+        if (drop.getType().compareTo("index") == 0) {
+            String indexName = drop.getName().getName();
+            int index = indexes.getIndexNames().indexOf(indexName);
+            if (index == -1) {
+                throw new SyntaxException("No such index");
+            }
+            indexes.getIndexes().set(index, null);
+            indexes.getIndexNames().set(index, null);
+            this.returnValue = new Table(true);
+        } else {
+            throw new SyntaxException("Not Implemented yet");
+        }
+    }
+
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(this.tableName).append("\n")
                 .append(this.columnNames.toString()).append("\n")
@@ -146,8 +286,8 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         String selectDemo1 = "SELECT DISTINCT(c.address), c.date FROM customer c\n";
         try {
             Statement selectStmt = CCJSqlParserUtil.parse(selectDemo1);
-            Table table = new Table("test");
-            table.visit((Select) selectStmt);
+//            Table table = new Table("test");
+//            table.visit((Select) selectStmt);
         } catch (JSQLParserException e) {
             throw new RuntimeException(e);
         }
