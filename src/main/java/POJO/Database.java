@@ -17,14 +17,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class Database extends ExecuteEngine {
+public class Database extends ExecuteEngine implements Serializable{
     private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
-    private Table returnValue;
+    private Table returnValue;// ???
 
     //Constructors
-    public Database() {
-        this.tables = this.Load();
+    public Database() {//Load from file
+        this.tables = new HashMap<>();
+        //this.tables = this.Load();
     }
 
     public Database(Map<String, Table> tablesMap) {
@@ -70,12 +71,19 @@ public class Database extends ExecuteEngine {
         return tables.get(tableName);
     }
 
-    public void createTable(String tableName, Table table) {
+    public void addTable(String tableName, Table table) {
         this.tables.put(tableName, table);
     }
 
     public static String getFilename() {
         return filename;
+    }
+
+    // visit
+    @Override
+    public void visit(CreateTable createTable){
+        Table table = new Table(createTable);
+        this.addTable(table.getTableName(), table);
     }
 
     @Override
