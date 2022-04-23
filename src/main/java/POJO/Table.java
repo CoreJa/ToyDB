@@ -258,8 +258,17 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         for (int i = 0; i < newRow.getDataGrids().size(); i++) { //check value one by one
             DataGrid dataGrid = newRow.getDataGrids().get(i);
+            Map<String, List<String>> curIndex= indexes.getIndexes().get(i);
             if (types.get(i) == Type.INT) {  //check if it should be integer
                 newRow.getDataGrids().set(i, new DataGrid(Type.INT, Integer.parseInt(dataGrid.toString())));
+            }
+            if (curIndex!=null){
+                String fieldValue = dataGrid.toString();
+                if (curIndex.containsKey(fieldValue)) {
+                    curIndex.get(fieldValue).add(newRow.getDataGrids().get(primaryKey).toString());
+                } else {
+                    curIndex.put(fieldValue, new ArrayList<>(Arrays.asList(newRow.getDataGrids().get(primaryKey).toString())));
+                }
             }
             if (foreignKeyList.get(i) != null) {  // check if it has foreign key constraint
                 DataGrid refGrid = findReferenceGrid(foreignKeyList.get(i).getFirst(),
@@ -283,7 +292,11 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         Map<String, List<String>> index = table.indexes.getIndexes().get(colInd);
         if (index != null) {  // if column is indexed
-            DataRow refRow = table.data.get(index.get(data.toString()).get(0));
+            List<String> primaryKeyValue =index.get(data.toString());
+            if (primaryKeyValue == null) {
+                return null;
+            }
+            DataRow refRow = table.data.get(primaryKeyValue.get(0));
             return refRow == null ? null : refRow.getDataGrids().get(colInd);
         } else {
             for (DataRow value : table.data.values()) {
