@@ -111,7 +111,6 @@ public class Table extends ExecuteEngine implements Serializable {
                 foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(tableName, foreignKeyIndexReferenced));
             }
         }
-
     }
 
     public Table(boolean bool) {
