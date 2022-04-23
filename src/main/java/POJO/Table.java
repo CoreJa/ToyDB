@@ -26,6 +26,9 @@ import java.util.*;
 
 public class Table extends ExecuteEngine implements Serializable {
     private static final long serialVersionUID = 1L;
+    /* indicates if the table is a temporary table used for transmitting return value, which means does not contain
+     *  metadata, default is true, set false in complex constructors.*/
+    private boolean simple = true;
     private Database db;
     private String tableName;
     private List<String> columnNames;
@@ -45,7 +48,9 @@ public class Table extends ExecuteEngine implements Serializable {
         this(null, null, new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, null, null, new ArrayList<>(), new ArrayList<>());
 
     }
+
     public Table(Database db, String tableName, List<String> columnNames, Map<String, Integer> columnIndexes, List<Type> types, Map<String, DataRow> data, Table returnValue, Indexes indexes, Integer primaryKey, List<Set<String>> uniqueSet, List<Pair<String, Integer>> foreignKeyList) {
+        this.simple = false;
         this.db = db;
         this.tableName = tableName;
         this.columnNames = columnNames;
@@ -58,7 +63,8 @@ public class Table extends ExecuteEngine implements Serializable {
         this.uniqueSet = uniqueSet;
         this.foreignKeyList = foreignKeyList;
     }
-    public Table(Database db, String tableName) {
+
+    public Table(Database db, String tableName) { // ???
         this.db = db;
         this.tableName = tableName;
         this.data = new HashMap<>();
@@ -70,6 +76,7 @@ public class Table extends ExecuteEngine implements Serializable {
         // define the name and dataType of each column
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
 
+        this.simple = false;
         this.db = db;
         this.tableName = createTableStatement.getTable().getName();
         this.columnNames = new ArrayList<>();
@@ -108,23 +115,24 @@ public class Table extends ExecuteEngine implements Serializable {
             }
             // column specs - unique
             uniqueSet.add(null);
-            if(def.getColumnSpecs()!= null
+            if (def.getColumnSpecs() != null
                     && def.getColumnSpecs().size() > 0
                     && def.getColumnSpecs().get(0).toLowerCase().compareTo("unique") == 0) {
                 this.uniqueSet.set(columnIndexes.get(columnName), new HashSet<>());
             }
+            this.returnValue = this;
 
         }
         //constraints: primary key, foreign key
-        for(int i = 0; i < columnNames.size(); i++) {
+        for (int i = 0; i < columnNames.size(); i++) {
             foreignKeyList.add(null);
         }
-        if(createTableStatement.getIndexes() != null) {
+        if (createTableStatement.getIndexes() != null) {
             for (Index index : createTableStatement.getIndexes()) {
                 //check primary key
                 if (index.getType().toLowerCase().compareTo("primary key") == 0) {
                     primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
-                    if(uniqueSet.get(primaryKey) == null) {
+                    if (uniqueSet.get(primaryKey) == null) {
                         uniqueSet.set(primaryKey, new HashSet<>()); // primary key should be unique
                     }
                 }
@@ -134,13 +142,13 @@ public class Table extends ExecuteEngine implements Serializable {
                     int foreignKeyIndexHere = columnIndexes.get(index.getColumnsNames().get(0));
                     String foreignTableName = ((ForeignKeyIndex) index).getTable().getName();
                     String foreignKeyReferenced = ((ForeignKeyIndex) index).getReferencedColumnNames().get(0);
-                    if(this.db == null
+                    if (this.db == null
                             || this.db.getTable(foreignTableName) == null
                             || this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced) == null) {
                         throw new SyntaxException("Foreign key no references");
                     }
                     int foreignKeyIndexReferenced = this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced);
-                    if(this.db.getTable(foreignTableName).uniqueSet == null) {
+                    if (this.db.getTable(foreignTableName).uniqueSet == null) {
                         throw new SyntaxException("Foreign key not unique");
                     }
                     foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(foreignTableName, foreignKeyIndexReferenced));
@@ -254,20 +262,25 @@ public class Table extends ExecuteEngine implements Serializable {
                 newRow.getDataGrids().set(i, refGrid);
             }
         }
-        this.data.put(newRow.getDataGrids().get(this.primaryKey).toString(),newRow); // write into main hashmap
+        this.data.put(newRow.getDataGrids().get(this.primaryKey).toString(), newRow); // write into main hashmap
         return new Table(true);
     }
 
     public DataGrid findReferenceGrid(String tableName, int colInd, DataGrid data) {
         Table table = db.getTable(tableName);
+
+        if (colInd == table.primaryKey) { // if rely on primary key
+            DataRow refRow = table.data.get(data.toString());
+            return refRow == null ? null : refRow.getDataGrids().get(colInd);
+        }
         Map<String, List<String>> index = table.indexes.getIndexes().get(colInd);
-        if (index != null) {
+        if (index != null) {  // if column is indexed
             DataRow refRow = table.data.get(index.get(data.toString()).get(0));
             return refRow == null ? null : refRow.getDataGrids().get(colInd);
         } else {
             for (DataRow value : table.data.values()) {
                 DataGrid curGrid = value.getDataGrids().get(colInd);
-                if (curGrid.toString().compareTo(data.toString()) == 0) {
+                if (curGrid.compareTo(data)) {
                     return curGrid;
                 }
             }
@@ -327,20 +340,48 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(AndExpression andExpression) {
+        /*
+         * recursivelly calculate expressions
+         * */
         Expression leftExpression = andExpression.getLeftExpression();
         leftExpression.accept(this);
-        Table table = this.getReturnValue();
-        if (table.data.get("result").getDataGrids().get(0).toString().equals("true")) {
-
-        }
+        Table table_l = this.getReturnValue();
         Expression rightExpression = andExpression.getRightExpression();
         rightExpression.accept(this);
+        Table table_r = this.getReturnValue();
 
+        /*
+         * logically and two tables
+         * */
+        for (Map.Entry<String, DataRow> entry : table_l.data.entrySet()) {
+            if (!table_r.data.containsKey(entry.getKey())) {
+                table_l.data.remove(entry.getKey());
+            }
+        }
+        this.returnValue = table_l;
     }
 
     @Override
     public void visit(OrExpression orExpression) {
+        /*
+         * recursivelly calculate expressions
+         * */
+        Expression leftExpression = orExpression.getLeftExpression();
+        leftExpression.accept(this);
+        Table table_l = this.getReturnValue();
+        Expression rightExpression = orExpression.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.getReturnValue();
 
+        /*
+         * logically or two tables
+         * */
+        for (Map.Entry<String, DataRow> entry : table_r.data.entrySet()) {
+            if (!table_l.data.containsKey(entry.getKey())) {
+                table_l.data.put(entry.getKey(), entry.getValue());
+            }
+        }
+        this.returnValue = table_l;
     }
 
     @Override
@@ -383,9 +424,13 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(this.tableName).append("\n")
-                .append(this.columnNames.toString()).append("\n")
-                .append(this.data.toString()).append("\n");
+        if (simple) {
+            sb.append(this.data.toString()).append("\n");
+        } else {
+            sb.append(this.tableName).append("\n")
+                    .append(this.columnNames.toString()).append("\n")
+                    .append(this.data.toString()).append("\n");
+        }
         return new String(sb);
     }
 

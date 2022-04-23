@@ -56,7 +56,9 @@ public class Database extends ExecuteEngine implements Serializable{
             this.tables = (Map<String, Table>) in.readObject();
             flag = true;
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            System.out.println("DB file not found, creating an empty one.");
+            this.tables=new HashMap<>();
         } catch (ClassNotFoundException e) {
             System.out.println("Table Class not found");
         } finally {
@@ -75,13 +77,16 @@ public class Database extends ExecuteEngine implements Serializable{
     public void putTable(Table table) {
         tables.put(table.getTableName(), table);
     }
-
+    public Table getReturnValue() {
+        return returnValue;
+    }
 
     // visit
     @Override
     public void visit(CreateTable createTable){
         Table table = new Table(this, createTable);
         this.tables.put(table.getTableName(), table);
+        this.returnValue = table.getReturnValue();
     }
 
     @Override
