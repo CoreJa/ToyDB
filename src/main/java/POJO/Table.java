@@ -341,8 +341,8 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public void visit(AndExpression andExpression) {
         /*
-        * recursivelly calculate expressions
-        * */
+         * recursivelly calculate expressions
+         * */
         Expression leftExpression = andExpression.getLeftExpression();
         leftExpression.accept(this);
         Table table_l = this.getReturnValue();
@@ -351,20 +351,37 @@ public class Table extends ExecuteEngine implements Serializable {
         Table table_r = this.getReturnValue();
 
         /*
-        * logically and two table
-        * */
-
+         * logically and two tables
+         * */
         for (Map.Entry<String, DataRow> entry : table_l.data.entrySet()) {
             if (!table_r.data.containsKey(entry.getKey())) {
                 table_l.data.remove(entry.getKey());
             }
         }
-
+        this.returnValue = table_l;
     }
 
     @Override
     public void visit(OrExpression orExpression) {
+        /*
+         * recursivelly calculate expressions
+         * */
+        Expression leftExpression = orExpression.getLeftExpression();
+        leftExpression.accept(this);
+        Table table_l = this.getReturnValue();
+        Expression rightExpression = orExpression.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.getReturnValue();
 
+        /*
+         * logically or two tables
+         * */
+        for (Map.Entry<String, DataRow> entry : table_r.data.entrySet()) {
+            if (!table_l.data.containsKey(entry.getKey())) {
+                table_l.data.put(entry.getKey(), entry.getValue());
+            }
+        }
+        this.returnValue = table_l;
     }
 
     @Override
