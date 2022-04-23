@@ -3,6 +3,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.statement.drop.Drop;
 
 public class main {
     public static void main(String[] args) {
@@ -28,9 +29,12 @@ public class main {
 
         String createIndexDemo = "create index indname on Tablename (ColName);";
 
+        String dropIndexDemo = "drop index tablename.indname;";
+
+        String insertDemo = " insert into tableName values (value1,value2);";
 
         try {
-            Statement stmt = CCJSqlParserUtil.parse(createIndexDemo);
+            Statement stmt = CCJSqlParserUtil.parse(insertDemo);
             System.out.println(stmt);
         } catch (JSQLParserException e) {
             throw new RuntimeException(e);
