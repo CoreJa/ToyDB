@@ -82,6 +82,7 @@ public class Database extends ExecuteEngine implements Serializable{
     public void visit(CreateTable createTable){
         Table table = new Table(this, createTable);
         this.tables.put(table.getTableName(), table);
+        this.returnValue = table.getReturnValue();
     }
 
     @Override

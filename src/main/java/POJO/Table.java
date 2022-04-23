@@ -113,6 +113,7 @@ public class Table extends ExecuteEngine implements Serializable {
                     && def.getColumnSpecs().get(0).toLowerCase().compareTo("unique") == 0) {
                 this.uniqueSet.set(columnIndexes.get(columnName), new HashSet<>());
             }
+            this.returnValue = this;
 
         }
         //constraints: primary key, foreign key
