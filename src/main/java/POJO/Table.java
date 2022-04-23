@@ -116,6 +116,11 @@ public class Table extends ExecuteEngine implements Serializable {
         data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(bool ? "true" : "false")));
     }
 
+    public Table(DataRow row) {
+        this.data = new HashMap<>();
+        data.put("result", row);
+    }
+
 
     //setters and getters
     public void setTableName(String tableName) {
@@ -174,27 +179,53 @@ public class Table extends ExecuteEngine implements Serializable {
         if (newRow.getDataGrids().size() != this.columnNames.size()) { // check value count
             throw new SyntaxException("Value count does not match.");
         }
-        for (int i = 0; i < newRow.getDataGrids().size(); i++) {
+        if (this.data.containsKey(newRow.getDataGrids().get(this.primaryKey).toString())) { // check primary key
+            throw new SyntaxException("Primary key already exists");
+        }
+        for (int i = 0; i < newRow.getDataGrids().size(); i++) { //check value one by one
             DataGrid dataGrid = newRow.getDataGrids().get(i);
-            if (foreignKeyList.get(i) != null) {
-
-            } else if (types.get(i) == Type.INT) {
+            if (types.get(i) == Type.INT) {  //check if it should be integer
                 newRow.getDataGrids().set(i, new DataGrid(Type.INT, Integer.parseInt(dataGrid.toString())));
             }
+            if (foreignKeyList.get(i) != null) {  // check if it has foreign key constraint
+                DataGrid refGrid = findReferenceGrid(foreignKeyList.get(i).getFirst(),
+                        foreignKeyList.get(i).getSecond(), newRow.getDataGrids().get(i));
+                if (refGrid == null) {
+                    throw new SyntaxException("Failed by foreign key constraint");
+                }
+                newRow.getDataGrids().set(i, refGrid);
+            }
         }
+        this.data.put(newRow.getDataGrids().get(this.primaryKey).toString(),newRow); // write into main hashmap
         return new Table(true);
+    }
+
+    public DataGrid findReferenceGrid(String tableName, int colInd, DataGrid data) {
+        Table table = db.getTable(tableName);
+        Map<String, List<String>> index = table.indexes.getIndexes().get(colInd);
+        if (index != null) {
+            DataRow refRow = table.data.get(index.get(data.toString()).get(0));
+            return refRow == null ? null : refRow.getDataGrids().get(colInd);
+        } else {
+            for (DataRow value : table.data.values()) {
+                DataGrid curGrid = value.getDataGrids().get(colInd);
+                if (curGrid.toString().compareTo(data.toString()) == 0) {
+                    return curGrid;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
     public void visit(ExpressionList expressionList) {
-        HashMap<String, DataRow> newData = new HashMap<>();
         List<Expression> exprs = expressionList.getExpressions();
         List<Object> a = new ArrayList<>();
         exprs.forEach((k) -> {
             k.accept(this);
             a.add((Object) this.returnValue.data.get("result").getDataGrids().get(0).toString());
         });
-        newData.put("result", new DataRow(Collections.nCopies(exprs.size(), Type.STRING), a));
+        this.returnValue = new Table(new DataRow(Collections.nCopies(exprs.size(), Type.STRING), a));
     }
 
     @Override
