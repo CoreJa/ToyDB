@@ -3,8 +3,11 @@ package POJO;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -19,6 +22,7 @@ import utils.ExecuteEngine;
 import utils.SyntaxException;
 
 
+import javax.swing.table.TableModel;
 import java.io.Serializable;
 import java.util.*;
 
@@ -52,7 +56,8 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     public Table(String tableName) {
-        this(tableName, new ArrayList<String>(), new HashMap<String, DataRow>());
+        this.data = new HashMap<>();
+        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(tableName)));
     }
 
     public Table(CreateTable createTableStatement) throws SyntaxException {
@@ -165,21 +170,39 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public void visit(Insert insert) {
         insert.getItemsList().accept(this);
-        DataRow newRow = returnValue.data.values().iterator().next();
+        returnValue = insert(returnValue.data.values().iterator().next());
+    }
+
+    public Table insert(DataRow newRow){
         if (newRow.getDataGrids().size() != this.columnNames.size()) {
             throw new SyntaxException("Value count does not match.");
         }
+        for (int i = 0; i < newRow.getDataGrids().size(); i++) {
+            DataGrid dataGrid = newRow.getDataGrids().get(i);
+            if (foreignKeyList.get(i) != null) {
 
-
+            } else if (types.get(i) == Type.INT) {
+                newRow.getDataGrids().set(i, new DataGrid(Type.INT, Integer.parseInt(dataGrid.toString())));
+            }
+        }
+        return new Table(true);
     }
 
     @Override
     public void visit(ExpressionList expressionList) {
         HashMap<String, DataRow> newData = new HashMap<>();
         List<Expression> exprs = expressionList.getExpressions();
-        newData.put("result", new DataRow(Collections.nCopies(exprs.size(), Type.STRING), exprs.forEach((k) -> {
+        List<Object> a = new ArrayList<>();
+        exprs.forEach((k) -> {
             k.accept(this);
-        })));
+            a.add((Object) this.returnValue.data.get("result").getDataGrids().get(0).toString());
+        });
+        newData.put("result", new DataRow(Collections.nCopies(exprs.size(), Type.STRING), a));
+    }
+
+    @Override
+    public void visit(Column tableColumn) {
+        this.returnValue = new Table(tableColumn.getColumnName());
     }
 
     @Override
