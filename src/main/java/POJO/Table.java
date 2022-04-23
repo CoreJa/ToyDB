@@ -14,15 +14,13 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.*;
 import utils.ExecuteEngine;
 import utils.SyntaxException;
 
 
 import javax.swing.table.TableModel;
+import javax.xml.crypto.Data;
 import java.io.Serializable;
 import java.util.*;
 
@@ -172,8 +170,8 @@ public class Table extends ExecuteEngine implements Serializable {
         returnValue = insert(returnValue.data.values().iterator().next());
     }
 
-    public Table insert(DataRow newRow){
-        if (newRow.getDataGrids().size() != this.columnNames.size()) {
+    public Table insert(DataRow newRow) {
+        if (newRow.getDataGrids().size() != this.columnNames.size()) { // check value count
             throw new SyntaxException("Value count does not match.");
         }
         for (int i = 0; i < newRow.getDataGrids().size(); i++) {
@@ -207,10 +205,34 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public void visit(Select select) {
         SelectBody selectBody = select.getSelectBody();
+
+        //plain select without where statement for now
         if (selectBody instanceof PlainSelect) {
             PlainSelect plainSelect = (PlainSelect) selectBody;
-            Expression expression = plainSelect.getWhere();
-
+            Table table = new Table(this);
+            table.columnNames = new ArrayList<>();
+            table.columnIndexes = new HashMap<>();
+            table.types = new ArrayList<>();
+            ArrayList<Integer> columnList = new ArrayList<>();
+            int cnt = 0;
+            for (SelectItem selectItem : plainSelect.getSelectItems()) {
+                String columnName = ((Column) ((SelectExpressionItem) selectItem).getExpression()).getColumnName();
+                table.columnNames.add(columnName);
+                table.columnIndexes.put(columnName, cnt++);
+                int idx = this.columnIndexes.get(columnName);
+                columnList.add(idx);
+                table.types.add(this.types.get(idx));
+            }
+            table.data = new HashMap<>();
+            for (Map.Entry<String, DataRow> entry : this.data.entrySet()) {
+                List<Object> dataList = new ArrayList<>();
+                for (int idx : columnList) {
+                    dataList.add(entry.getValue().getDataGrids().get(idx));
+                }
+                DataRow dataRow = new DataRow(table.types, dataList);
+                table.data.put(entry.getKey(), dataRow);
+            }
+            this.returnValue = table;
         }
     }
 
@@ -219,7 +241,9 @@ public class Table extends ExecuteEngine implements Serializable {
         Expression leftExpression = andExpression.getLeftExpression();
         leftExpression.accept(this);
         Table table = this.getReturnValue();
-        table.data.get("result").getDataGrids().get(0).toString().equals("true");
+        if (table.data.get("result").getDataGrids().get(0).toString().equals("true")) {
+
+        }
         Expression rightExpression = andExpression.getRightExpression();
         rightExpression.accept(this);
 
@@ -247,11 +271,6 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(GreaterThanEquals greaterThanEquals) {
-
-    }
-
-    @Override
-    public void visit(InExpression inExpression) {
 
     }
 
