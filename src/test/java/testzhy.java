@@ -6,7 +6,7 @@ import utils.SyntaxException;
 
 import java.util.ArrayList;
 
-public class test {
+public class testzhy {
     public static void main(String[] args) {
         Database db = new Database();
         db.load();
