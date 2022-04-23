@@ -81,6 +81,7 @@ public class Table extends ExecuteEngine implements Serializable {
         this.tableName = createTableStatement.getTable().getName();
         this.columnNames = new ArrayList<>();
         this.types = new ArrayList<>();
+        this.data = new HashMap<>();
         try {
             this.indexes = new Indexes(columnDefinitionList.size());
         } catch (NullPointerException e) {
