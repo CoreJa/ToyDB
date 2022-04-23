@@ -13,16 +13,16 @@ public class test {
         ArrayList<String> stmts=new ArrayList<>();
         stmts.add("create table tableName ("+
                 "    col1 int UNIQUE,\n" +
-                "    col2 int NOT NULL)\n"+
-                "    PRIMARY KEY (col1);");
+                "    col2 int NOT NULL,\n"+
+                "    PRIMARY KEY (col1));");
         stmts.add("insert into tableName "+
                 "  values (1,1);");
-        stmts.add("create table table2 "+
+        stmts.add("create table table2 ("+
                 "  col3 int unique,"+
                 "  col4 int not null,"+
                 "  primary key (col3),"+
-                "  foreign key (col4) references tableName(col2);");
-        stmts.add("create index tableName.col2;");
+                "  foreign key (col4) references tableName(col2));");
+        stmts.add("create index myIndex on tableName(col2);");
         stmts.add("insert into tableName "+
                 "  values (2,2);");
         stmts.add("insert into table2 "+
