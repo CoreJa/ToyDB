@@ -26,6 +26,9 @@ import java.util.*;
 
 public class Table extends ExecuteEngine implements Serializable {
     private static final long serialVersionUID = 1L;
+    /* indicates if the table is a temporary table used for transmitting return value, which means does not contain
+     *  metadata, default is true, set false in complex constructors.*/
+    private boolean simple = true;
     private Database db;
     private String tableName;
     private List<String> columnNames;
