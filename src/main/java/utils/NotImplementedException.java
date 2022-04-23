@@ -6,6 +6,6 @@ public class NotImplementedException extends RuntimeException {
     }
 
     public NotImplementedException(String text) {
-        super("SQL NotImplemented Exception: " + text + "has not been implemented yet.");
+        super("SQL NotImplemented Exception: " + text + " has not been implemented yet.");
     }
 }
