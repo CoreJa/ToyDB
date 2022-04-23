@@ -15,28 +15,34 @@ public class main {
     public static void main (String[] args)throws IOException{
         //Initialization
         Database db = new Database();
-        StringBuilder statementBuilder = new StringBuilder();
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         db.load();
-        for(String line = stdin.readLine();  line.compareTo("exit")!= 0;line = stdin.readLine()){//单语句
-            statementBuilder.delete(0, statementBuilder.capacity());
+        while(true){//单语句
+            StringBuilder statementBuilder = new StringBuilder();
             while (true) {//单行
-                if ((line = stdin.readLine()) == null || line.length() == 0) break;//用户输入空行时代表语句结束
+                System.out.print("> "); // > means the program is excepting the user input
+                String line = stdin.readLine();
+                if (line == null || line.length() == 0) {
+                    break;
+                }//用户输入空行时代表语句结束
                 statementBuilder.append(line + " ");
             }
+
             // Handle the statement
-            String command = statementBuilder.toString();
-            if(command.compareTo("exit ") == 0) {
-                System.out.println("Exit request sent.");
+            if(statementBuilder.length()==0){continue;} // skip empty lines
+            String statementText = statementBuilder.toString();
+            if(statementText.compareTo("exit ") == 0) {
                 break;
             }
             try {
-                Statement statement = CCJSqlParserUtil.parse(command);
+                Statement statement = CCJSqlParserUtil.parse(statementBuilder.toString());
                 statement.accept(db);// TODO: what should we print if the statement is valid
-            } catch(JSQLParserException e) {
+            } catch (JSQLParserException e) {
                 e.printStackTrace();
-            } catch(SyntaxException e) {
+            } catch (SyntaxException e) {
                 e.show();
+            } finally {
+                statementBuilder.delete(0, statementBuilder.capacity());
             }
         }
 
