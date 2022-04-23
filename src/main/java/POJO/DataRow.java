@@ -21,4 +21,9 @@ public class DataRow implements Serializable {
     public List<DataGrid> getDataGrids() {
         return dataGrids;
     }
+
+    @Override
+    public String toString() {
+        return dataGrids.toString();
+    }
 }
