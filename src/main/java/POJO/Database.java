@@ -62,7 +62,7 @@ public class Database extends ExecuteEngine implements Serializable{
         } catch (ClassNotFoundException e) {
             System.out.println("Table Class not found");
         } finally {
-            return flag; // TODO: fall backs?
+            return flag;
         }
     }
     public boolean load() {
