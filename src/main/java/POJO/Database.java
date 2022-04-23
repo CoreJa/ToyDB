@@ -17,22 +17,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class Database extends StatementVisitorAdapter {
-    private Map<String, Table> tables;
+public class Database extends ExecuteEngine {
+    private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
     private Table returnValue;
 
-
-    public Database(Map<String, Table> tables) {
-        this.tables = tables;
-    }
-
     //Constructors
-
     public Database() {
         this.tables = this.Load();
     }
 
+    public Database(Map<String, Table> tablesMap) {
+        this.tables = tablesMap;
+    }
+
+    //Storage
     public void Save() {
         try {
             FileOutputStream fileOut =

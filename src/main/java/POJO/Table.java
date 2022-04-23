@@ -6,9 +6,11 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
-import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
-import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import utils.ExecuteEngine;
@@ -29,7 +31,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     private Indexes indexes;
     //Constraints
     private Integer primaryKey; // index in columnNames
-    private Set<String> primaryKeySet; // maintain a HashSet of primary keys. Always cast to String.
+    private Set<String> primaryKeySet; // maintain a HashSet of value of . Always cast to String.
     private List<Map.Entry<String, Integer>> foreignKeyList;
 
 
@@ -51,11 +53,15 @@ public class Table extends StatementVisitorAdapter implements Serializable {
     }
 
     public Table(CreateTable createTableStatement) throws SyntaxException {
-        //create table by statement
+        // create table by statement
         // define the name and dataType of each column
-        this.tableName = createTableStatement.getTable().getName();
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
+
+        this.tableName = createTableStatement.getTable().getName();
         this.columnNames = new ArrayList<>();
+        this.types = new ArrayList<>();
+        this.indexes = new Indexes(columnDefinitionList.size());
+
         Set<String> check = new HashSet<>(); //check duplication of column names
         types = new ArrayList<>();
 
@@ -67,7 +73,7 @@ public class Table extends StatementVisitorAdapter implements Serializable {
                 columnNames.add(columnName);
                 columnIndexes.put(columnName,columnNames.size()-1);
             } else {
-                throw new SyntaxException("Duplicate column name.");
+                throw new SyntaxException("Duplicate column name");
             }
             // data type
             String columnLowerCaseType = def.getColDataType().getDataType().toLowerCase();//string of type name
@@ -79,8 +85,21 @@ public class Table extends StatementVisitorAdapter implements Serializable {
                 throw new SyntaxException("Wrong or unsupported data type.");
             }
         }
-        // StatementVisitorAdapter
-        //primary key, foreign key constraints
+        // primary key, foreign key constraints
+        Collections.nCopies(columnNames.size(), foreignKeyList);
+        for (Index index : createTableStatement.getIndexes()) {
+            if (index.getType().toLowerCase().compareTo("primary key") == 0) {
+                primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
+            }
+            if (index instanceof ForeignKeyIndex) {
+                int foreignKeyIndexHere = columnIndexes.get(index.getColumnsNames().get(0));
+                String tableName = ((ForeignKeyIndex) index).getTable().getName();
+                String foreignKeyReferenced = ((ForeignKeyIndex) index).getReferencedColumnNames().get(0);
+                foreignKeyList.set(foreignKeyIndexHere, new Map.Entry<String, Integer>(tableName, tableName.getcolumnIndex(foreignKeyReferenced)));
+
+            }
+        }
+
     }
 
     public Table(boolean bool) {
@@ -94,6 +113,9 @@ public class Table extends StatementVisitorAdapter implements Serializable {
         this.tableName = tableName;
     }
 
+    public int getColumnIndex(String columnName) {
+        return this.columnIndexes.get(columnName);
+    }
     public String getTableName() {
         return tableName;
     }
