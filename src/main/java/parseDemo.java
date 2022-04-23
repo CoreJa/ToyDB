@@ -29,7 +29,7 @@ public class parseDemo {
                 ");";
 
         String createIndexDemo = "create index indname on Tablename (ColName);";
-        String dropTableDemo = "DROP TABLE T23.index2333;";
+        String dropTableDemo = "DROP TABLE T23.index2333";
         String selectDemo = "SELECT DISTINCT ID,ID2 \" +\n" +
                 "                \"FROM (SELECT * FROM MY_TABLE3), MY_TABLE1, MY_TABLE2 LEFT OUTER JOIN MY_TABLE4 \" +\n" +
                 "                \"WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";

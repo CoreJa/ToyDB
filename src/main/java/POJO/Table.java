@@ -74,7 +74,11 @@ public class Table extends ExecuteEngine implements Serializable {
         this.tableName = createTableStatement.getTable().getName();
         this.columnNames = new ArrayList<>();
         this.types = new ArrayList<>();
-        this.indexes = new Indexes(columnDefinitionList.size());
+        try {
+            this.indexes = new Indexes(columnDefinitionList.size());
+        } catch (NullPointerException e) {
+            throw new SyntaxException("Can't create empty table");
+        }
         this.columnIndexes = new HashMap<>();
         this.uniqueSet = new ArrayList<>();
         this.foreignKeyList = new ArrayList<>();
@@ -115,32 +119,35 @@ public class Table extends ExecuteEngine implements Serializable {
         for(int i = 0; i < columnNames.size(); i++) {
             foreignKeyList.add(null);
         }
-        for (Index index : createTableStatement.getIndexes()) {
-            //check primary key
-            if (index.getType().toLowerCase().compareTo("primary key") == 0) {
-                primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
-                if(uniqueSet.get(primaryKey) == null) {
-                    uniqueSet.set(primaryKey, new HashSet<>()); // primary key should be unique
+        if(createTableStatement.getIndexes() != null) {
+            for (Index index : createTableStatement.getIndexes()) {
+                //check primary key
+                if (index.getType().toLowerCase().compareTo("primary key") == 0) {
+                    primaryKey = columnIndexes.get(index.getColumnsNames().get(0));
+                    if(uniqueSet.get(primaryKey) == null) {
+                        uniqueSet.set(primaryKey, new HashSet<>()); // primary key should be unique
+                    }
                 }
-            }
 
-            //check foreign key(s)
-            if (index instanceof ForeignKeyIndex) {
-                int foreignKeyIndexHere = columnIndexes.get(index.getColumnsNames().get(0));
-                String foreignTableName = ((ForeignKeyIndex) index).getTable().getName();
-                String foreignKeyReferenced = ((ForeignKeyIndex) index).getReferencedColumnNames().get(0);
-                if(this.db == null 
-                        || this.db.getTable(foreignTableName) == null
-                        || this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced) == null) {
-                    throw new SyntaxException("Foreign key no references");
+                //check foreign key(s)
+                if (index instanceof ForeignKeyIndex) {
+                    int foreignKeyIndexHere = columnIndexes.get(index.getColumnsNames().get(0));
+                    String foreignTableName = ((ForeignKeyIndex) index).getTable().getName();
+                    String foreignKeyReferenced = ((ForeignKeyIndex) index).getReferencedColumnNames().get(0);
+                    if(this.db == null
+                            || this.db.getTable(foreignTableName) == null
+                            || this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced) == null) {
+                        throw new SyntaxException("Foreign key no references");
+                    }
+                    int foreignKeyIndexReferenced = this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced);
+                    if(this.db.getTable(foreignTableName).uniqueSet == null) {
+                        throw new SyntaxException("Foreign key not unique");
+                    }
+                    foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(foreignTableName, foreignKeyIndexReferenced));
                 }
-                int foreignKeyIndexReferenced = this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced);
-                if(this.db.getTable(foreignTableName).uniqueSet == null) {
-                    throw new SyntaxException("Foreign key not unique");
-                }
-                foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(foreignTableName, foreignKeyIndexReferenced));
             }
         }
+
     }
 
     //Constructors (without DB)
