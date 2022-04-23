@@ -18,7 +18,7 @@ public class main {
         StringBuilder statementBuilder = new StringBuilder();
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         db.load();
-        for(String line = stdin.readLine();  line.compareTo("exit")!= 0;line = stdin.readLine()){//单语句
+        for(String line = stdin.readLine();  line.compareTo("exit")!= 0;line = stdin.readLine()){ //单语句
             statementBuilder.delete(0, statementBuilder.capacity());
             while (true) {//单行
                 if ((line = stdin.readLine()) == null || line.length() == 0) break;//用户输入空行时代表语句结束
@@ -33,6 +33,7 @@ public class main {
             try {
                 Statement statement = CCJSqlParserUtil.parse(command);
                 statement.accept(db);// TODO: what should we print if the statement is valid
+                System.out.println(db.getReturnValue().toString()); // this is what we should do
             } catch(JSQLParserException e) {
                 e.printStackTrace();
             } catch(SyntaxException e) {

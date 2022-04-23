@@ -50,6 +50,7 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     public Table(Database db, String tableName, List<String> columnNames, Map<String, Integer> columnIndexes, List<Type> types, Map<String, DataRow> data, Table returnValue, Indexes indexes, Integer primaryKey, List<Set<String>> uniqueSet, List<Pair<String, Integer>> foreignKeyList) {
+        this.simple = false;
         this.db = db;
         this.tableName = tableName;
         this.columnNames = columnNames;
@@ -62,7 +63,8 @@ public class Table extends ExecuteEngine implements Serializable {
         this.uniqueSet = uniqueSet;
         this.foreignKeyList = foreignKeyList;
     }
-    public Table(Database db, String tableName) {
+
+    public Table(Database db, String tableName) { // ???
         this.db = db;
         this.tableName = tableName;
         this.data = new HashMap<>();
@@ -74,6 +76,7 @@ public class Table extends ExecuteEngine implements Serializable {
         // define the name and dataType of each column
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
 
+        this.simple = false;
         this.db = db;
         this.tableName = createTableStatement.getTable().getName();
         this.columnNames = new ArrayList<>();
@@ -264,14 +267,19 @@ public class Table extends ExecuteEngine implements Serializable {
 
     public DataGrid findReferenceGrid(String tableName, int colInd, DataGrid data) {
         Table table = db.getTable(tableName);
+
+        if (colInd == table.primaryKey) { // if rely on primary key
+            DataRow refRow = table.data.get(data.toString());
+            return refRow == null ? null : refRow.getDataGrids().get(colInd);
+        }
         Map<String, List<String>> index = table.indexes.getIndexes().get(colInd);
-        if (index != null) {
+        if (index != null) {  // if column is indexed
             DataRow refRow = table.data.get(index.get(data.toString()).get(0));
             return refRow == null ? null : refRow.getDataGrids().get(colInd);
         } else {
             for (DataRow value : table.data.values()) {
                 DataGrid curGrid = value.getDataGrids().get(colInd);
-                if (curGrid.toString().compareTo(data.toString()) == 0) {
+                if (curGrid.compareTo(data)) {
                     return curGrid;
                 }
             }
@@ -398,9 +406,13 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(this.tableName).append("\n")
-                .append(this.columnNames.toString()).append("\n")
-                .append(this.data.toString()).append("\n");
+        if (simple) {
+            sb.append(this.data.toString()).append("\n");
+        } else {
+            sb.append(this.tableName).append("\n")
+                    .append(this.columnNames.toString()).append("\n")
+                    .append(this.data.toString()).append("\n");
+        }
         return new String(sb);
     }
 
