@@ -3,7 +3,7 @@ import POJO.Table;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import utils.SyntaxException;
+import utils.ExecutionException;
 
 public class TestYC {
     public static void main(String[] args) {
@@ -24,7 +24,7 @@ public class TestYC {
             tab = new Table();
         } catch (JSQLParserException e) {
             throw new RuntimeException(e);
-        } catch (SyntaxException e) {
+        } catch (ExecutionException e) {
             e.printStackTrace();
         }
 
