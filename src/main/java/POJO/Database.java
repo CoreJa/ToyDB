@@ -27,33 +27,21 @@ public class Database extends ExecuteEngine implements Serializable{
         this.tables = new HashMap<>();
         this.returnValue = null;
     }
-    public Database(boolean newSchema){//Load from file
-        this.tables = new HashMap<>();
+
+    public void createMetadata(boolean newSchema){//Load from file
         List<String> columnNames = new ArrayList<>();
         columnNames.add("Table");
         List<Type> types = new ArrayList<>();
         types.add(Type.STRING);
         this.tables.put("TABLES", new Table(this, "TABLES", columnNames, types, 0));
+        columnNames = new ArrayList<>();
+        columnNames.add("Table");
+        columnNames.add("Column");
+        columnNames.add("Type");
+        columnNames.add("Display");
+        this.tables.put("COLUMNS", new Table(this, "COLUMNS", columnNames, types, 3));
 
 
-        this.returnValue = null;
-        // Create TABLES table
-        String createTABLESQuery = "CREATE TABLE TABLES(" +
-                " Table char," +
-                " PRIMARY KEY(Table));";
-        // Create COLUMNS table
-        String createCOLUMNSQuery = "CREATE TABLE COLUMNS(" +
-                " Table char," +
-                " Column char," +
-                " Type char," +
-                " Display char," + //Display = Table + "." + Column
-                " PRIMARY KEY(Display));";
-        try {
-            CCJSqlParserUtil.parse(createTABLESQuery).accept(this);
-            CCJSqlParserUtil.parse(createCOLUMNSQuery).accept(this);
-        } catch (JSQLParserException e) {
-            e.printStackTrace();
-        }
     }
 
 
