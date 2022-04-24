@@ -23,7 +23,7 @@ public class Database extends ExecuteEngine implements Serializable{
     private Table returnValue;
 
     // Constructors
-    public Database(){//Load from file
+    public Database() {
         this.tables = new HashMap<>();
         this.returnValue = null;
     }
@@ -49,6 +49,7 @@ public class Database extends ExecuteEngine implements Serializable{
         }
 
     }
+
 
     public Database(Map<String, Table> tablesMap){
         this();
