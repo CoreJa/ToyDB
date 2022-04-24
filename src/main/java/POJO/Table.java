@@ -42,10 +42,6 @@ public class Table extends ExecuteEngine implements Serializable {
         return columnIndexes;
     }
 
-    protected List<Type> getTypes() {
-        return types;
-    }
-
     private List<String> columnNames;
     private Map<String, Integer> columnIndexes;
     private List<Type> types;
