@@ -10,9 +10,9 @@ public class Indexes implements Serializable {
     private static final long serialVersionUID = 1L;
     private List<String> indexNames;
     private List<Map<String, List<String>>> indexes;
-    public Indexes(int n){
-        indexNames=new ArrayList<>(Collections.nCopies(n,null));
-        indexes=new ArrayList<>(Collections.nCopies(n,null));
+    public Indexes(int numberOfColumns){
+        indexNames=new ArrayList<>(Collections.nCopies(numberOfColumns,null));
+        indexes=new ArrayList<>(Collections.nCopies(numberOfColumns,null));
     }
 
     public List<String> getIndexNames() {

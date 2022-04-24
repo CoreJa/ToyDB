@@ -25,8 +25,8 @@ public class Database extends ExecuteEngine implements Serializable {
 
     // Constructors
     public Database() {//Load from file
-        //无参构造方法是创建时默认调用的. 如果想要使用load(), 请在main里初始化过程中load
         this.tables = new HashMap<>();
+//        Table tables = new Table(false, this, "TABLES", "Tables");
     }
 
     public Database(Map<String, Table> tablesMap) {

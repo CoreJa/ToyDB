@@ -11,7 +11,6 @@ import net.sf.jsqlparser.expression.operators.relational.*;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -22,8 +21,6 @@ import utils.ExecutionException;
 import utils.SyntaxException;
 
 
-import javax.swing.table.TableModel;
-import javax.xml.crypto.Data;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -53,13 +50,15 @@ public class Table extends ExecuteEngine implements Serializable {
     private List<Pair<String, Integer>> foreignKeyList;
 
     //Constructors (with DB)
-    public Table() {
-        this(null, null, new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, null, null, new ArrayList<>(), new ArrayList<>());
+    public Table() {//by default
+        this(false, null, null, new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, new Indexes(0), null, new ArrayList<>(), new ArrayList<>());
 
     }
 
-    public Table(Database db, String tableName, List<String> columnNames, Map<String, Integer> columnIndexes, List<Type> types, Map<String, DataRow> data, Table returnValue, Indexes indexes, Integer primaryKey, List<Set<String>> uniqueSet, List<Pair<String, Integer>> foreignKeyList) {
-        this.simple = false;
+    public Table(boolean simple, Database db, String tableName, List<String> columnNames, Map<String, Integer> columnIndexes,
+                 List<Type> types, Map<String, DataRow> data, Table returnValue, Indexes indexes,
+                 Integer primaryKey, List<Set<String>> uniqueSet, List<Pair<String, Integer>> foreignKeyList) {
+        this.simple = simple;
         this.db = db;
         this.tableName = tableName;
         this.columnNames = columnNames;
@@ -73,7 +72,33 @@ public class Table extends ExecuteEngine implements Serializable {
         this.foreignKeyList = foreignKeyList;
     }
 
-    public Table(Database db, String tableName) { // ???
+    public Table(Database db, String tableName, List<String> columnNames, List<Type> types, Integer primaryKey) {
+        // Used for TABLES, COLUMNS table
+        Map<String, Integer> columnIndexes = new HashMap<>();
+        List<Set<String>> uniqueSet = new ArrayList<>();
+        List<Pair<String, Integer>> foreignKeyList = new ArrayList<>();
+        for (String columnName : columnNames) {
+            columnIndexes.put(columnName, columnIndexes.size());
+            uniqueSet.add(null);
+            foreignKeyList.add(null);
+        }
+
+        this.simple = false;
+        this.db = db;
+        this.tableName = tableName;
+        this.columnNames = columnNames;
+        this.columnIndexes = columnIndexes;
+        this.types = types;
+        this.data = new HashMap<>();
+        this.returnValue = null;
+        this.indexes = new Indexes(columnNames.size());
+        this.primaryKey = primaryKey;
+        this.uniqueSet = uniqueSet;
+        this.foreignKeyList = foreignKeyList;
+
+    }
+
+    public Table(Database db, String tableName) {//TODO:这个不是说不要了吗？najiu buyao le ba
         this.db = db;
         this.tableName = tableName;
         this.data = new HashMap<>();
@@ -97,7 +122,7 @@ public class Table extends ExecuteEngine implements Serializable {
             throw new SyntaxException("Can't create empty table");
         }
         this.columnIndexes = new HashMap<>();
-        this.uniqueSet = new ArrayList<>();
+        this.uniqueSet = new ArrayList<>(); // candidate keys have not null uniqueSet items
         this.foreignKeyList = new ArrayList<>();
 
         Set<String> check = new HashSet<>(); //check duplication of column names
@@ -123,7 +148,7 @@ public class Table extends ExecuteEngine implements Serializable {
             } else {
                 throw new SyntaxException("Wrong or unsupported data type.");
             }
-            // column specs - unique
+            // column specs - only support unique
             uniqueSet.add(null);
             if (def.getColumnSpecs() != null
                     && def.getColumnSpecs().size() > 0
