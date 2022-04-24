@@ -3,7 +3,6 @@ package POJO;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -16,35 +15,33 @@ import utils.SyntaxException;
 import java.io.*;
 import java.util.*;
 
-import static java.util.Collections.unmodifiableList;
 
 public class Database extends ExecuteEngine implements Serializable {
     private static final long serialVersionUID = 1L;
     private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
-    private Table returnValue;// ???
+    private Table returnValue;
 
     // Constructors
     public Database() {//Load from file
         this.tables = new HashMap<>();
         this.returnValue = null;
         // Create TABLES table
-        List<String> columnNames = new ArrayList<>();
-        columnNames.add("Table");
+        List<String> tableColumnNames = new ArrayList<>();
+        tableColumnNames.add("Table");
         List<Type> types = new ArrayList<>();
         types.add(Type.STRING);
-        this.tables.put("TABLES", new Table(this, "TABLES", columnNames, types, 0));
+        this.tables.put("TABLES", new Table(this, "TABLES", tableColumnNames, types, 0));
         // Create COLUMNS table
-        columnNames = new ArrayList<>();
-        columnNames.add("Table");
-        columnNames.add("Column Name");
-        columnNames.add("Type");
-        types = new ArrayList<>();
-        types.add(Type.STRING);
-        types.add(Type.STRING);
-        types.add(Type.STRING);
-        this.tables.put("COLUMNS", new Table(this, "COLUMNS", columnNames, types, 1));
-
+        List<String> columnsNames = new ArrayList<>();
+        columnsNames.add("Table");
+        columnsNames.add("Column Name");
+        columnsNames.add("Type");
+        List<Type> columnsTypes = new ArrayList<>();
+        columnsTypes.add(Type.STRING);
+        columnsTypes.add(Type.STRING);
+        columnsTypes.add(Type.STRING);
+        this.tables.put("COLUMNS", new Table(this, "COLUMNS", columnsNames, columnsTypes, 1));
     }
 
     public Database(Map<String, Table> tablesMap) {
@@ -55,14 +52,12 @@ public class Database extends ExecuteEngine implements Serializable {
 
     // Storage
     public boolean save(String filename) {
-        boolean flag = false;
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
             out.writeObject(this.tables);
-            flag = true;
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            return flag;
+            return false;
         }
     }
 
@@ -108,6 +103,8 @@ public class Database extends ExecuteEngine implements Serializable {
     @Override
     public void visit(CreateTable createTable) {
         Table table = new Table(this, createTable);
+        Table TABLES = this.tables.get("TABLES");
+        Table COLUMNS = this.tables.get("COLUMNS");
         this.tables.put(table.getTableName(), table);
         this.returnValue = table.getReturnValue();
     }
