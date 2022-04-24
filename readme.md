@@ -12,10 +12,10 @@ Authors:
   - [ ] drop table -yc
 - [ ] Tables
   - [x] insert -hy
-  - [ ] update -cr
-  - [ ] delete -cr
-  - [ ] select -cr
-    - [ ] where -cr
+  - [ ] update -hy
+  - [ ] delete -hy
+  - [x] select -cr
+    - [x] where -cr
     - [ ] join -cr
     - [ ] distinct -hy
     - [ ] order by () -hy
