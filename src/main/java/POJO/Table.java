@@ -4,6 +4,7 @@ package POJO;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
@@ -553,6 +554,11 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public void visit(StringValue stringValue) {
         this.returnValue = new Table(stringValue.getValue());
+    }
+
+    @Override
+    public void visit(Parenthesis parenthesis) {
+        parenthesis.getExpression().accept(this);
     }
 
     public static void main(String[] args) {

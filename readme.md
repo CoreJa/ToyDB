@@ -11,7 +11,7 @@ Authors:
     - [x] create foreign key -yc
   - [ ] drop table -yc
 - [ ] Tables
-  - [ ] insert -hy
+  - [x] insert -hy
   - [ ] update -cr
   - [ ] delete -cr
   - [ ] select -cr
@@ -24,7 +24,10 @@ Authors:
     - [x] create -hy
     - [x] delete -hy
   - [ ] check foreign key -hycr
-
+    - [x] on insert -hy
+    - [ ] on update
+    - [ ] on delete
+      - [ ] on dependence
 ## Constraints
 ### On the Structure
 - [ ] 兩個基礎表格: `TABLES, COLUMNS`

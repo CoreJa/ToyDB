@@ -36,7 +36,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-public class ExecuteEngine implements StatementVisitor, FromItemVisitor, ItemsListVisitor, ExpressionVisitor {
+public class ExecuteEngine implements StatementVisitor, FromItemVisitor, ItemsListVisitor, ExpressionVisitor, SelectItemVisitor {
     @Override
     public void visit(SavepointStatement savepointStatement) {
         throw new NotImplementedException("SavepointStatement");

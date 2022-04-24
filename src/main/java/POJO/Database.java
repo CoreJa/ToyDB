@@ -1,6 +1,7 @@
 package POJO;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -148,6 +149,16 @@ public class Database extends ExecuteEngine implements Serializable {
         // if limit
 
 
+    }
+
+    @Override
+    public void visit(SelectExpressionItem selectExpressionItem) {
+        selectExpressionItem.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(Parenthesis parenthesis) {
+        parenthesis.getExpression().accept(this);
     }
 
     public static void main(String[] args) {
