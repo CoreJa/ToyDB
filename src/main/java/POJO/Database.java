@@ -39,6 +39,11 @@ public class Database extends ExecuteEngine implements Serializable{
         columnNames.add("Column");
         columnNames.add("Type");
         columnNames.add("Display");
+        types = new ArrayList<>();
+        types.add(Type.STRING);
+        types.add(Type.STRING);
+        types.add(Type.STRING);
+        types.add(Type.STRING);
         this.tables.put("COLUMNS", new Table(this, "COLUMNS", columnNames, types, 3));
 
 
