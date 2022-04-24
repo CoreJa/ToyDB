@@ -5,7 +5,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.parser.CCJSqlParser;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
-import utils.SyntaxException;
+import utils.ExecutionException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class main {
                 System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException e) {
                 e.printStackTrace();
-            } catch (SyntaxException e) {
+            } catch (ExecutionException e) {
                 e.printStackTrace();
             } finally {
                 statementBuilder.delete(0, statementBuilder.capacity());
