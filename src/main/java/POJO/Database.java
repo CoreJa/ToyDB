@@ -3,7 +3,7 @@ package POJO;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.StatementVisitorAdapter;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -22,7 +22,7 @@ public class Database extends ExecuteEngine implements Serializable {
     private static final long serialVersionUID = 1L;
     private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
-    private Table returnValue;// ???
+    private Table returnValue;
 
     // Constructors
     public Database() {//Load from file
@@ -156,15 +156,17 @@ public class Database extends ExecuteEngine implements Serializable {
                 String next = iterator.next();
                 String curVal = returnValue.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("",(x, y)->x+" # "+y);
                 if (!set.add(curVal)) {
-                    data.remove(next);
+//                    data.remove(next);
+                    iterator.remove();
                 }
             }
         }
 
         if (((PlainSelect) select.getSelectBody()).getOrderByElements()!=null){ // if order by
             OrderByElement element=((PlainSelect) select.getSelectBody()).getOrderByElements().get(0);
-            element.getExpression().accept(returnValue);
-            String colName=(String)returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData();
+            Database temp=new Database();
+            element.getExpression().accept(temp);
+            String colName=(String)temp.returnValue.getData().get("result").getDataGrids().get(0).getData();
             int colInd=returnValue.getColumnIndex(colName); // get column index
             List<Map.Entry<String, DataRow>> list = new ArrayList<>(returnValue.getData().entrySet()); //construct list from table
             if (returnValue.getTypes().get(colInd)==Type.STRING){ // sort the list.
@@ -182,8 +184,8 @@ public class Database extends ExecuteEngine implements Serializable {
                 orderedMap.put(entry.getKey(),entry.getValue());
             }
             returnValue.setData(orderedMap);
-
         }
+
         if (((PlainSelect) select.getSelectBody()).getLimit()!=null){ // if limit
             ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
             int lim=(int)returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
@@ -195,7 +197,8 @@ public class Database extends ExecuteEngine implements Serializable {
                     String next = iterator.next();
                     cur++;
                     if (cur>lim){
-                        data.remove(next);
+//                        data.remove(next);
+                        iterator.remove();
                     }
                 }
             }
@@ -212,6 +215,11 @@ public class Database extends ExecuteEngine implements Serializable {
     @Override
     public void visit(Parenthesis parenthesis) {
         parenthesis.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(Column tableColumn) {
+        this.returnValue=new Table(tableColumn.getColumnName());
     }
 
     public static void main(String[] args) {
