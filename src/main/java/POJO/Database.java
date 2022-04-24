@@ -143,19 +143,63 @@ public class Database extends ExecuteEngine implements Serializable {
         select.accept(table);
         this.returnValue = table.getReturnValue();
 
+
+        /*
+        -------------- Below are post-processes of select, write result to this.returnValue before get into this --------------
+         */
+
         if (((PlainSelect) select.getSelectBody()).getDistinct()!=null){ // if distinct
-            HashSet<List<DataGrid>> set=new HashSet<>();
-            Iterator<String> iterator=returnValue.getData().keySet().iterator();
+            HashSet<String> set=new HashSet<>();
+            Map<String,DataRow> data=returnValue.getData();
+            Iterator<String> iterator=data.keySet().iterator();
             while (iterator.hasNext()) {
                 String next = iterator.next();
-                List<DataGrid> curVal = Collections.unmodifiableList(returnValue.getData().get(next).getDataGrids());
+                String curVal = returnValue.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("",(x, y)->x+" # "+y);
                 if (!set.add(curVal)) {
-                    returnValue.getData().remove(next);
+                    data.remove(next);
                 }
             }
         }
-        // if order by
-        // if limit
+
+        if (((PlainSelect) select.getSelectBody()).getOrderByElements()!=null){ // if order by
+            OrderByElement element=((PlainSelect) select.getSelectBody()).getOrderByElements().get(0);
+            element.getExpression().accept(returnValue);
+            String colName=(String)returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData();
+            int colInd=returnValue.getColumnIndex(colName); // get column index
+            List<Map.Entry<String, DataRow>> list = new ArrayList<>(returnValue.getData().entrySet()); //construct list from table
+            if (returnValue.getTypes().get(colInd)==Type.STRING){ // sort the list.
+                list.sort((o1, o2) -> o2.getValue().getDataGrids().get(colInd).toString()
+                        .compareTo(o1.getValue().getDataGrids().get(colInd).toString()));
+            }else{
+                list.sort((o1, o2) ->(int)o2.getValue().getDataGrids().get(colInd).getData()
+                                   - (int)o1.getValue().getDataGrids().get(colInd).getData());
+            }
+            if (!element.isAsc()) { // Ascending or Descending
+                Collections.reverse(list);
+            }
+            LinkedHashMap<String,DataRow> orderedMap=new LinkedHashMap<>();
+            for (Map.Entry<String, DataRow> entry : list) { // write into a hashmap that preserves order
+                orderedMap.put(entry.getKey(),entry.getValue());
+            }
+            returnValue.setData(orderedMap);
+
+        }
+        if (((PlainSelect) select.getSelectBody()).getLimit()!=null){ // if limit
+            ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
+            int lim=(int)returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
+            if(returnValue.getData().size()>lim){
+                int cur=0;
+                Map<String,DataRow> data=returnValue.getData();
+                Iterator<String> iterator=returnValue.getData().keySet().iterator();
+                while (iterator.hasNext()) {
+                    String next = iterator.next();
+                    cur++;
+                    if (cur>lim){
+                        data.remove(next);
+                    }
+                }
+            }
+        }
 
 
     }

@@ -263,6 +263,10 @@ public class Table extends ExecuteEngine implements Serializable {
         return returnValue;
     }
 
+    public List<Type> getTypes() {
+        return types;
+    }
+
     //create index
     public boolean createIndex(String indexName, String columnName) {
         int colInd = columnIndexes.get(columnName); //get column index by column name
