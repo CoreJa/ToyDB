@@ -49,16 +49,18 @@ public class testzhy {
 //                System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException e) {
                 e.printStackTrace();
-            } catch (SyntaxException e) {
+            } catch (ExecutionException e) {
                 e.printStackTrace();
             }
         }
         stmts=new ArrayList<>();
-        stmts.add("insert into table2 "+
-                "  values (1000,1000);");
-        stmts.add("create index myIndex on tableName(col2);");
-        stmts.add("insert into table2 "+
-                "  values (3,3);");
+//        stmts.add("insert into table2 "+
+//                "  values (1000,1000);");
+//        stmts.add("create index myIndex on tableName(col2);");
+//        stmts.add("insert into table2 "+
+//                "  values (3,3);");
+        stmts.add("select col1 from tableName order by col1 asc limit 5");
+        stmts.add("select distinct col2 from tableName order by col2 asc limit 5");
 
         for (String stmt : stmts) {
             try {
@@ -67,7 +69,7 @@ public class testzhy {
                 System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException e) {
                 e.printStackTrace();
-            } catch (SyntaxException e) {
+            } catch (ExecutionException e) {
                 e.printStackTrace();
             }
         }

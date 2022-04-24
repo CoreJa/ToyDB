@@ -37,6 +37,7 @@ public class parseDemo {
         String distinctDemo2 = "select distinct col1, col2 from tableName order by col1 asc limit 50;";
         Table tab = null;
         Database db = new Database();
+        int a="200".compareTo("100");
         try {
             Statement stmt = CCJSqlParserUtil.parse(distinctDemo2);
             tab = new Table();

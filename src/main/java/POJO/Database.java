@@ -160,13 +160,13 @@ public class Database extends ExecuteEngine implements Serializable{
         if (drop.getType().toLowerCase().compareTo("index") == 0) {//Drop Index
             //DROP INDEX tableName.indexName
             if (drop.getName().getSchemaName() == null || drop.getName().getName()==null) {
-                throw new SyntaxException("Should specify both table name and index name.");
+                throw new ExecutionException("Should specify both table name and index name.");
             }
             String tableName = drop.getName().getSchemaName();
             //String indexName = drop.getName().getName();
             Table table = tables.get(tableName);
             if (table == null) {
-                throw new SyntaxException("No such table.");
+                throw new ExecutionException("No such table.");
             }
             drop.accept(table);
             this.returnValue = table.getReturnValue();
