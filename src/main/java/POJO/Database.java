@@ -3,6 +3,7 @@ package POJO;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -10,7 +11,6 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
-import utils.SyntaxException;
 
 import java.io.*;
 import java.util.*;
@@ -29,6 +29,13 @@ public class Database extends ExecuteEngine implements Serializable{
     }
     public Database(boolean newSchema){//Load from file
         this.tables = new HashMap<>();
+        List<String> columnNames = new ArrayList<>();
+        columnNames.add("Table");
+        List<Type> types = new ArrayList<>();
+        types.add(Type.STRING);
+        this.tables.put("TABLES", new Table(this, "TABLES", columnNames, types, 0));
+
+
         this.returnValue = null;
         // Create TABLES table
         String createTABLESQuery = "CREATE TABLE TABLES(" +
@@ -47,7 +54,6 @@ public class Database extends ExecuteEngine implements Serializable{
         } catch (JSQLParserException e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -133,6 +139,7 @@ public class Database extends ExecuteEngine implements Serializable{
             e.printStackTrace();
         }
     }
+
     @Override
     public void visit(CreateIndex createIndex) {
         Table table = tables.get(createIndex.getTable().getName());
@@ -146,7 +153,7 @@ public class Database extends ExecuteEngine implements Serializable{
             String tableName = drop.getName().getName(); //和下面的句式结构不一样, 注意
             // use dropped to check if the statement is valid
             if (this.tables.remove(tableName) == null) {
-                throw new SyntaxException("Drop table: TABLE " + tableName + " not exists");
+                throw new ExecutionException("Drop table: TABLE " + tableName + " not exists");
             }
             try {
                 CCJSqlParserUtil.parse("DELETE FROM TABLES WHERE Table=\'" + tableName + "\'").accept(this);
@@ -175,28 +182,75 @@ public class Database extends ExecuteEngine implements Serializable{
 
     @Override
     public void visit(Select select) {
-        //TODO: test
         String tableName = ((PlainSelect) select.getSelectBody()).getFromItem().toString();
         if (!tables.containsKey(tableName)) {
             throw new ExecutionException(tableName + " doesn't exist.");
         }
+        // will duplicate a new table object here
         Table table = new Table(tables.get(tableName));
         select.accept(table);
         this.returnValue = table.getReturnValue();
 
+
+        /*
+        -------------- Below are post-processes of select, write result to this.returnValue before get into this --------------
+         */
+
         if (((PlainSelect) select.getSelectBody()).getDistinct()!=null){ // if distinct
-            HashSet<List<DataGrid>> set=new HashSet<>();
-            Iterator<String> iterator=returnValue.getData().keySet().iterator();
+            HashSet<String> set=new HashSet<>();
+            Map<String,DataRow> data=returnValue.getData();
+            Iterator<String> iterator=data.keySet().iterator();
             while (iterator.hasNext()) {
                 String next = iterator.next();
-                List<DataGrid> curVal = Collections.unmodifiableList(returnValue.getData().get(next).getDataGrids());
+                String curVal = returnValue.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("",(x, y)->x+" # "+y);
                 if (!set.add(curVal)) {
-                    returnValue.getData().remove(next);
+//                    data.remove(next);
+                    iterator.remove();
                 }
             }
         }
-        // if order by
-        // if limit
+
+        if (((PlainSelect) select.getSelectBody()).getOrderByElements()!=null){ // if order by
+            OrderByElement element=((PlainSelect) select.getSelectBody()).getOrderByElements().get(0);
+            Database temp=new Database();
+            element.getExpression().accept(temp);
+            String colName=(String)temp.returnValue.getData().get("result").getDataGrids().get(0).getData();
+            int colInd=returnValue.getColumnIndex(colName); // get column index
+            List<Map.Entry<String, DataRow>> list = new ArrayList<>(returnValue.getData().entrySet()); //construct list from table
+            if (returnValue.getTypes().get(colInd)==Type.STRING){ // sort the list.
+                list.sort((o1, o2) -> o2.getValue().getDataGrids().get(colInd).toString()
+                        .compareTo(o1.getValue().getDataGrids().get(colInd).toString()));
+            }else{
+                list.sort((o1, o2) ->(int)o2.getValue().getDataGrids().get(colInd).getData()
+                                   - (int)o1.getValue().getDataGrids().get(colInd).getData());
+            }
+            if (!element.isAsc()) { // Ascending or Descending
+                Collections.reverse(list);
+            }
+            LinkedHashMap<String,DataRow> orderedMap=new LinkedHashMap<>();
+            for (Map.Entry<String, DataRow> entry : list) { // write into a hashmap that preserves order
+                orderedMap.put(entry.getKey(),entry.getValue());
+            }
+            returnValue.setData(orderedMap);
+        }
+
+        if (((PlainSelect) select.getSelectBody()).getLimit()!=null){ // if limit
+            ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
+            int lim=(int)returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
+            if(returnValue.getData().size()>lim){
+                int cur=0;
+                Map<String,DataRow> data=returnValue.getData();
+                Iterator<String> iterator=returnValue.getData().keySet().iterator();
+                while (iterator.hasNext()) {
+                    String next = iterator.next();
+                    cur++;
+                    if (cur>lim){
+//                        data.remove(next);
+                        iterator.remove();
+                    }
+                }
+            }
+        }
 
 
     }
@@ -209,6 +263,11 @@ public class Database extends ExecuteEngine implements Serializable{
     @Override
     public void visit(Parenthesis parenthesis) {
         parenthesis.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(Column tableColumn) {
+        this.returnValue=new Table(tableColumn.getColumnName());
     }
 
     public static void main(String[] args) {
