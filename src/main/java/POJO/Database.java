@@ -28,7 +28,7 @@ public class Database extends ExecuteEngine implements Serializable{
         this.returnValue = null;
     }
 
-    public void createMetadata(boolean newSchema){//Load from file
+    public void createMetadata(){//Load from file
         List<String> columnNames = new ArrayList<>();
         columnNames.add("Table");
         List<Type> types = new ArrayList<>();
@@ -74,7 +74,7 @@ public class Database extends ExecuteEngine implements Serializable{
         } catch (IOException e) {
 //            e.printStackTrace();
             System.out.println("DB file not found, creating an empty one.");
-            this.tables = new HashMap<>();
+            this.createMetadata();
         } catch (ClassNotFoundException e) {
             System.out.println("Table Class not found");
         } finally {
