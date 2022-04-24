@@ -7,8 +7,8 @@ Authors:
 
 # Checklist
 - [ ] Database
-  - [ ] create table -yc
-    - [ ] create foreign key -yc
+  - [x] create table -yc
+    - [x] create foreign key -yc
   - [ ] drop table -yc
 - [ ] Tables
   - [ ] insert -hy

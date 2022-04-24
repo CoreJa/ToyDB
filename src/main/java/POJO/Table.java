@@ -18,6 +18,7 @@ import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
 import utils.ExecuteEngine;
+import utils.ExecutionException;
 import utils.SyntaxException;
 
 
@@ -25,6 +26,7 @@ import javax.swing.table.TableModel;
 import javax.xml.crypto.Data;
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Table extends ExecuteEngine implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -191,6 +193,12 @@ public class Table extends ExecuteEngine implements Serializable {
         data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str)));
     }
 
+    //indicates transferring a column name
+    public Table(Column column) {
+        this.data = new HashMap<>();
+        data.put("column", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(column.getColumnName())));
+    }
+
     public Table(int n) {
         this.data = new HashMap<>();
         data.put("result", new DataRow(Arrays.asList(Type.INT), Arrays.asList(n)));
@@ -319,11 +327,6 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     @Override
-    public void visit(Column tableColumn) {
-        this.returnValue = new Table(tableColumn.getColumnName());
-    }
-
-    @Override
     public void visit(Select select) {
         SelectBody selectBody = select.getSelectBody();
 
@@ -360,18 +363,20 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public void visit(AndExpression andExpression) {
         /*
-         * recursivelly calculate expressions
-         * */
+          recursively calculate expressions
+          */
         Expression leftExpression = andExpression.getLeftExpression();
         leftExpression.accept(this);
         Table table_l = this.getReturnValue();
         Expression rightExpression = andExpression.getRightExpression();
         rightExpression.accept(this);
-        Table table_r = this.getReturnValue();
+        Table table_r = new Table(this.getReturnValue());
 
         /*
          * logically and two tables
          * */
+        Iterator<String> iterator=table_l.data.keySet().iterator();
+        
         for (Map.Entry<String, DataRow> entry : table_l.data.entrySet()) {
             if (!table_r.data.containsKey(entry.getKey())) {
                 table_l.data.remove(entry.getKey());
@@ -405,22 +410,79 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     @Override
-    public void visit(Between between) {
-
+    public void visit(Column tableColumn) {
+        this.returnValue = new Table(tableColumn);
     }
 
     @Override
     public void visit(EqualsTo equalsTo) {
         Expression leftExpression = equalsTo.getLeftExpression();
         leftExpression.accept(this);
-        Table table = this.returnValue;
-        String columnName = table.data.get("result").getDataGrids().get(0).getData().toString();
+        Table table_l = this.returnValue;
+        Expression rightExpression = equalsTo.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.returnValue;
+        if (table_l.data.containsKey("column") && table_r.data.containsKey("column")) {
+            //The case that where consists of two columns
+            String columnName_l = table_l.data.get("column").getDataGrids().get(0).toString();
+            String columnName_r = table_r.data.get("column").getDataGrids().get(0).toString();
+            if (columnName_l.compareTo(columnName_r) != 0) {
+                this.data = new HashMap<>();
+            }
+            this.returnValue = this;
+        } else if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
+            // The case that where consists of one column and one data
+            DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
+            DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
+            if (!dataGrid_l.compareTo(dataGrid_r)) {
+                this.data = new HashMap<>();
+            }
+            this.returnValue = this;
+        } else {
+            // The case that where consists of one column and one data
+            if (table_r.data.containsKey("column")) {
+                //Swap so table_l is always column
+                Table table_tmp = table_l;
+                table_l = table_r;
+                table_r = table_tmp;
+            }
+            String columnName = table_l.data.get("column").getDataGrids().get(0).toString();
+            if (!this.columnIndexes.containsKey(columnName)) {
+                throw new ExecutionException(columnName + " doesn't exist in " + table_l.getTableName());
+            }
+            int idx = this.columnIndexes.get(columnName);
 
+            DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
+
+            for (Map.Entry<String, DataRow> entry : this.data.entrySet()) {
+                DataRow dataRow = entry.getValue();
+                if (!dataRow.getDataGrids().get(idx).compareTo(dataGrid)) {
+                    //remove datarow from this table if datagrid is not equal
+                    this.data.remove(entry.getKey());
+                }
+            }
+            this.returnValue = this;
+        }
+    }
+
+    @Override
+    public void visit(NotEqualsTo notEqualsTo) {
+        super.visit(notEqualsTo);
+    }
+
+    @Override
+    public void visit(MinorThan minorThan) {
+        super.visit(minorThan);
     }
 
     @Override
     public void visit(GreaterThan greaterThan) {
 
+    }
+
+    @Override
+    public void visit(MinorThanEquals minorThanEquals) {
+        super.visit(minorThanEquals);
     }
 
     @Override

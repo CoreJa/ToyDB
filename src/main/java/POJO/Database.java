@@ -9,6 +9,7 @@ import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
 import utils.ExecuteEngine;
+import utils.ExecutionException;
 import utils.SyntaxException;
 
 import java.io.*;
@@ -16,7 +17,7 @@ import java.util.*;
 
 import static java.util.Collections.unmodifiableList;
 
-public class Database extends ExecuteEngine implements Serializable{
+public class Database extends ExecuteEngine implements Serializable {
     private static final long serialVersionUID = 1L;
     private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
@@ -36,7 +37,7 @@ public class Database extends ExecuteEngine implements Serializable{
     // Storage
     public boolean save(String filename) {
         boolean flag = false;
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))){
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
             out.writeObject(this.tables);
             flag = true;
         } catch (IOException e) {
@@ -45,7 +46,8 @@ public class Database extends ExecuteEngine implements Serializable{
             return flag;
         }
     }
-    public boolean save(){
+
+    public boolean save() {
         return this.save(this.filename);
     }
 
@@ -57,13 +59,14 @@ public class Database extends ExecuteEngine implements Serializable{
         } catch (IOException e) {
 //            e.printStackTrace();
             System.out.println("DB file not found, creating an empty one.");
-            this.tables=new HashMap<>();
+            this.tables = new HashMap<>();
         } catch (ClassNotFoundException e) {
             System.out.println("Table Class not found");
         } finally {
             return flag;
         }
     }
+
     public boolean load() {
         return this.load(this.filename);
     }
@@ -73,16 +76,18 @@ public class Database extends ExecuteEngine implements Serializable{
     public Table getTable(String tableName) {
         return tables.get(tableName);
     }
+
     public void putTable(Table table) {
         tables.put(table.getTableName(), table);
     }
+
     public Table getReturnValue() {
         return returnValue;
     }
 
     // visit
     @Override
-    public void visit(CreateTable createTable){
+    public void visit(CreateTable createTable) {
         Table table = new Table(this, createTable);
         this.tables.put(table.getTableName(), table);
         this.returnValue = table.getReturnValue();
@@ -100,7 +105,7 @@ public class Database extends ExecuteEngine implements Serializable{
         if (drop.getType().toLowerCase().compareTo("table") == 0) {//Drop Table
             String tableName = drop.getName().getName(); //和下面的句式结构不一样, 注意
             // use dropped to check if the statement is valid
-            if(this.tables.remove(tableName) == null) {
+            if (this.tables.remove(tableName) == null) {
                 throw new SyntaxException("Drop table: TABLE " + tableName + " not exists");
             }
         }
@@ -123,28 +128,26 @@ public class Database extends ExecuteEngine implements Serializable{
     }
 
     @Override
-    public void visit(Select selectStatement) throws SyntaxException {
-        SelectBody selectBody = selectStatement.getSelectBody();
-        if (selectBody instanceof PlainSelect) {
-            PlainSelect stmt = (PlainSelect) selectBody;
-            FromItem fromItem = stmt.getFromItem();
-            if (fromItem instanceof net.sf.jsqlparser.schema.Table) {
-                net.sf.jsqlparser.schema.Table fromItemTable = (net.sf.jsqlparser.schema.Table) fromItem;
-                Table table = tables.get((fromItemTable.getSchemaName()));
-
-
-            } else if (fromItem instanceof SubSelect) {
-                SubSelect subSelect = (SubSelect) fromItem;
-                this.visit(subSelect);
-            } else if (fromItem instanceof SubJoin) {
-                //TODO: 暂时不知道subJoin
-            }
-
-
-
-        } else {
-            throw new SyntaxException(selectBody.toString());
+    public void visit(Select select) {
+        //TODO: test
+        String tableName = ((PlainSelect) select.getSelectBody()).getFromItem().toString();
+        if (!tables.containsKey(tableName)) {
+            throw new ExecutionException(tableName + " doesn't exist.");
         }
+        Table table = new Table(tables.get(tableName));
+        select.accept(table);
+        this.returnValue = table.getReturnValue();
+        if (((PlainSelect) select.getSelectBody()).getDistinct()!=null){
+            HashSet<List<DataGrid>> set=new HashSet<>();
+            for (DataRow value : returnValue.getData().values()) {
+                List<DataGrid> curVal=Collections.unmodifiableList(value.getDataGrids());
+
+            }
+        }
+        // if orderby
+        // if limit
+
+
     }
 
     public static void main(String[] args) {
