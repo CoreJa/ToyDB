@@ -36,7 +36,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.upsert.Upsert;
 import net.sf.jsqlparser.statement.values.ValuesStatement;
 
-public class ExecuteEngine implements StatementVisitor, FromItemVisitor, ItemsListVisitor, ExpressionVisitor {
+public class ExecuteEngine implements StatementVisitor, FromItemVisitor, ItemsListVisitor, ExpressionVisitor, SelectItemVisitor,SelectVisitor {
     @Override
     public void visit(SavepointStatement savepointStatement) {
         throw new NotImplementedException("SavepointStatement");
@@ -172,6 +172,21 @@ public class ExecuteEngine implements StatementVisitor, FromItemVisitor, ItemsLi
     @Override
     public void visit(Block block) {
         throw new NotImplementedException("Block");
+    }
+
+    @Override
+    public void visit(PlainSelect plainSelect) {
+        throw new NotImplementedException("PlainSelect");
+    }
+
+    @Override
+    public void visit(SetOperationList setOpList) {
+        throw new NotImplementedException("SetOperationList");
+    }
+
+    @Override
+    public void visit(WithItem withItem) {
+        throw new NotImplementedException("With");
     }
 
     @Override
@@ -688,5 +703,20 @@ public class ExecuteEngine implements StatementVisitor, FromItemVisitor, ItemsLi
     @Override
     public void visit(ParenthesisFromItem aThis) {
         throw new NotImplementedException("ParenthesisFromItem");
+    }
+
+    @Override
+    public void visit(AllColumns allColumns) {
+        throw new NotImplementedException("AllColumns");
+    }
+
+    @Override
+    public void visit(AllTableColumns allTableColumns) {
+        throw new NotImplementedException("AllTableColumns");
+    }
+
+    @Override
+    public void visit(SelectExpressionItem selectExpressionItem) {
+        throw new NotImplementedException("SelectExpressionItem");
     }
 }

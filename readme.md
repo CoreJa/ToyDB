@@ -7,25 +7,27 @@ Authors:
 
 # Checklist
 - [ ] Database
-  - [ ] create table -yc
-    - [ ] create foreign key -yc
+  - [x] create table -yc
+    - [x] create foreign key -yc
   - [ ] drop table -yc
 - [ ] Tables
-  - [ ] insert -hy
+  - [x] insert -hy
   - [ ] update -cr
   - [ ] delete -cr
   - [ ] select -cr
-    - [ ] where
-    - [ ] join
-    - [ ] distinct
-    - [ ] order by ()
-    - [ ] limit ()
-    - [ ] group by()
-  - [ ] Indexing -hy
-    - [ ] create
-    - [ ] delete
+    - [ ] where -cr
+    - [ ] join -cr
+    - [ ] distinct -hy
+    - [ ] order by () -hy
+    - [ ] limit () -hy
+  - [x] Indexing -hy
+    - [x] create -hy
+    - [x] delete -hy
   - [ ] check foreign key -hycr
-
+    - [x] on insert -hy
+    - [ ] on update
+    - [ ] on delete
+      - [ ] on dependence
 ## Constraints
 ### On the Structure
 - [ ] 兩個基礎表格: `TABLES, COLUMNS`

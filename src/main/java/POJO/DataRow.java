@@ -18,8 +18,21 @@ public class DataRow implements Serializable {
         }
     }
 
+    public DataRow(List<DataGrid> datagrids) {
+        this.dataGrids = datagrids;
+    }
+
     public List<DataGrid> getDataGrids() {
         return dataGrids;
+    }
+
+    @Override
+    public DataRow clone() {
+        List<DataGrid> dataGrids = new ArrayList<>();
+        for (DataGrid datagrid : this.dataGrids) {
+            dataGrids.add(datagrid.clone());
+        }
+        return new DataRow(dataGrids);
     }
 
     @Override

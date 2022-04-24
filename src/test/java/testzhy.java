@@ -2,7 +2,7 @@ import POJO.Database;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
-import utils.SyntaxException;
+import utils.ExecutionException;
 
 import java.util.ArrayList;
 
@@ -37,7 +37,7 @@ public class testzhy {
                 System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException e) {
                 e.printStackTrace();
-            } catch (SyntaxException e) {
+            } catch (ExecutionException e) {
                 e.printStackTrace();
             }
         }
