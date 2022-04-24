@@ -297,6 +297,7 @@ public class ExecuteEngine implements StatementVisitor, FromItemVisitor, ItemsLi
     @Override
     public void visit(LongValue longValue) {
         throw new NotImplementedException("LongValue");
+
     }
 
     @Override

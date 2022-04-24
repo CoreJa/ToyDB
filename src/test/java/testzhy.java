@@ -29,7 +29,7 @@ public class testzhy {
                 "  values (2,2);");
         stmts.add("insert into table2 "+
                 "  values (3,3);");
-        stmts.add("drop index tableName.col2;");
+        stmts.add("drop index tableName.myIndex;");
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
@@ -41,5 +41,6 @@ public class testzhy {
                 e.printStackTrace();
             }
         }
+        db.save();
     }
 }
