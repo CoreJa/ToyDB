@@ -19,7 +19,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
-import utils.SyntaxException;
+import utils.ExecutionException;
 
 
 import java.io.Serializable;
@@ -103,7 +103,7 @@ public class Table extends ExecuteEngine implements Serializable {
 
     }
 
-    public Table(Database db, CreateTable createTableStatement) throws SyntaxException {
+    public Table(Database db, CreateTable createTableStatement) throws ExecutionException {
         // create table by statement
         // define the name and dataType of each column
         List<ColumnDefinition> columnDefinitionList = createTableStatement.getColumnDefinitions();
@@ -117,7 +117,7 @@ public class Table extends ExecuteEngine implements Serializable {
         try {
             this.indexes = new Indexes(columnDefinitionList.size());
         } catch (NullPointerException e) {
-            throw new SyntaxException("Can't create empty table");
+            throw new ExecutionException("Can't create empty table");
         }
         this.columnIndexes = new HashMap<>();
         this.uniqueSet = new ArrayList<>(); // candidate keys have not null uniqueSet items
@@ -135,7 +135,7 @@ public class Table extends ExecuteEngine implements Serializable {
 //                indexes.getIndexNames().add(null);
 //                indexes.getIndexes().add(null);
             } else {
-                throw new SyntaxException("Duplicate column name");
+                throw new ExecutionException("Duplicate column name");
             }
             // column data type
             String columnLowerCaseType = def.getColDataType().getDataType().toLowerCase();//string of type name
@@ -144,7 +144,7 @@ public class Table extends ExecuteEngine implements Serializable {
             } else if (columnLowerCaseType.compareTo("int") == 0 || columnLowerCaseType.compareTo("integer") == 0 || columnLowerCaseType.compareTo("smallint") == 0) {
                 types.add(Type.INT);
             } else {
-                throw new SyntaxException("Wrong or unsupported data type.");
+                throw new ExecutionException("Wrong or unsupported data type.");
             }
             // column specs - only support unique
             uniqueSet.add(null);
@@ -178,11 +178,11 @@ public class Table extends ExecuteEngine implements Serializable {
                     if (this.db == null
                             || this.db.getTable(foreignTableName) == null
                             || this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced) == null) {
-                        throw new SyntaxException("Foreign key no references");
+                        throw new ExecutionException("Foreign key no references");
                     }
                     int foreignKeyIndexReferenced = this.db.getTable(foreignTableName).columnIndexes.get(foreignKeyReferenced);
                     if (this.db.getTable(foreignTableName).uniqueSet == null) {
-                        throw new SyntaxException("Foreign key not unique");
+                        throw new ExecutionException("Foreign key not unique");
                     }
                     foreignKeyList.set(foreignKeyIndexHere, new Pair<String, Integer>(foreignTableName, foreignKeyIndexReferenced));
                 }
@@ -268,7 +268,7 @@ public class Table extends ExecuteEngine implements Serializable {
         int colInd = columnIndexes.get(columnName); //get column index by column name
 
         if (colInd == primaryKey) {
-            throw new SyntaxException("Can't create index on primary key.");
+            throw new ExecutionException("Can't create index on primary key.");
         }
         if (indexes.getIndexes().get(colInd) != null) { // judge if index already exists
             return false;
@@ -301,10 +301,10 @@ public class Table extends ExecuteEngine implements Serializable {
 
     public Table insert(DataRow newRow) {
         if (newRow.getDataGrids().size() != this.columnNames.size()) { // check value count
-            throw new SyntaxException("Value count does not match.");
+            throw new ExecutionException("Value count does not match.");
         }
         if (this.data.containsKey(newRow.getDataGrids().get(this.primaryKey).toString())) { // check primary key
-            throw new SyntaxException("Primary key already exists");
+            throw new ExecutionException("Primary key already exists");
         }
         for (int i = 0; i < newRow.getDataGrids().size(); i++) { //check value one by one
             DataGrid dataGrid = newRow.getDataGrids().get(i);
@@ -324,7 +324,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 DataGrid refGrid = findReferenceGrid(foreignKeyList.get(i).getFirst(),
                         foreignKeyList.get(i).getSecond(), newRow.getDataGrids().get(i));
                 if (refGrid == null) {
-                    throw new SyntaxException("Failed by foreign key constraint");
+                    throw new ExecutionException("Failed by foreign key constraint");
                 }
                 newRow.getDataGrids().set(i, refGrid);
             }
@@ -540,13 +540,13 @@ public class Table extends ExecuteEngine implements Serializable {
             String indexName = drop.getName().getName();
             int index = indexes.getIndexNames().indexOf(indexName);
             if (index == -1) {
-                throw new SyntaxException("No such index");
+                throw new ExecutionException("No such index");
             }
             indexes.getIndexes().set(index, null);
             indexes.getIndexNames().set(index, null);
             this.returnValue = new Table(true);
         } else {
-            throw new SyntaxException("Not Implemented yet");
+            throw new ExecutionException("Not Implemented yet");
         }
     }
 

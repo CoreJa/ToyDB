@@ -11,7 +11,6 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
-import utils.SyntaxException;
 
 import java.io.*;
 import java.util.*;
@@ -111,7 +110,7 @@ public class Database extends ExecuteEngine implements Serializable {
             String tableName = drop.getName().getName(); //和下面的句式结构不一样, 注意
             // use dropped to check if the statement is valid
             if (this.tables.remove(tableName) == null) {
-                throw new SyntaxException("Drop table: TABLE " + tableName + " not exists");
+                throw new ExecutionException("Drop table: TABLE " + tableName + " not exists");
             }
         }
         if (drop.getType().toLowerCase().compareTo("index") == 0) {//Drop Index
