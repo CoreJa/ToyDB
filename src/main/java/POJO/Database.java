@@ -23,7 +23,11 @@ public class Database extends ExecuteEngine implements Serializable{
     private Table returnValue;
 
     // Constructors
-    public Database(){//Load from file
+    public Database() {
+        this.tables = new HashMap<>();
+        this.returnValue = null;
+    }
+    public Database(boolean newSchema){//Load from file
         this.tables = new HashMap<>();
         List<String> columnNames = new ArrayList<>();
         columnNames.add("Table");
@@ -51,6 +55,7 @@ public class Database extends ExecuteEngine implements Serializable{
             e.printStackTrace();
         }
     }
+
 
     public Database(Map<String, Table> tablesMap){
         this();
