@@ -138,14 +138,19 @@ public class Database extends ExecuteEngine implements Serializable {
         Table table = new Table(tables.get(tableName));
         select.accept(table);
         this.returnValue = table.getReturnValue();
-        if (((PlainSelect) select.getSelectBody()).getDistinct()!=null){
-            HashSet<List<DataGrid>> set=new HashSet<>();
-            for (DataRow value : returnValue.getData().values()) {
-                List<DataGrid> curVal=Collections.unmodifiableList(value.getDataGrids());
 
+        if (((PlainSelect) select.getSelectBody()).getDistinct()!=null){ // if distinct
+            HashSet<List<DataGrid>> set=new HashSet<>();
+            Iterator<String> iterator=returnValue.getData().keySet().iterator();
+            while (iterator.hasNext()) {
+                String next = iterator.next();
+                List<DataGrid> curVal = Collections.unmodifiableList(returnValue.getData().get(next).getDataGrids());
+                if (!set.add(curVal)) {
+                    returnValue.getData().remove(next);
+                }
             }
         }
-        // if orderby
+        // if order by
         // if limit
 
 

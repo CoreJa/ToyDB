@@ -41,6 +41,10 @@ public class Table extends ExecuteEngine implements Serializable {
         return data;
     }
 
+    public void setData(Map<String, DataRow> data) {
+        this.data = data;
+    }
+
     private Map<String, DataRow> data;//key: primary key; value: data record
     private Table returnValue;
     // Indexes of all columns, elements corresponding to PrimaryKey and None Indexed columns should be Null.
@@ -52,7 +56,7 @@ public class Table extends ExecuteEngine implements Serializable {
 
     //Constructors (with DB)
     public Table() {//by default
-        this(false, null, null, new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, new Indexes(0), null, new ArrayList<>(), new ArrayList<>());
+        this(true, null, null, new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, new Indexes(0), null, new ArrayList<>(), new ArrayList<>());
 
     }
 
@@ -414,14 +418,13 @@ public class Table extends ExecuteEngine implements Serializable {
         /*
          * logically and two tables
          * */
-        Iterator<String> iterator=table_l.data.keySet().iterator();
-        
-        for (Map.Entry<String, DataRow> entry : table_l.data.entrySet()) {
-            if (!table_r.data.containsKey(entry.getKey())) {
-                table_l.data.remove(entry.getKey());
+        Iterator<String> iterator = table_l.data.keySet().iterator();
+        while (iterator.hasNext()) {
+            String next = iterator.next();
+            if (!table_r.data.containsKey(next)) {
+                table_l.data.remove(next);
             }
         }
-
         this.returnValue = table_l;
     }
 
