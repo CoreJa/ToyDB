@@ -372,35 +372,44 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(Select select) {
-        SelectBody selectBody = select.getSelectBody();
+        select.getSelectBody().accept(this);
+    }
 
-        //plain select without where statement for now
-        if (selectBody instanceof PlainSelect) {
-            PlainSelect plainSelect = (PlainSelect) selectBody;
-            Table table = new Table();
-            table.setTableName(this.tableName);
-            table.simple = false;
-            List<Integer> columnIndexFromOrigin = new ArrayList<>();
-            int cnt = 0;
-            for (SelectItem selectItem : plainSelect.getSelectItems()) {
-                // not using recursive accept because *(all columns) is already atomic.
-                // will immediately break from loop and only return itself.
-                if (selectItem instanceof AllColumns) {
-                    this.returnValue = this;
-                    return;
-                }
-                selectItem.accept(this);
-                String columnName = this.returnValue.data.get("column").getDataGrids().get(0).getData().toString();
-                if (!this.columnIndexes.containsKey(columnName)) {
-                    throw new ExecutionException(columnName + " doesn't exist");
-                }
-                table.columnNames.add(columnName);
-                table.columnIndexes.put(columnName, cnt++);
-                int idx = this.columnIndexes.get(columnName);
-                columnIndexFromOrigin.add(idx);
-                table.types.add(this.types.get(idx));
+    @Override
+    public void visit(SelectExpressionItem selectExpressionItem) {
+        selectExpressionItem.getExpression().accept(this);
+    }
+
+    @Override
+    public void visit(PlainSelect plainSelect) {
+        Table table = new Table();
+        table.setTableName(this.tableName);
+        table.simple = false;
+        List<Integer> columnIndexFromOrigin = new ArrayList<>();
+
+        //copying table object and re-construct its meta info.
+        int cnt = 0;
+        for (SelectItem selectItem : plainSelect.getSelectItems()) {
+            // not using recursive accept because *(all columns) is already atomic.
+            // will immediately break from loop and only return itself.
+            if (selectItem instanceof AllColumns) {
+                table = this;
+                break;
             }
+            selectItem.accept(this);
+            String columnName = this.returnValue.data.get("column").getDataGrids().get(0).getData().toString();
+            if (!this.columnIndexes.containsKey(columnName)) {
+                throw new ExecutionException(columnName + " doesn't exist");
+            }
+            table.columnNames.add(columnName);
+            table.columnIndexes.put(columnName, cnt++);
+            int idx = this.columnIndexes.get(columnName);
+            columnIndexFromOrigin.add(idx);
+            table.types.add(this.types.get(idx));
+        }
 
+        //The case where table is actually re-constructed, copying its data to table
+        if (table != this) {
             table.data = new HashMap<>();
             for (Map.Entry<String, DataRow> entry : this.data.entrySet()) {
                 List<Object> dataList = new ArrayList<>();
@@ -410,13 +419,14 @@ public class Table extends ExecuteEngine implements Serializable {
                 DataRow dataRow = new DataRow(table.types, dataList);
                 table.data.put(entry.getKey(), dataRow);
             }
-            this.returnValue = table;
         }
-    }
 
-    @Override
-    public void visit(SelectExpressionItem selectExpressionItem) {
-        selectExpressionItem.getExpression().accept(this);
+        //processing where statement
+        if (plainSelect.getWhere() != null) {
+            plainSelect.getWhere().accept(table);
+            table = table.returnValue;
+        }
+        this.returnValue = table;
     }
 
     @Override
@@ -424,21 +434,22 @@ public class Table extends ExecuteEngine implements Serializable {
         /*
           recursively calculate expressions
           */
-        Expression leftExpression = andExpression.getLeftExpression();
-        leftExpression.accept(this);
-        Table table_l = this.getReturnValue();
-        Expression rightExpression = andExpression.getRightExpression();
-        rightExpression.accept(this);
-        Table table_r = new Table(this.getReturnValue());
+        Table table_l = new Table(this);
+        andExpression.getLeftExpression().accept(table_l);
+        table_l = table_l.getReturnValue();
+        Table table_r = new Table(this);
+        andExpression.getRightExpression().accept(table_r);
+        table_r = table_r.getReturnValue();
 
         /*
-         * logically and two tables
+         * logically and two tables, left combine, so traversing table_l is faster.
          * */
         Iterator<String> iterator = table_l.data.keySet().iterator();
         while (iterator.hasNext()) {
             String next = iterator.next();
             if (!table_r.data.containsKey(next)) {
-                table_l.data.remove(next);
+//                table_l.data.remove(next);
+                iterator.remove();
             }
         }
         this.returnValue = table_l;
@@ -449,15 +460,16 @@ public class Table extends ExecuteEngine implements Serializable {
         /*
          * recursivelly calculate expressions
          * */
-        Expression leftExpression = orExpression.getLeftExpression();
-        leftExpression.accept(this);
-        Table table_l = this.getReturnValue();
-        Expression rightExpression = orExpression.getRightExpression();
-        rightExpression.accept(this);
-        Table table_r = this.getReturnValue();
+        Table table_l = new Table(this);
+        orExpression.getLeftExpression().accept(table_l);
+        table_l = table_l.getReturnValue();
+        Table table_r = new Table(this);
+        orExpression.getRightExpression().accept(table_r);
+        table_r = table_r.getReturnValue();
+
 
         /*
-         * logically or two tables
+         * logically or two tables, left combine, so traversing table_r is faster.
          * */
         for (Map.Entry<String, DataRow> entry : table_r.data.entrySet()) {
             if (!table_l.data.containsKey(entry.getKey())) {
@@ -512,11 +524,13 @@ public class Table extends ExecuteEngine implements Serializable {
 
             DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
 
-            for (Map.Entry<String, DataRow> entry : this.data.entrySet()) {
-                DataRow dataRow = entry.getValue();
+            Iterator<String> iterator = this.data.keySet().iterator();
+            while (iterator.hasNext()) {
+                String next = iterator.next();
+                DataRow dataRow = this.data.get(next);
                 if (!dataRow.getDataGrids().get(idx).compareTo(dataGrid)) {
                     //remove datarow from this table if datagrid is not equal
-                    this.data.remove(entry.getKey());
+                    iterator.remove();
                 }
             }
             this.returnValue = this;
