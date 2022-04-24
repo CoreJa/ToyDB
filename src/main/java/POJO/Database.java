@@ -27,7 +27,11 @@ public class Database extends ExecuteEngine implements Serializable {
     // Constructors
     public Database() {//Load from file
         this.tables = new HashMap<>();
-//        Table tables = new Table(false, this, "TABLES", "Tables");
+        List<String> columnNames = new ArrayList<>();
+        columnNames.add("Table");
+        List<Type> types = new ArrayList<>();
+        types.add(Type.STRING);
+        this.tables.put("TABLES", new Table(this, "TABLES", columnNames, types, 0));
     }
 
     public Database(Map<String, Table> tablesMap) {
