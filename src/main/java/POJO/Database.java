@@ -3,7 +3,6 @@ package POJO;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.StatementVisitorAdapter;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.drop.Drop;
@@ -15,39 +14,51 @@ import utils.ExecutionException;
 import java.io.*;
 import java.util.*;
 
-import static java.util.Collections.unmodifiableList;
 
-public class Database extends ExecuteEngine implements Serializable {
+public class Database extends ExecuteEngine implements Serializable{
     private static final long serialVersionUID = 1L;
     private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
-    private Table returnValue;// ???
+    private Table returnValue;
 
     // Constructors
-    public Database() {//Load from file
+    public Database(){//Load from file
         this.tables = new HashMap<>();
-        List<String> columnNames = new ArrayList<>();
-        columnNames.add("Table");
-        List<Type> types = new ArrayList<>();
-        types.add(Type.STRING);
-        this.tables.put("TABLES", new Table(this, "TABLES", columnNames, types, 0));
+        this.returnValue = null;
+        // Create TABLES table
+        String createTABLESQuery = "CREATE TABLE TABLES(" +
+                " Table char," +
+                " PRIMARY KEY(Table));";
+        // Create COLUMNS table
+        String createCOLUMNSQuery = "CREATE TABLE COLUMNS(" +
+                " Table char," +
+                " Column char," +
+                " Type char," +
+                " Display char," + //Display = Table + "." + Column
+                " PRIMARY KEY(Display));";
+        try {
+            CCJSqlParserUtil.parse(createTABLESQuery).accept(this);
+            CCJSqlParserUtil.parse(createCOLUMNSQuery).accept(this);
+        } catch (JSQLParserException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    public Database(Map<String, Table> tablesMap) {
+    public Database(Map<String, Table> tablesMap){
+        this();
         this.tables = tablesMap;
     }
 
 
     // Storage
     public boolean save(String filename) {
-        boolean flag = false;
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(filename))) {
             out.writeObject(this.tables);
-            flag = true;
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            return flag;
+            return false;
         }
     }
 
@@ -92,11 +103,30 @@ public class Database extends ExecuteEngine implements Serializable {
     // visit
     @Override
     public void visit(CreateTable createTable) {
-        Table table = new Table(this, createTable);
+        Table table = new Table(this, createTable); // create table object
+        Table TABLES = this.tables.get("TABLES");
+        if (TABLES!= null
+                && TABLES.getColumnIndexes()!= null
+                && TABLES.getColumnIndexes().containsKey(table.getTableName())) {
+            throw new ExecutionException("Table already exists");
+        }
         this.tables.put(table.getTableName(), table);
         this.returnValue = table.getReturnValue();
+        //update metadata in TABLES
+        try{
+            CCJSqlParserUtil.parse("INSERT INTO TABLES VALUES (\'" + table.getTableName() + "\');").accept(this);
+            for (int i = 0; i < table.getColumnNames().size(); i++) {
+                String type = table.getTypes().get(i) == Type.STRING ? "string" : "int";
+                String insertCOLUMNSQuery = "INSERT INTO COLUMNS VALUES (\'" + table.getTableName() + "\'," +
+                        "\'" + table.getColumnNames().get(i) + "\'," +
+                        "\'" + type + "\'," +
+                        "\'" + table.getTableName() + "." + table.getColumnNames().get(i) + "\')";
+                CCJSqlParserUtil.parse(insertCOLUMNSQuery).accept(this);
+            }
+        }catch(JSQLParserException e) {
+            e.printStackTrace();
+        }
     }
-
     @Override
     public void visit(CreateIndex createIndex) {
         Table table = tables.get(createIndex.getTable().getName());
@@ -111,6 +141,12 @@ public class Database extends ExecuteEngine implements Serializable {
             // use dropped to check if the statement is valid
             if (this.tables.remove(tableName) == null) {
                 throw new ExecutionException("Drop table: TABLE " + tableName + " not exists");
+            }
+            try {
+                CCJSqlParserUtil.parse("DELETE FROM TABLES WHERE Table=\'" + tableName + "\'").accept(this);
+                CCJSqlParserUtil.parse("DELETE FROM COLUMNS WHERE Table=\'" + tableName + "\'").accept(this);
+            } catch(JSQLParserException e) {
+                e.printStackTrace();
             }
         }
         if (drop.getType().toLowerCase().compareTo("index") == 0) {//Drop Index

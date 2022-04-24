@@ -33,6 +33,19 @@ public class Table extends ExecuteEngine implements Serializable {
     private boolean simple = true;
     private Database db;
     private String tableName;
+
+    protected List<String> getColumnNames() {
+        return columnNames;
+    }
+
+    protected Map<String, Integer> getColumnIndexes() {
+        return columnIndexes;
+    }
+
+    protected List<Type> getTypes() {
+        return types;
+    }
+
     private List<String> columnNames;
     private Map<String, Integer> columnIndexes;
     private List<Type> types;
