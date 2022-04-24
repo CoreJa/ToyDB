@@ -106,7 +106,9 @@ public class Database extends ExecuteEngine implements Serializable{
     public void visit(CreateTable createTable) {
         Table table = new Table(this, createTable); // create table object
         Table TABLES = this.tables.get("TABLES");
-        if (TABLES.getColumnIndexes().containsKey(table.getTableName())) {
+        if (TABLES!= null
+                && TABLES.getColumnIndexes()!= null
+                && TABLES.getColumnIndexes().containsKey(table.getTableName())) {
             throw new ExecutionException("Table already exists");
         }
         this.tables.put(table.getTableName(), table);
