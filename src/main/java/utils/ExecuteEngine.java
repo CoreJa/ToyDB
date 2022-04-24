@@ -688,4 +688,19 @@ public class ExecuteEngine implements StatementVisitor, FromItemVisitor, ItemsLi
     public void visit(ParenthesisFromItem aThis) {
         throw new NotImplementedException("ParenthesisFromItem");
     }
+
+    @Override
+    public void visit(AllColumns allColumns) {
+        throw new NotImplementedException("AllColumns");
+    }
+
+    @Override
+    public void visit(AllTableColumns allTableColumns) {
+        throw new NotImplementedException("AllTableColumns");
+    }
+
+    @Override
+    public void visit(SelectExpressionItem selectExpressionItem) {
+        throw new NotImplementedException("SelectExpressionItem");
+    }
 }

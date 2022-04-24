@@ -15,15 +15,14 @@ Authors:
   - [ ] update -cr
   - [ ] delete -cr
   - [ ] select -cr
-    - [ ] where
-    - [ ] join
-    - [ ] distinct
-    - [ ] order by ()
-    - [ ] limit ()
-    - [ ] group by()
-  - [ ] Indexing -hy
-    - [ ] create
-    - [ ] delete
+    - [ ] where -cr
+    - [ ] join -cr
+    - [ ] distinct -hy
+    - [ ] order by () -hy
+    - [ ] limit () -hy
+  - [x] Indexing -hy
+    - [x] create -hy
+    - [x] delete -hy
   - [ ] check foreign key -hycr
 
 ## Constraints

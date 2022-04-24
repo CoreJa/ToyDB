@@ -36,6 +36,11 @@ public class Table extends ExecuteEngine implements Serializable {
     private List<String> columnNames;
     private Map<String, Integer> columnIndexes;
     private List<Type> types;
+
+    public Map<String, DataRow> getData() {
+        return data;
+    }
+
     private Map<String, DataRow> data;//key: primary key; value: data record
     private Table returnValue;
     // Indexes of all columns, elements corresponding to PrimaryKey and None Indexed columns should be Null.
@@ -170,8 +175,14 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     public Table(Table table) {//TODO: copy other tables, deep copy
+        this.simple = table.simple;
+        this.db = table.db;
         this.tableName = table.tableName;
-        this.columnNames = table.columnNames;
+        this.columnNames = new ArrayList<>();
+        this.columnNames.addAll(table.columnNames);
+        this.columnIndexes=new HashMap<>();
+        this.columnIndexes.putAll(table.columnIndexes);
+
 
     }
 
@@ -366,6 +377,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 table_l.data.remove(entry.getKey());
             }
         }
+
         this.returnValue = table_l;
     }
 
