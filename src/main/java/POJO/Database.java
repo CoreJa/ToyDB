@@ -102,13 +102,19 @@ public class Database extends ExecuteEngine implements Serializable {
     // visit
     @Override
     public void visit(CreateTable createTable) {
-        Table table = new Table(this, createTable);
+        Table table = new Table(this, createTable); // create table object
         Table TABLES = this.tables.get("TABLES");
-        Table COLUMNS = this.tables.get("COLUMNS");
+        if (TABLES.getColumnIndexes().containsKey(table.getTableName())) {
+            throw new ExecutionException("Table already exists");
+        }
         this.tables.put(table.getTableName(), table);
         this.returnValue = table.getReturnValue();
+        //update metadata in TABLES
+        List<String> TABLESColumns = TABLES.getColumnNames();
+        Map<String, Integer> TABLESIndexes = TABLES.getColumnIndexes();
+        TABLESColumns.add(table.getTableName());
+        Table COLUMNS = this.tables.get("COLUMNS");
     }
-
     @Override
     public void visit(CreateIndex createIndex) {
         Table table = tables.get(createIndex.getTable().getName());
