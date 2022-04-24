@@ -16,35 +16,37 @@ import java.io.*;
 import java.util.*;
 
 
-public class Database extends ExecuteEngine implements Serializable {
+public class Database extends ExecuteEngine implements Serializable{
     private static final long serialVersionUID = 1L;
     private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
     private Table returnValue;
 
     // Constructors
-    public Database() {//Load from file
+    public Database(){//Load from file
         this.tables = new HashMap<>();
         this.returnValue = null;
         // Create TABLES table
-        List<String> tableColumnNames = new ArrayList<>();
-        tableColumnNames.add("Table");
-        List<Type> types = new ArrayList<>();
-        types.add(Type.STRING);
-        this.tables.put("TABLES", new Table(this, "TABLES", tableColumnNames, types, 0));
+        String createTABLESQuery = "CREATE TABLE TABLES(" +
+                " Table char," +
+                " PRIMARY KEY(Table));";
         // Create COLUMNS table
-        List<String> columnsNames = new ArrayList<>();
-        columnsNames.add("Table");
-        columnsNames.add("Column Name");
-        columnsNames.add("Type");
-        List<Type> columnsTypes = new ArrayList<>();
-        columnsTypes.add(Type.STRING);
-        columnsTypes.add(Type.STRING);
-        columnsTypes.add(Type.STRING);
-        this.tables.put("COLUMNS", new Table(this, "COLUMNS", columnsNames, columnsTypes, 1));
+        String createCOLUMNSQuery = "CREATE TABLE COLUMNS(" +
+                " Table char," +
+                " Column char," +
+                " Type char," +
+                " Display char," + //Display = Table + "." + Column
+                " PRIMARY KEY(Display));";
+        try {
+            CCJSqlParserUtil.parse(createTABLESQuery).accept(this);
+            CCJSqlParserUtil.parse(createCOLUMNSQuery).accept(this);
+        } catch (JSQLParserException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    public Database(Map<String, Table> tablesMap) {
+    public Database(Map<String, Table> tablesMap){
         this();
         this.tables = tablesMap;
     }
@@ -110,10 +112,19 @@ public class Database extends ExecuteEngine implements Serializable {
         this.tables.put(table.getTableName(), table);
         this.returnValue = table.getReturnValue();
         //update metadata in TABLES
-        List<String> TABLESColumns = TABLES.getColumnNames();
-        Map<String, Integer> TABLESIndexes = TABLES.getColumnIndexes();
-        TABLESColumns.add(table.getTableName());
-        Table COLUMNS = this.tables.get("COLUMNS");
+        try{
+            CCJSqlParserUtil.parse("INSERT INTO TABLES VALUES (\'" + table.getTableName() + "\');").accept(this);
+            for (int i = 0; i < table.getColumnNames().size(); i++) {
+                String type = table.getTypes().get(i) == Type.STRING ? "string" : "int";
+                String insertCOLUMNSQuery = "INSERT INTO COLUMNS VALUES (\'" + table.getTableName() + "\'," +
+                        "\'" + table.getColumnNames().get(i) + "\'," +
+                        "\'" + type + "\'," +
+                        "\'" + table.getTableName() + "." + table.getColumnNames().get(i) + "\')";
+                CCJSqlParserUtil.parse(insertCOLUMNSQuery).accept(this);
+            }
+        }catch(JSQLParserException e) {
+            e.printStackTrace();
+        }
     }
     @Override
     public void visit(CreateIndex createIndex) {
@@ -129,6 +140,12 @@ public class Database extends ExecuteEngine implements Serializable {
             // use dropped to check if the statement is valid
             if (this.tables.remove(tableName) == null) {
                 throw new SyntaxException("Drop table: TABLE " + tableName + " not exists");
+            }
+            try {
+                CCJSqlParserUtil.parse("DELETE FROM TABLES WHERE Table=\'" + tableName + "\'").accept(this);
+                CCJSqlParserUtil.parse("DELETE FROM COLUMNS WHERE Table=\'" + tableName + "\'").accept(this);
+            } catch(JSQLParserException e) {
+                e.printStackTrace();
             }
         }
         if (drop.getType().toLowerCase().compareTo("index") == 0) {//Drop Index
