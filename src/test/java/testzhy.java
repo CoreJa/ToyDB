@@ -21,7 +21,7 @@ public class testzhy {
                 "  col3 int unique,"+
                 "  col4 int not null,"+
                 "  primary key (col3),"+
-                "  foreign key (col4) references tableName(col2));");
+                "  foreign key (col4) references tableName(col1));");
         stmts.add("create index myIndex on tableName(col2);");
         stmts.add("insert into tableName "+
                 "  values (2,2);");
@@ -41,6 +41,36 @@ public class testzhy {
                 e.printStackTrace();
             }
         }
-        db.save();
+        for (int i = 3; i < 1000; i++) {
+            try {
+                Statement statement = CCJSqlParserUtil.parse("insert into tableName "+
+                        "  values ("+i+","+i+");");
+                statement.accept(db);
+//                System.out.println(db.getReturnValue().toString());
+            } catch (JSQLParserException e) {
+                e.printStackTrace();
+            } catch (SyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+        stmts=new ArrayList<>();
+        stmts.add("insert into table2 "+
+                "  values (1000,1000);");
+        stmts.add("create index myIndex on tableName(col2);");
+        stmts.add("insert into table2 "+
+                "  values (3,3);");
+
+        for (String stmt : stmts) {
+            try {
+                Statement statement = CCJSqlParserUtil.parse(stmt);
+                statement.accept(db);
+                System.out.println(db.getReturnValue().toString());
+            } catch (JSQLParserException e) {
+                e.printStackTrace();
+            } catch (SyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+//        db.save();
     }
 }

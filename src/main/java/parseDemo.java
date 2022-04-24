@@ -33,11 +33,12 @@ public class parseDemo {
         String selectDemo = "SELECT DISTINCT ID,ID2 \" +\n" +
                 "                \"FROM (SELECT * FROM MY_TABLE3), MY_TABLE1, MY_TABLE2 LEFT OUTER JOIN MY_TABLE4 \" +\n" +
                 "                \"WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";
-
+        String distinctDemo = "select distinct col1 from tableName;";
+        String distinctDemo2 = "select distinct col1, col2 from tableName order by col1 asc limit 50;";
         Table tab = null;
         Database db = new Database();
         try {
-            Statement stmt = CCJSqlParserUtil.parse(dropTableDemo);
+            Statement stmt = CCJSqlParserUtil.parse(distinctDemo2);
             tab = new Table();
         } catch (JSQLParserException e) {
             throw new RuntimeException(e);
