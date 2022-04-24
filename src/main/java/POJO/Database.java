@@ -133,11 +133,11 @@ public class Database extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(Select select) {
-        //TODO: test
         String tableName = ((PlainSelect) select.getSelectBody()).getFromItem().toString();
         if (!tables.containsKey(tableName)) {
             throw new ExecutionException(tableName + " doesn't exist.");
         }
+        // will duplicate a new table object here
         Table table = new Table(tables.get(tableName));
         select.accept(table);
         this.returnValue = table.getReturnValue();

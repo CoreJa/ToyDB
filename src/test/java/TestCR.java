@@ -3,12 +3,32 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import utils.ExecutionException;
+
 import java.util.ArrayList;
 
 public class TestCR {
     public static void main(String[] args) {
         Database db = new Database();
-        db.load();
+        loadData(db);
+        ArrayList<String> stmts = new ArrayList<>();
+        stmts.add("select * from tableName");
+        stmts.add("select col1 from tableName");
+        stmts.add("select col3,col4 from table2");
+        stmts.add("select col3,col2 from table2");
+        for (String stmt : stmts) {
+            try {
+                Statement statement = CCJSqlParserUtil.parse(stmt);
+                System.out.println(stmt);
+                statement.accept(db);
+                System.out.println(db.getReturnValue().toString());
+            } catch (JSQLParserException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private static void loadData(Database db) {
         ArrayList<String> stmts = new ArrayList<>();
         stmts.add("create table tableName (" +
                 "    col1 int UNIQUE,\n" +
@@ -26,18 +46,17 @@ public class TestCR {
                 "  values (2,2);");
         stmts.add("insert into table2 " +
                 "  values (2,2);");
-        stmts.add("insert into table2 " +
-                "  values (3,3);");
+//        stmts.add("insert into table2 " +
+//                "  values (3,3);");
         stmts.add("drop index tableName.myIndex;");
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
                 statement.accept(db);
-                System.out.println(db.getReturnValue().toString());
+//                System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException | ExecutionException e) {
                 e.printStackTrace();
             }
         }
-        db.save();
     }
 }

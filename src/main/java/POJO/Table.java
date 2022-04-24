@@ -377,24 +377,34 @@ public class Table extends ExecuteEngine implements Serializable {
         //plain select without where statement for now
         if (selectBody instanceof PlainSelect) {
             PlainSelect plainSelect = (PlainSelect) selectBody;
-            Table table = new Table(this);
-            table.columnNames = new ArrayList<>();
-            table.columnIndexes = new HashMap<>();
-            table.types = new ArrayList<>();
-            ArrayList<Integer> columnList = new ArrayList<>();
+            Table table = new Table();
+            table.setTableName(this.tableName);
+            table.simple = false;
+            List<Integer> columnIndexFromOrigin = new ArrayList<>();
             int cnt = 0;
             for (SelectItem selectItem : plainSelect.getSelectItems()) {
-                String columnName = ((Column) ((SelectExpressionItem) selectItem).getExpression()).getColumnName();
+                // not using recursive accept because *(all columns) is already atomic.
+                // will immediately break from loop and only return itself.
+                if (selectItem instanceof AllColumns) {
+                    this.returnValue = this;
+                    return;
+                }
+                selectItem.accept(this);
+                String columnName = this.returnValue.data.get("column").getDataGrids().get(0).getData().toString();
+                if (!this.columnIndexes.containsKey(columnName)) {
+                    throw new ExecutionException(columnName + " doesn't exist");
+                }
                 table.columnNames.add(columnName);
                 table.columnIndexes.put(columnName, cnt++);
                 int idx = this.columnIndexes.get(columnName);
-                columnList.add(idx);
+                columnIndexFromOrigin.add(idx);
                 table.types.add(this.types.get(idx));
             }
+
             table.data = new HashMap<>();
             for (Map.Entry<String, DataRow> entry : this.data.entrySet()) {
                 List<Object> dataList = new ArrayList<>();
-                for (int idx : columnList) {
+                for (int idx : columnIndexFromOrigin) {
                     dataList.add(entry.getValue().getDataGrids().get(idx));
                 }
                 DataRow dataRow = new DataRow(table.types, dataList);
@@ -402,6 +412,11 @@ public class Table extends ExecuteEngine implements Serializable {
             }
             this.returnValue = table;
         }
+    }
+
+    @Override
+    public void visit(SelectExpressionItem selectExpressionItem) {
+        selectExpressionItem.getExpression().accept(this);
     }
 
     @Override
