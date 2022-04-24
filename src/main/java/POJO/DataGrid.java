@@ -21,6 +21,9 @@ public class DataGrid implements Serializable {
         return this.data;
     }
 
+    public DataGrid clone() {
+        return new DataGrid(this.type, this.data);
+    }
 
     public String toString() {//shi
         return this.data.toString();

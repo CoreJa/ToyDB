@@ -103,13 +103,6 @@ public class Table extends ExecuteEngine implements Serializable {
 
     }
 
-    public Table(Database db, String tableName) {//TODO:这个不是说不要了吗？najiu buyao le ba
-        this.db = db;
-        this.tableName = tableName;
-        this.data = new HashMap<>();
-        data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(tableName)));
-    }
-
     public Table(Database db, CreateTable createTableStatement) throws SyntaxException {
         // create table by statement
         // define the name and dataType of each column
@@ -206,15 +199,23 @@ public class Table extends ExecuteEngine implements Serializable {
         this.data = data;
     }
 
-    public Table(Table table) {//TODO: copy other tables, deep copy
+    //Copying all the data to a new table object
+    public Table(Table table) {
         this.simple = table.simple;
         this.db = table.db;
         this.tableName = table.tableName;
         this.columnNames = new ArrayList<>();
         this.columnNames.addAll(table.columnNames);
-        this.columnIndexes=new HashMap<>();
+        this.columnIndexes = new HashMap<>();
         this.columnIndexes.putAll(table.columnIndexes);
-
+        this.types = new ArrayList<>();
+        this.types.addAll(table.types);
+        this.data = new HashMap<>();
+        for (Map.Entry<String, DataRow> entry : table.data.entrySet()) {
+            this.data.put(entry.getKey(), entry.getValue().clone());
+        }
+        this.returnValue = null;
+        this.indexes = table.indexes;
 
     }
 
@@ -307,11 +308,11 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         for (int i = 0; i < newRow.getDataGrids().size(); i++) { //check value one by one
             DataGrid dataGrid = newRow.getDataGrids().get(i);
-            Map<String, List<String>> curIndex= indexes.getIndexes().get(i);
+            Map<String, List<String>> curIndex = indexes.getIndexes().get(i);
             if (types.get(i) == Type.INT) {  //check if it should be integer
                 newRow.getDataGrids().set(i, new DataGrid(Type.INT, Integer.parseInt(dataGrid.toString())));
             }
-            if (curIndex!=null){
+            if (curIndex != null) {
                 String fieldValue = dataGrid.toString();
                 if (curIndex.containsKey(fieldValue)) {
                     curIndex.get(fieldValue).add(newRow.getDataGrids().get(primaryKey).toString());
@@ -341,7 +342,7 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         Map<String, List<String>> index = table.indexes.getIndexes().get(colInd);
         if (index != null) {  // if column is indexed
-            List<String> primaryKeyValue =index.get(data.toString());
+            List<String> primaryKeyValue = index.get(data.toString());
             if (primaryKeyValue == null) {
                 return null;
             }
