@@ -26,6 +26,10 @@ public class Database extends ExecuteEngine implements Serializable{
     public Database(){//Load from file
         this.tables = new HashMap<>();
         this.returnValue = null;
+    }
+    public Database(boolean newSchema){//Load from file
+        this.tables = new HashMap<>();
+        this.returnValue = null;
         // Create TABLES table
         String createTABLESQuery = "CREATE TABLE TABLES(" +
                 " Table char," +
