@@ -17,7 +17,7 @@ Authors:
   - [x] select -cr
     - [x] where -cr
     - [ ] join -cr
-    - [ ] distinct -hy
+    - [ ] distinct -hy int√ string?
     - [ ] order by () -hy
     - [ ] limit () -hy
   - [x] Indexing -hy

@@ -41,7 +41,7 @@ public class testzhy {
                 e.printStackTrace();
             }
         }
-        for (int i = 3; i < 1000; i++) {
+        for (int i = 3; i < 100000; i++) {
             try {
                 Statement statement = CCJSqlParserUtil.parse("insert into tableName "+
                         "  values ("+i+","+i+");");

@@ -223,7 +223,7 @@ public class Database extends ExecuteEngine implements Serializable{
                 list.sort((o1, o2) ->(int)o2.getValue().getDataGrids().get(colInd).getData()
                                    - (int)o1.getValue().getDataGrids().get(colInd).getData());
             }
-            if (!element.isAsc()) { // Ascending or Descending
+            if (element.isAsc()) { // Ascending or Descending
                 Collections.reverse(list);
             }
             LinkedHashMap<String,DataRow> orderedMap=new LinkedHashMap<>();
