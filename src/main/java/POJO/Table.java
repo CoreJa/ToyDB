@@ -425,11 +425,11 @@ public class Table extends ExecuteEngine implements Serializable {
         if (table != this) {
             table.data = new HashMap<>();
             for (Map.Entry<String, DataRow> entry : this.data.entrySet()) {
-                List<Object> dataList = new ArrayList<>();
+                List<DataGrid> dataList = new ArrayList<>();
                 for (int idx : columnIndexFromOrigin) {
                     dataList.add(entry.getValue().getDataGrids().get(idx));
                 }
-                DataRow dataRow = new DataRow(table.types, dataList);
+                DataRow dataRow = new DataRow(dataList);
                 table.data.put(entry.getKey(), dataRow);
             }
         }

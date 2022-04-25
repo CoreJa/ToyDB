@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class TestCR {
     public static void main(String[] args) {
         Database db = new Database();
+        db.load();
         loadData(db);
         ArrayList<String> stmts = new ArrayList<>();
         stmts.add("select col3,col4 from table2");
