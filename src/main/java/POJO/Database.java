@@ -187,6 +187,7 @@ public class Database extends ExecuteEngine implements Serializable{
         }
         // will duplicate a new table object here
         Table table = new Table(tables.get(tableName));
+
         select.accept(table);
         this.returnValue = table.getReturnValue();
 
@@ -203,7 +204,6 @@ public class Database extends ExecuteEngine implements Serializable{
                 String next = iterator.next();
                 String curVal = returnValue.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("",(x, y)->x+" # "+y);
                 if (!set.add(curVal)) {
-//                    data.remove(next);
                     iterator.remove();
                 }
             }
@@ -224,29 +224,43 @@ public class Database extends ExecuteEngine implements Serializable{
                                    - (int)o1.getValue().getDataGrids().get(colInd).getData());
             }
             if (element.isAsc()) { // Ascending or Descending
+                if (((PlainSelect) select.getSelectBody()).getLimit() != null) { // if limit
+                    ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
+                    int lim = (int) returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
+                    if (list.size()>lim){
+                        list=list.subList(list.size()-lim, list.size());
+                    }
+                }
                 Collections.reverse(list);
+            }else{
+                if (((PlainSelect) select.getSelectBody()).getLimit() != null) { // if limit
+                    ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
+                    int lim = (int) returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
+                    if (list.size()>lim){
+                        list=list.subList(0, lim);
+                    }
+                }
             }
             LinkedHashMap<String,DataRow> orderedMap=new LinkedHashMap<>();
             for (Map.Entry<String, DataRow> entry : list) { // write into a hashmap that preserves order
                 orderedMap.put(entry.getKey(),entry.getValue());
             }
             returnValue.setData(orderedMap);
-        }
-
-        if (((PlainSelect) select.getSelectBody()).getLimit()!=null){ // if limit
-            ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
-            int lim=(int)returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
-            if(returnValue.getData().size()>lim){
-                int cur=0;
-                Map<String,DataRow> data=returnValue.getData();
-                Iterator<String> iterator=returnValue.getData().keySet().iterator();
-                while (iterator.hasNext()) {
-                    String next = iterator.next();
-                    cur++;
-                    if (cur>lim){
-//                        data.remove(next);
-                        iterator.remove();
+        }else {
+            if (((PlainSelect) select.getSelectBody()).getLimit() != null) { // if limit
+                ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
+                int lim = (int) returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
+                if (returnValue.getData().size() > lim) {
+                    int cur = 0;
+                    Map<String, DataRow> data = returnValue.getData();
+                    Iterator<Map.Entry<String, DataRow>> iterator = returnValue.getData().entrySet().iterator();
+                    Map<String, DataRow> newdata= new HashMap<>();
+                    while (iterator.hasNext() && cur<lim) {
+                        Map.Entry<String, DataRow> next = iterator.next();
+                        cur++;
+                        newdata.put(next.getKey(),next.getValue());
                     }
+                    returnValue.setData(newdata);
                 }
             }
         }

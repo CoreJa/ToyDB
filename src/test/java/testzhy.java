@@ -60,9 +60,17 @@ public class testzhy {
 //        stmts.add("insert into table2 "+
 //                "  values (3,3);");
         stmts.add("select col1 from tableName order by col1 asc limit 5");
-        stmts.add("select distinct col2 from tableName order by col2 desc limit 5");
+        stmts.add("select col1 from tableName order by col1 asc limit 5");
+        stmts.add("select col1 from tableName order by col1 desc limit 5");
+        stmts.add("select distinct col2 from tableName order by col2 asc");
+//        stmts.add("select distinct col2 from tableName order by col2 asc");
+//        stmts.add("select col1 from tableName order by col1 asc");
+//        stmts.add("select col1,col2 from tableName order by col1 asc");
+        stmts.add("select * from tableName limit 5");
+//        stmts.add("select col1 from tableName");
 
         for (String stmt : stmts) {
+            long start=System.currentTimeMillis();
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
                 statement.accept(db);
@@ -72,6 +80,7 @@ public class testzhy {
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
+            System.out.println(System.currentTimeMillis()-start);
         }
 //        db.save();
     }
