@@ -544,25 +544,23 @@ public class Table extends ExecuteEngine implements Serializable {
         /*
           recursively calculate expressions
           */
-        Table table_l = new Table(this);
-        andExpression.getLeftExpression().accept(table_l);
-        table_l = table_l.getReturnValue();
-        Table table_r = new Table(this);
-        andExpression.getRightExpression().accept(table_r);
-        table_r = table_r.getReturnValue();
+        andExpression.getLeftExpression().accept(this);
+        Table table_l = this.returnValue;
+        andExpression.getRightExpression().accept(this);
+        Table table_r = this.returnValue;
 
         /*
          * logically and two tables, left combine, so traversing table_l is faster.
          * */
-        Iterator<String> iterator = table_l.data.keySet().iterator();
+        Table res = new Table(table_l);
+        Iterator<String> iterator = res.data.keySet().iterator();
         while (iterator.hasNext()) {
             String next = iterator.next();
             if (!table_r.data.containsKey(next)) {
-//                table_l.data.remove(next);
                 iterator.remove();
             }
         }
-        this.returnValue = table_l;
+        this.returnValue = res;
     }
 
     @Override
@@ -570,23 +568,22 @@ public class Table extends ExecuteEngine implements Serializable {
         /*
          * recursivelly calculate expressions
          * */
-        Table table_l = new Table(this);
-        orExpression.getLeftExpression().accept(table_l);
-        table_l = table_l.getReturnValue();
-        Table table_r = new Table(this);
-        orExpression.getRightExpression().accept(table_r);
-        table_r = table_r.getReturnValue();
+        orExpression.getLeftExpression().accept(this);
+        Table table_l = this.returnValue;
+        orExpression.getRightExpression().accept(this);
+        Table table_r = this.returnValue;
 
 
         /*
          * logically or two tables, left combine, so traversing table_r is faster.
          * */
-        for (Map.Entry<String, DataRow> entry : table_r.data.entrySet()) {
+        Table res = new Table(table_r);
+        for (Map.Entry<String, DataRow> entry : res.data.entrySet()) {
             if (!table_l.data.containsKey(entry.getKey())) {
-                table_l.data.put(entry.getKey(), entry.getValue());
+                res.data.put(entry.getKey(), entry.getValue());
             }
         }
-        this.returnValue = table_l;
+        this.returnValue = res;
     }
 
     @Override
@@ -611,6 +608,8 @@ public class Table extends ExecuteEngine implements Serializable {
         Expression rightExpression = equalsTo.getRightExpression();
         rightExpression.accept(this);
         Table table_r = this.returnValue;
+
+        Table res = new Table(this);
         if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
             //The case that left or right contains result
             if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
@@ -618,7 +617,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
                 DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
                 if (!dataGrid_l.compareTo(dataGrid_r)) {
-                    this.data = new HashMap<>();
+                    res.data = new HashMap<>();
                 }
             } else {
                 // The case that only one side has result
@@ -631,7 +630,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     if (!dataGrid.compareTo(rowEntry.getValue().getDataGrids().get(0))) {
-                        this.data.remove(rowEntry.getKey());
+                        res.data.remove(rowEntry.getKey());
                     }
                 }
             }
@@ -642,12 +641,12 @@ public class Table extends ExecuteEngine implements Serializable {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
                     DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
                     if (!dataGrid_l.compareTo(dataGrid_r)) {
-                        this.data.remove(rowEntry.getKey());
+                        res.data.remove(rowEntry.getKey());
                     }
                 }
             }
         }
-        this.returnValue = this;
+        this.returnValue = res;
     }
 
     @Override
@@ -658,6 +657,8 @@ public class Table extends ExecuteEngine implements Serializable {
         Expression rightExpression = notEqualsTo.getRightExpression();
         rightExpression.accept(this);
         Table table_r = this.returnValue;
+
+        Table res = new Table(this);
         if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
             //The case that left or right contains result
             if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
@@ -665,7 +666,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
                 DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
                 if (dataGrid_l.compareTo(dataGrid_r)) {
-                    this.data = new HashMap<>();
+                    res.data = new HashMap<>();
                 }
             } else {
                 // The case that only one side has result
@@ -678,7 +679,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     if (dataGrid.compareTo(rowEntry.getValue().getDataGrids().get(0))) {
-                        this.data.remove(rowEntry.getKey());
+                        res.data.remove(rowEntry.getKey());
                     }
                 }
             }
@@ -689,32 +690,229 @@ public class Table extends ExecuteEngine implements Serializable {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
                     DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
                     if (dataGrid_l.compareTo(dataGrid_r)) {
-                        this.data.remove(rowEntry.getKey());
+                        res.data.remove(rowEntry.getKey());
                     }
                 }
+            } else {
+                //the case where left column and right column are the same
+                res.data = new HashMap<>();
             }
         }
-        this.returnValue = this;
+        this.returnValue = res;
     }
 
     @Override
     public void visit(MinorThan minorThan) {
+        Expression leftExpression = minorThan.getLeftExpression();
+        leftExpression.accept(this);
+        Table table_l = this.returnValue;
+        Expression rightExpression = minorThan.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.returnValue;
 
+        Table res = new Table(this);
+        if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
+            //The case that left or right contains result
+            if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
+                // The case that left and right are both result
+                DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
+                if (!dataGrid_l.minorThan(dataGrid_r)) {
+                    res.data = new HashMap<>();
+                }
+            } else {
+                // The case that only one side has result
+                if (table_l.data.containsKey("result")) {
+                    DataGrid dataGrid = table_l.data.get("result").getDataGrids().get(0);
+                    for (Map.Entry<String, DataRow> rowEntry : table_r.data.entrySet()) {
+                        if (!dataGrid.minorThan(rowEntry.getValue().getDataGrids().get(0))) {
+                            res.data.remove(rowEntry.getKey());
+                        }
+                    }
+                } else {
+                    DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
+                    for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                        if (!rowEntry.getValue().getDataGrids().get(0).minorThan(dataGrid)) {
+                            res.data.remove(rowEntry.getKey());
+                        }
+                    }
+                }
+            }
+        } else {
+            //The case that left and right are both columns
+            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                    if (!dataGrid_l.minorThan(dataGrid_r)) {
+                        res.data.remove(rowEntry.getKey());
+                    }
+                }
+            } else {
+                //the case where left column and right column are the same
+                res.data = new HashMap<>();
+            }
+        }
+        this.returnValue = res;
     }
 
     @Override
     public void visit(GreaterThan greaterThan) {
+        Expression leftExpression = greaterThan.getLeftExpression();
+        leftExpression.accept(this);
+        Table table_l = this.returnValue;
+        Expression rightExpression = greaterThan.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.returnValue;
 
+        Table res = new Table(this);
+        if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
+            //The case that left or right contains result
+            if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
+                // The case that left and right are both result
+                DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
+                if (!dataGrid_l.greatThan(dataGrid_r)) {
+                    res.data = new HashMap<>();
+                }
+            } else {
+                // The case that only one side has result
+                if (table_l.data.containsKey("result")) {
+                    DataGrid dataGrid = table_l.data.get("result").getDataGrids().get(0);
+                    for (Map.Entry<String, DataRow> rowEntry : table_r.data.entrySet()) {
+                        if (!dataGrid.greatThan(rowEntry.getValue().getDataGrids().get(0))) {
+                            res.data.remove(rowEntry.getKey());
+                        }
+                    }
+                } else {
+                    DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
+                    for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                        if (!rowEntry.getValue().getDataGrids().get(0).greatThan(dataGrid)) {
+                            res.data.remove(rowEntry.getKey());
+                        }
+                    }
+                }
+            }
+        } else {
+            //The case that left and right are both columns
+            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                    if (!dataGrid_l.greatThan(dataGrid_r)) {
+                        res.data.remove(rowEntry.getKey());
+                    }
+                }
+            } else {
+                //the case where left column and right column are the same
+                res.data = new HashMap<>();
+            }
+        }
+        this.returnValue = res;
     }
 
     @Override
     public void visit(MinorThanEquals minorThanEquals) {
-        super.visit(minorThanEquals);
+        Expression leftExpression = minorThanEquals.getLeftExpression();
+        leftExpression.accept(this);
+        Table table_l = this.returnValue;
+        Expression rightExpression = minorThanEquals.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.returnValue;
+
+        Table res = new Table(this);
+        if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
+            //The case that left or right contains result
+            if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
+                // The case that left and right are both result
+                DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
+                if (dataGrid_l.greatThan(dataGrid_r)) {
+                    res.data = new HashMap<>();
+                }
+            } else {
+                // The case that only one side has result
+                if (table_l.data.containsKey("result")) {
+                    DataGrid dataGrid = table_l.data.get("result").getDataGrids().get(0);
+                    for (Map.Entry<String, DataRow> rowEntry : table_r.data.entrySet()) {
+                        if (dataGrid.greatThan(rowEntry.getValue().getDataGrids().get(0))) {
+                            res.data.remove(rowEntry.getKey());
+                        }
+                    }
+                } else {
+                    DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
+                    for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                        if (rowEntry.getValue().getDataGrids().get(0).greatThan(dataGrid)) {
+                            res.data.remove(rowEntry.getKey());
+                        }
+                    }
+                }
+            }
+        } else {
+            //The case that left and right are both columns
+            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                    if (dataGrid_l.greatThan(dataGrid_r)) {
+                        res.data.remove(rowEntry.getKey());
+                    }
+                }
+            }
+        }
+        this.returnValue = res;
     }
 
     @Override
     public void visit(GreaterThanEquals greaterThanEquals) {
+        Expression leftExpression = greaterThanEquals.getLeftExpression();
+        leftExpression.accept(this);
+        Table table_l = this.returnValue;
+        Expression rightExpression = greaterThanEquals.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.returnValue;
 
+        Table res = new Table(this);
+        if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
+            //The case that left or right contains result
+            if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
+                // The case that left and right are both result
+                DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
+                if (dataGrid_l.minorThan(dataGrid_r)) {
+                    res.data = new HashMap<>();
+                }
+            } else {
+                // The case that only one side has result
+                if (table_l.data.containsKey("result")) {
+                    DataGrid dataGrid = table_l.data.get("result").getDataGrids().get(0);
+                    for (Map.Entry<String, DataRow> rowEntry : table_r.data.entrySet()) {
+                        if (dataGrid.minorThan(rowEntry.getValue().getDataGrids().get(0))) {
+                            res.data.remove(rowEntry.getKey());
+                        }
+                    }
+                } else {
+                    DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
+                    for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                        if (rowEntry.getValue().getDataGrids().get(0).minorThan(dataGrid)) {
+                            res.data.remove(rowEntry.getKey());
+                        }
+                    }
+                }
+            }
+        } else {
+            //The case that left and right are both columns
+            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                    if (dataGrid_l.minorThan(dataGrid_r)) {
+                        res.data.remove(rowEntry.getKey());
+                    }
+                }
+            }
+        }
+        this.returnValue = res;
     }
 
     @Override
