@@ -379,7 +379,7 @@ public class Table extends ExecuteEngine implements Serializable {
         ArrayList<Pair<Integer,Expression>> ops=new ArrayList<>();
         for (UpdateSet set : updateSets) {
             set.getColumns().get(0).accept(this);
-            String colName=returnValue.data.get("column").getDataGrids().get(0).getData().toString();
+            String colName=returnValue.columnNames.get(0);
             int colInd=this.getColumnIndex(colName);
             ops.add(new Pair<>(colInd,set.getExpressions().get(0)));
         }

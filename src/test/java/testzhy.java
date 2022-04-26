@@ -14,7 +14,7 @@ public class testzhy {
 //        stmts.add("Update tableName set col1=col1+1, col2='1' where col1=2;");
         stmts.add("create table tableName ("+
                 "    col1 int UNIQUE,\n" +
-                "    col2 char NOT NULL,\n"+
+                "    col2 int NOT NULL,\n"+
                 "    PRIMARY KEY (col1));");
         stmts.add("insert into tableName "+
                 "  values (1,1);");
@@ -25,11 +25,13 @@ public class testzhy {
                 "  foreign key (col4) references tableName(col1));");
         stmts.add("create index myIndex on tableName(col2);");
         stmts.add("insert into tableName "+
-                "  values (2,'2');");
+                "  values (2,2);");
         stmts.add("insert into table2 "+
                 "  values (2,2);");
         stmts.add("insert into table2 "+
                 "  values (3,3);");
+        stmts.add("update tableName set col1=2 where col1 =1;");
+        stmts.add("update tableName set col2=1 where col1 =2;");
         stmts.add("drop index tableName.myIndex;");
 
         for (String stmt : stmts) {
