@@ -1,5 +1,7 @@
 package POJO;
 
+import utils.ExecutionException;
+
 import java.io.Serializable;
 
 public class DataGrid implements Serializable {
@@ -30,6 +32,11 @@ public class DataGrid implements Serializable {
     }
 
     public boolean compareTo(DataGrid dataGrid) {
-        return (this.type == dataGrid.type) && (this.data.toString().compareTo(dataGrid.toString()) == 0);
+        if (this.type != dataGrid.type) {
+            throw new ExecutionException("Can't compare type: " + this.type + " with type " + dataGrid.type);
+        }
+        return this.data.toString().compareTo(dataGrid.toString()) == 0;
     }
+
+
 }
