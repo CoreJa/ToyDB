@@ -232,6 +232,14 @@ public class Table extends ExecuteEngine implements Serializable {
 
     }
 
+    //Coping without meta
+    public Table(Map<String, DataRow> data) {
+        this();
+        for (Map.Entry<String, DataRow> entry : data.entrySet()) {
+            this.data.put(entry.getKey(), entry.getValue().clone());
+        }
+    }
+
     public Table(String str) {
         this.data = new HashMap<>();
         data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str)));
@@ -537,7 +545,8 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() ==0 ||
+                    table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
                     DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
@@ -586,7 +595,8 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() ==0 ||
+                    table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
                     DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
@@ -641,7 +651,8 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() == 0 ||
+                    table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
                     DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
@@ -696,7 +707,8 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() == 0 ||
+                    table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
                     DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
@@ -705,7 +717,6 @@ public class Table extends ExecuteEngine implements Serializable {
                     }
                 }
             } else {
-                //the case where left column and right column are the same
                 res.data = new HashMap<>();
             }
         }
@@ -750,8 +761,9 @@ public class Table extends ExecuteEngine implements Serializable {
                 }
             }
         } else {
-            //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+            //The case that left and right are both column
+            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() == 0 ||
+                    table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
                     DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
@@ -803,7 +815,8 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() == 0 ||
+                    table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
                     DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
