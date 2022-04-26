@@ -553,6 +553,49 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(NotEqualsTo notEqualsTo) {
+        Expression leftExpression = notEqualsTo.getLeftExpression();
+        leftExpression.accept(this);
+        Table table_l = this.returnValue;
+        Expression rightExpression = notEqualsTo.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.returnValue;
+        if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
+            //The case that left or right contains result
+            if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
+                // The case that left and right are both result
+                DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
+                if (dataGrid_l.compareTo(dataGrid_r)) {
+                    this.data = new HashMap<>();
+                }
+            } else {
+                // The case that only one side has result
+                if (table_l.data.containsKey("result")) {
+                    //Swap so table_l is always column
+                    Table table_tmp = table_l;
+                    table_l = table_r;
+                    table_r = table_tmp;
+                }
+                DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    if (dataGrid.compareTo(rowEntry.getValue().getDataGrids().get(0))) {
+                        this.data.remove(rowEntry.getKey());
+                    }
+                }
+            }
+        } else {
+            //The case that left and right are both columns
+            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                    if (dataGrid_l.compareTo(dataGrid_r)) {
+                        this.data.remove(rowEntry.getKey());
+                    }
+                }
+            }
+        }
+        this.returnValue = this;
     }
 
     @Override
