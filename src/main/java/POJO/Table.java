@@ -831,7 +831,52 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(Addition addition) {
+        Expression leftExpression = addition.getLeftExpression();
+        leftExpression.accept(this);
+        Table table_l = this.returnValue;
+        Expression rightExpression = addition.getRightExpression();
+        rightExpression.accept(this);
+        Table table_r = this.returnValue;
 
+        Table res = new Table(this.data);
+        if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
+            //The case that left or right contains result
+            if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
+                // The case that left and right are both result
+                DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
+                res.data = new HashMap<>();
+                DataGrid dataGrid = new DataGrid(dataGrid_l);
+                dataGrid.add(dataGrid_r);
+                res.data.put("result", new DataRow(Arrays.asList(dataGrid)));
+            } else {
+                // The case that only one side has result
+                if (table_l.data.containsKey("result")) {
+                    //Swap so table_l is always column
+                    Table table_tmp = table_l;
+                    table_l = table_r;
+                    table_r = table_tmp;
+                }
+                DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    DataGrid dataGrid_new = new DataGrid(dataGrid);
+                    dataGrid_new.add(rowEntry.getValue().getDataGrids().get(0));
+                    res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid_new)));
+                }
+            }
+        } else {
+            //The case that left and right are both columns
+            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                    DataGrid dataGrid = new DataGrid(dataGrid_l);
+                    dataGrid.add(dataGrid_r);
+                    res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
+                }
+            }
+        }
+        this.returnValue = res;
     }
 
     @Override
