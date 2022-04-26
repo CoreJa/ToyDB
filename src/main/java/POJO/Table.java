@@ -880,14 +880,4 @@ public class Table extends ExecuteEngine implements Serializable {
         parenthesis.getExpression().accept(this);
     }
 
-    public static void main(String[] args) {
-        String selectDemo1 = "SELECT DISTINCT(c.address), c.date FROM customer c\n";
-        try {
-            Statement selectStmt = CCJSqlParserUtil.parse(selectDemo1);
-//            Table table = new Table("test");
-//            table.visit((Select) selectStmt);
-        } catch (JSQLParserException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }
