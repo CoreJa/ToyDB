@@ -24,6 +24,9 @@ public class TestCR {
         stmts.add("select * from tableName where 10=col1");
 
         stmts.add("select * from tableName where col1!=10");
+        stmts.add("select * from tableName where 10!=10");
+        stmts.add("select * from tableName where 10!=15");
+        stmts.add("select * from tableName where 10<>15");
         stmts.add("select * from tableName where col1!=col2");
         stmts.add("select * from tableName where col1!=col2 and col2!=col3");
         stmts.add("select * from tableName where col1!=col2 or col2!=col3");
