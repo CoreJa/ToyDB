@@ -12,34 +12,47 @@ public class TestCR {
         db.load();
         loadData(db);
         ArrayList<String> stmts = new ArrayList<>();
-        stmts.add("select col3,col4 from table2");
-        stmts.add("select col3,col2 from table2");
+//        stmts.add("select col3,col4 from table2");
+//        stmts.add("select col3,col2 from table2");
+//
+//        stmts.add("select * from tableName");
+//        stmts.add("select col1 from tableName");
+//
+//        stmts.add("select * from tableName where col1=10");
+//        stmts.add("select * from tableName where col1=col1");
+//        stmts.add("select * from tableName where col1=col2");
+//        stmts.add("select * from tableName where 10=col1");
 
-        stmts.add("select * from tableName");
-        stmts.add("select col1 from tableName");
+//        stmts.add("select * from tableName where col1!=10");
+//        stmts.add("select * from tableName where 10!=10");
+//        stmts.add("select * from tableName where 10!=15");
+//        stmts.add("select * from tableName where 10<>15");
+//        stmts.add("select * from tableName where col1!=col2");
+//        stmts.add("select * from tableName where col1!=col2 and col2!=col3");
+//        stmts.add("select * from tableName where col1!=col2 or col2!=col3");
 
-        stmts.add("select * from tableName where col1=10");
-        stmts.add("select * from tableName where col1=col1");
-        stmts.add("select * from tableName where col1=col2");
-        stmts.add("select * from tableName where 10=col1");
+        stmts.add("select * from tableName where col1<10");
+        stmts.add("select * from tableName where col1<=10");
+        stmts.add("select * from tableName where col1>1000");
+        stmts.add("select * from tableName where col1>=1000");
+        stmts.add("select * from tableName where col1<=col2");
+        stmts.add("select * from tableName where col1>col2");
+        stmts.add("select * from tableName where col1>col2 and col2<col3");
+        stmts.add("select * from tableName where col1>col2 and 6<5");
+        stmts.add("select * from tableName where col1<10 and col2<15");
+        stmts.add("select * from tableName where col1<10 or col2<15");
+        stmts.add("select * from tableName where col1<10 and col1>10");
+        stmts.add("select * from tableName where col1<=10 and col1>=10");
 
-        stmts.add("select * from tableName where col1!=10");
-        stmts.add("select * from tableName where 10!=10");
-        stmts.add("select * from tableName where 10!=15");
-        stmts.add("select * from tableName where 10<>15");
-        stmts.add("select * from tableName where col1!=col2");
-        stmts.add("select * from tableName where col1!=col2 and col2!=col3");
-        stmts.add("select * from tableName where col1!=col2 or col2!=col3");
-
-        stmts.add("select * from tableName where col1=10 or col2=10");
-        stmts.add("select * from tableName where col1=10 or col1=15");
-        stmts.add("select * from tableName where col1=10 or col1=15 or col1=100");
-        stmts.add("select * from tableName where col1=10 or col2=15");
-
-        stmts.add("select * from tableName where col1=10 and col2=10");
-        stmts.add("select * from tableName where col1=10 and col2=10 and col3=10");
-        stmts.add("select * from tableName where col1=10 and col1=15");
-        stmts.add("select * from tableName where col1=10 and col2=15");
+//        stmts.add("select * from tableName where col1=10 or col2=10");
+//        stmts.add("select * from tableName where col1=10 or col1=15");
+//        stmts.add("select * from tableName where col1=10 or col1=15 or col1=100");
+//        stmts.add("select * from tableName where col1=10 or col2=15");
+//
+//        stmts.add("select * from tableName where col1=10 and col2=10");
+//        stmts.add("select * from tableName where col1=10 and col2=10 and col3=10");
+//        stmts.add("select * from tableName where col1=10 and col1=15");
+//        stmts.add("select * from tableName where col1=10 and col2=15");
 
 
         for (String stmt : stmts) {
@@ -77,7 +90,7 @@ public class TestCR {
 //        stmts.add("insert into table2 " +
 //                "  values (3,3);");
         stmts.add("drop index tableName.myIndex;");
-        for (int i = 3; i < 1000; i++) {
+        for (int i = 3; i <= 1000; i++) {
             stmts.add("insert into tableName values (" + i + "," + i + "," + i + ");");
         }
         stmts.add("insert into tableName values (1001,1,1);");
