@@ -16,8 +16,8 @@ public class testzhy {
                 "    col1 int UNIQUE,\n" +
                 "    col2 char NOT NULL,\n"+
                 "    PRIMARY KEY (col1));");
-//        stmts.add("insert into tableName "+
-//                "  values (1,1);");
+        stmts.add("insert into tableName "+
+                "  values (1,1);");
         stmts.add("create table table2 ("+
                 "  col3 int unique,"+
                 "  col4 int not null,"+
@@ -31,6 +31,7 @@ public class testzhy {
         stmts.add("insert into table2 "+
                 "  values (3,3);");
         stmts.add("drop index tableName.myIndex;");
+
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);

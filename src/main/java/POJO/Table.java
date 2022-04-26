@@ -387,16 +387,22 @@ public class Table extends ExecuteEngine implements Serializable {
             update.getWhere().accept(this);
             for (Pair<Integer, Expression> op : ops) {
                 int colInd=op.getFirst();
+                if (colInd==primaryKey){ // if pk
+                    throw new ExecutionException("Primary key is not modifiable.");
+                }
                 op.getSecond().accept(returnValue);
                 Map<String,DataRow> res=returnValue.returnValue.data;
                 if (res.size()==1){
                     Object val=res.get("result").getDataGrids().get(0).getData();
+                    DataGrid valGrid=res.get("result").getDataGrids().get(0);
                     for (String s : returnValue.data.keySet()) {
-                        this.data.get(s).getDataGrids().get(colInd).setData(val);
+                        update(colInd, s, val, valGrid);
                     }
                 }else {
                     for (String s : returnValue.data.keySet()) {
-                        this.data.get(s).getDataGrids().get(colInd).setData(res.get(s).getDataGrids().get(0).getData());
+                        Object val=res.get(s).getDataGrids().get(0).getData();
+                        DataGrid valGrid=res.get(s).getDataGrids().get(0);
+                        update(colInd, s, val, valGrid);
                     }
                 }
             }
@@ -407,14 +413,42 @@ public class Table extends ExecuteEngine implements Serializable {
                 Map<String,DataRow> res=returnValue.data;
                 if (res.size()==1){
                     Object val=res.get("result").getDataGrids().get(0).getData();
+                    DataGrid valGrid=res.get("result").getDataGrids().get(0);
                     for (String s : data.keySet()) {
-                        this.data.get(s).getDataGrids().get(colInd).setData(val);
+                        update(colInd, s, val, valGrid);
                     }
                 }else {
                     for (String s : data.keySet()) {
-                        this.data.get(s).getDataGrids().get(colInd).setData(res.get(s).getDataGrids().get(0).getData());
+                        Object val=res.get(s).getDataGrids().get(0).getData();
+                        DataGrid valGrid=res.get(s).getDataGrids().get(0);
+                        update(colInd, s, val, valGrid);
                     }
                 }
+            }
+        }
+    }
+
+    private void update(int colInd, String s, Object val, DataGrid valGrid) {
+        if (foreignKeyList.get(colInd)!=null){ //check fk
+            DataGrid ref=findReferenceGrid(foreignKeyList.get(colInd).getFirst(),foreignKeyList.get(colInd).getSecond(),valGrid);
+            if (ref == null) {
+                throw new ExecutionException("Failed by foreign key constraint.");
+            }
+            this.data.get(s).getDataGrids().set(colInd,ref);
+        }else {
+            this.data.get(s).getDataGrids().get(colInd).setData(val);
+        }
+        Map<String, List<String>> index=indexes.getIndexes().get(colInd);
+        if (index!=null){ //update index
+            if (index.containsKey(val.toString())) {
+                index.get(val.toString()).add(s);
+            }else{
+                index.put(val.toString(),new ArrayList<>(Arrays.asList(s)));
+            }
+            List<String> hits=index.get(data.get(s).getDataGrids().get(colInd).toString());
+            hits.remove(s);
+            if (hits.size()==0){
+                index.remove(data.get(s).getDataGrids().get(colInd).toString());
             }
         }
     }
