@@ -38,5 +38,25 @@ public class DataGrid implements Serializable {
         return this.data.toString().compareTo(dataGrid.toString()) == 0;
     }
 
+    public boolean greatThan(DataGrid dataGrid) {
+        if (this.type != dataGrid.type) {
+            throw new ExecutionException("Can't compare type: " + this.type + " with type " + dataGrid.type);
+        }
+        if (this.type == Type.STRING) {
+            return this.data.toString().compareTo(dataGrid.toString()) > 0;
+        } else {
+            return (int) this.data > (int) dataGrid.data;
+        }
+    }
 
+    public boolean minorThan(DataGrid dataGrid) {
+        if (this.type != dataGrid.type) {
+            throw new ExecutionException("Can't compare type: " + this.type + " with type " + dataGrid.type);
+        }
+        if (this.type == Type.STRING) {
+            return this.data.toString().compareTo(dataGrid.toString()) < 0;
+        } else {
+            return (int) this.data < (int) dataGrid.data;
+        }
+    }
 }
