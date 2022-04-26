@@ -13,10 +13,10 @@ public class testzhy {
         ArrayList<String> stmts=new ArrayList<>();
         stmts.add("create table tableName ("+
                 "    col1 int UNIQUE,\n" +
-                "    col2 int NOT NULL,\n"+
+                "    col2 char NOT NULL,\n"+
                 "    PRIMARY KEY (col1));");
-        stmts.add("insert into tableName "+
-                "  values (1,1);");
+//        stmts.add("insert into tableName "+
+//                "  values (1,1);");
         stmts.add("create table table2 ("+
                 "  col3 int unique,"+
                 "  col4 int not null,"+
@@ -24,7 +24,7 @@ public class testzhy {
                 "  foreign key (col4) references tableName(col1));");
         stmts.add("create index myIndex on tableName(col2);");
         stmts.add("insert into tableName "+
-                "  values (2,2);");
+                "  values (2,'2');");
         stmts.add("insert into table2 "+
                 "  values (2,2);");
         stmts.add("insert into table2 "+
@@ -44,7 +44,7 @@ public class testzhy {
         for (int i = 3; i < 100000; i++) {
             try {
                 Statement statement = CCJSqlParserUtil.parse("insert into tableName "+
-                        "  values ("+i+","+i+");");
+                        "  values ("+i+",\'"+1+"\');");
                 statement.accept(db);
 //                System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException e) {
@@ -60,7 +60,7 @@ public class testzhy {
 //        stmts.add("insert into table2 "+
 //                "  values (3,3);");
         stmts.add("select col1 from tableName order by col1 asc limit 5");
-        stmts.add("select distinct col2 from tableName order by col2 asc limit 5");
+        stmts.add("select distinct col2 from tableName order by col2 desc limit 5");
 
         for (String stmt : stmts) {
             try {

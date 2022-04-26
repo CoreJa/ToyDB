@@ -9,6 +9,7 @@ Authors:
 - [ ] Database
   - [x] create table -yc
     - [x] create foreign key -yc
+    - [ ] as -yc
   - [ ] drop table -yc
 - [ ] Tables
   - [x] insert -hy
@@ -24,8 +25,10 @@ Authors:
     - [x] create -hy
     - [x] delete -hy
   - [ ] check foreign key -hycr
-    - [x] on insert -hy
+    - [ ] on insert -hy
+      - [ ] unique
     - [ ] on update
+      - [ ] unique
     - [ ] on delete
       - [ ] on dependence
 ## Constraints
