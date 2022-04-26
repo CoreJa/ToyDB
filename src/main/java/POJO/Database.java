@@ -9,6 +9,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.update.Update;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
 
@@ -180,6 +181,13 @@ public class Database extends ExecuteEngine implements Serializable{
     }
 
     @Override
+    public void visit(Update update) {
+        Table table = tables.get(update.getTable().getName());
+        update.accept(table);
+        this.returnValue = table.getReturnValue();
+    }
+
+    @Override
     public void visit(Select select) {
         String tableName = ((PlainSelect) select.getSelectBody()).getFromItem().toString();
         if (!tables.containsKey(tableName)) {
@@ -217,8 +225,8 @@ public class Database extends ExecuteEngine implements Serializable{
             int colInd=returnValue.getColumnIndex(colName); // get column index
             List<Map.Entry<String, DataRow>> list = new ArrayList<>(returnValue.getData().entrySet()); //construct list from table
             if (returnValue.getTypes().get(colInd)==Type.STRING){ // sort the list.
-                list.sort((o1, o2) -> o2.getValue().getDataGrids().get(colInd).toString()
-                        .compareTo(o1.getValue().getDataGrids().get(colInd).toString()));
+                list.sort((o1, o2) -> ((String)o2.getValue().getDataGrids().get(colInd).getData())
+                        .compareTo((String) o1.getValue().getDataGrids().get(colInd).getData()));
             }else{
                 list.sort((o1, o2) ->(int)o2.getValue().getDataGrids().get(colInd).getData()
                                    - (int)o1.getValue().getDataGrids().get(colInd).getData());

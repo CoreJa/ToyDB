@@ -14,9 +14,12 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
 import utils.ExecutionException;
@@ -370,6 +373,68 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         }
         return null;
+    }
+
+    @Override
+    public void visit(Update update) {
+        ArrayList<UpdateSet> updateSets = update.getUpdateSets();
+        ArrayList<Pair<Integer,Expression>> ops=new ArrayList<>();
+        for (UpdateSet set : updateSets) {
+            set.getColumns().get(0).accept(this);
+            String colName=returnValue.data.get("column").getDataGrids().get(0).getData().toString();
+            int colInd=this.getColumnIndex(colName);
+            ops.add(new Pair<>(colInd,set.getExpressions().get(0)));
+        }
+        if (update.getWhere() != null) { // has where
+            update.getWhere().accept(this);
+            for (Pair<Integer, Expression> op : ops) {
+                int colInd=op.getFirst();
+                op.getSecond().accept(returnValue);
+                Map<String,DataRow> res=returnValue.returnValue.data;
+                if (res.size()==1){
+                    Object val=res.get("result").getDataGrids().get(0).getData();
+                    for (String s : returnValue.data.keySet()) {
+                        this.data.get(s).getDataGrids().get(colInd).setData(val);
+                    }
+                }else {
+                    for (String s : returnValue.data.keySet()) {
+                        this.data.get(s).getDataGrids().get(colInd).setData(res.get(s).getDataGrids().get(0).getData());
+                    }
+                }
+            }
+        }else{ // UPDATE ALL !!!
+            for (Pair<Integer, Expression> op : ops) {
+                int colInd=op.getFirst();
+                op.getSecond().accept(this);
+                Map<String,DataRow> res=returnValue.data;
+                if (res.size()==1){
+                    Object val=res.get("result").getDataGrids().get(0).getData();
+                    for (String s : data.keySet()) {
+                        this.data.get(s).getDataGrids().get(colInd).setData(val);
+                    }
+                }else {
+                    for (String s : data.keySet()) {
+                        this.data.get(s).getDataGrids().get(colInd).setData(res.get(s).getDataGrids().get(0).getData());
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void visit(Delete delete) {
+        if (delete.getWhere() != null) { // has where
+            delete.getWhere().accept(this);
+            for (String s : returnValue.data.keySet()) {
+                this.data.get(s).getDataGrids().forEach(x->x.setData(null));
+                this.data.remove(s);
+            }
+        }else{ // DELETE ALL !!!
+            for (String s : this.data.keySet()) {
+                this.data.get(s).getDataGrids().forEach(x->x.setData(null));
+                this.data.remove(s);
+            }
+        }
     }
 
     @Override

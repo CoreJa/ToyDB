@@ -11,6 +11,7 @@ public class testzhy {
         Database db = new Database();
         db.load();
         ArrayList<String> stmts=new ArrayList<>();
+//        stmts.add("Update tableName set col1=col1+1, col2='1' where col1=2;");
         stmts.add("create table tableName ("+
                 "    col1 int UNIQUE,\n" +
                 "    col2 char NOT NULL,\n"+
@@ -59,14 +60,19 @@ public class testzhy {
 //        stmts.add("create index myIndex on tableName(col2);");
 //        stmts.add("insert into table2 "+
 //                "  values (3,3);");
-        stmts.add("select col1 from tableName order by col1 asc limit 5");
-        stmts.add("select col1 from tableName order by col1 asc limit 5");
-        stmts.add("select col1 from tableName order by col1 desc limit 5");
-        stmts.add("select distinct col2 from tableName order by col2 asc");
+
+//        stmts.add("select col1 from tableName where col1 = 50000 order by col1 asc limit 5");
+        stmts.add("select col2 from tableName where col2=\'1\' order by col2 desc limit 5");
+        stmts.add("select distinct col2 from tableName order by col2 asc limit 5");
+
+        stmts.add("select col1 from tableName where col1 = 50000 order by col1 asc limit 5");
+        stmts.add("select col2 from tableName where col2=\'1\' order by col2 desc limit 5");
+        stmts.add("select distinct col2 from tableName order by col2 asc limit 5");
+
 //        stmts.add("select distinct col2 from tableName order by col2 asc");
 //        stmts.add("select col1 from tableName order by col1 asc");
 //        stmts.add("select col1,col2 from tableName order by col1 asc");
-        stmts.add("select * from tableName limit 5");
+        stmts.add("select * from tableName where col2=\'1\' limit 5");
 //        stmts.add("select col1 from tableName");
 
         for (String stmt : stmts) {
