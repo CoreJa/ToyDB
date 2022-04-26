@@ -6,6 +6,10 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
+import net.sf.jsqlparser.expression.operators.arithmetic.Division;
+import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
+import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
@@ -233,12 +237,6 @@ public class Table extends ExecuteEngine implements Serializable {
         data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str)));
     }
 
-    //indicates transferring a column name
-    public Table(Column column) {
-        this.data = new HashMap<>();
-        data.put("column", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(column.getColumnName())));
-    }
-
     public Table(int n) {
         this.data = new HashMap<>();
         data.put("result", new DataRow(Arrays.asList(Type.INT), Arrays.asList(n)));
@@ -390,7 +388,7 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
-        selectExpressionItem.getExpression().accept(this);
+        this.returnValue = new Table(((Column) selectExpressionItem.getExpression()).getColumnName());
     }
 
     @Override
@@ -410,7 +408,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 break;
             }
             selectItem.accept(this);
-            String columnName = this.returnValue.data.get("column").getDataGrids().get(0).getData().toString();
+            String columnName = this.returnValue.data.get("result").getDataGrids().get(0).getData().toString();
             if (!this.columnIndexes.containsKey(columnName)) {
                 throw new ExecutionException(columnName + " doesn't exist");
             }
@@ -494,7 +492,14 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(Column tableColumn) {
-        this.returnValue = new Table(tableColumn);
+        String columnName = tableColumn.getColumnName();
+        Table table = new Table();
+        for (Map.Entry<String, DataRow> rowEntry : this.data.entrySet()) {
+            DataRow dataRow = new DataRow(Arrays.asList(
+                    rowEntry.getValue().getDataGrids().get(this.columnIndexes.get(columnName))));
+            table.data.put(rowEntry.getKey(), dataRow);
+        }
+        this.returnValue = table;
     }
 
     @Override
@@ -509,10 +514,22 @@ public class Table extends ExecuteEngine implements Serializable {
             //The case that where consists of two columns
             String columnName_l = table_l.data.get("column").getDataGrids().get(0).toString();
             String columnName_r = table_r.data.get("column").getDataGrids().get(0).toString();
-            if (columnName_l.compareTo(columnName_r) != 0) {
-                this.data = new HashMap<>();
+            if (columnName_l.compareTo(columnName_r) == 0) {
+                this.returnValue = this;
+            } else {
+                int idx_l = this.columnIndexes.get(columnName_l);
+                int idx_r = this.columnIndexes.get(columnName_r);
+                Iterator<String> iterator = this.data.keySet().iterator();
+                while (iterator.hasNext()) {
+                    String next = iterator.next();
+                    DataRow dataRow = this.data.get(next);
+                    if (!dataRow.getDataGrids().get(idx_l).compareTo(dataRow.getDataGrids().get(idx_r))) {
+                        //remove datarow from this table if datagrid is not equal
+                        iterator.remove();
+                    }
+                }
+                this.returnValue = this;
             }
-            this.returnValue = this;
         } else if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
             // The case that where consists of one column and one data
             DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
@@ -552,12 +569,11 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(NotEqualsTo notEqualsTo) {
-        super.visit(notEqualsTo);
     }
 
     @Override
     public void visit(MinorThan minorThan) {
-        super.visit(minorThan);
+
     }
 
     @Override
@@ -575,6 +591,25 @@ public class Table extends ExecuteEngine implements Serializable {
 
     }
 
+    @Override
+    public void visit(Addition addition) {
+
+    }
+
+    @Override
+    public void visit(Subtraction subtraction) {
+
+    }
+
+    @Override
+    public void visit(Multiplication multiplication) {
+
+    }
+
+    @Override
+    public void visit(Division division) {
+
+    }
 
     @Override
     public void visit(Drop drop) {

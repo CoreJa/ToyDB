@@ -19,6 +19,15 @@ public class TestCR {
         stmts.add("select col1 from tableName");
 
         stmts.add("select * from tableName where col1=10");
+        stmts.add("select * from tableName where col1=col1");
+        stmts.add("select * from tableName where col1=col2");
+        stmts.add("select * from tableName where 10=col1");
+
+        stmts.add("select * from tableName where col1!=10");
+        stmts.add("select * from tableName where col1!=10");
+        stmts.add("select * from tableName where col1!=10");
+        stmts.add("select * from tableName where col1!=10");
+        stmts.add("select * from tableName where col1!=10");
 
         stmts.add("select * from tableName where col1=10 or col2=10");
         stmts.add("select * from tableName where col1=10 or col1=15");
@@ -29,6 +38,7 @@ public class TestCR {
         stmts.add("select * from tableName where col1=10 and col2=10 and col3=10");
         stmts.add("select * from tableName where col1=10 and col1=15");
         stmts.add("select * from tableName where col1=10 and col2=15");
+
 
         for (String stmt : stmts) {
             try {
