@@ -6,6 +6,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
@@ -184,6 +185,13 @@ public class Database extends ExecuteEngine implements Serializable{
     public void visit(Update update) {
         Table table = tables.get(update.getTable().getName());
         update.accept(table);
+        this.returnValue = table.getReturnValue();
+    }
+
+    @Override
+    public void visit(Delete delete) {
+        Table table = tables.get(delete.getTable().getName());
+        delete.accept(table);
         this.returnValue = table.getReturnValue();
     }
 

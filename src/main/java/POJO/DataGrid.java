@@ -32,7 +32,7 @@ public class DataGrid implements Serializable {
     }
 
     public String toString() {//shi
-        return this.data.toString();
+        return String.valueOf(data);
     }
 
     public boolean compareTo(DataGrid dataGrid) {

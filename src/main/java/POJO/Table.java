@@ -385,10 +385,13 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         if (update.getWhere() != null) { // has where
             update.getWhere().accept(this);
+            if (this.returnValue.data == null) {
+                throw new ExecutionException("No such row.");
+            }
             for (Pair<Integer, Expression> op : ops) {
                 int colInd=op.getFirst();
                 if (colInd==primaryKey){ // if pk
-                    throw new ExecutionException("Primary key is not modifiable.");
+                    throw new ExecutionException("Primary key is not modifiable");
                 }
                 op.getSecond().accept(returnValue);
                 Map<String,DataRow> res=returnValue.returnValue.data;
@@ -426,6 +429,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 }
             }
         }
+        this.returnValue=new Table("True");
     }
 
     private void update(int colInd, String s, Object val, DataGrid valGrid) {
@@ -434,10 +438,16 @@ public class Table extends ExecuteEngine implements Serializable {
             if (ref == null) {
                 throw new ExecutionException("Failed by foreign key constraint.");
             }
+            updateIndex(colInd, s, val);
             this.data.get(s).getDataGrids().set(colInd,ref);
         }else {
+            updateIndex(colInd, s, val);
             this.data.get(s).getDataGrids().get(colInd).setData(val);
         }
+
+    }
+
+    private void updateIndex(int colInd, String s, Object val) {
         Map<String, List<String>> index=indexes.getIndexes().get(colInd);
         if (index!=null){ //update index
             if (index.containsKey(val.toString())) {
