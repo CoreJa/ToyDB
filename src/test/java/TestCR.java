@@ -24,10 +24,9 @@ public class TestCR {
         stmts.add("select * from tableName where 10=col1");
 
         stmts.add("select * from tableName where col1!=10");
-        stmts.add("select * from tableName where col1!=10");
-        stmts.add("select * from tableName where col1!=10");
-        stmts.add("select * from tableName where col1!=10");
-        stmts.add("select * from tableName where col1!=10");
+        stmts.add("select * from tableName where col1!=col2");
+        stmts.add("select * from tableName where col1!=col2 and col2!=col3");
+        stmts.add("select * from tableName where col1!=col2 or col2!=col3");
 
         stmts.add("select * from tableName where col1=10 or col2=10");
         stmts.add("select * from tableName where col1=10 or col1=15");
@@ -78,6 +77,10 @@ public class TestCR {
         for (int i = 3; i < 1000; i++) {
             stmts.add("insert into tableName values (" + i + "," + i + "," + i + ");");
         }
+        stmts.add("insert into tableName values (1001,1,1);");
+        stmts.add("insert into tableName values (1002,1,2);");
+        stmts.add("insert into tableName values (1003,1003,2);");
+
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
