@@ -494,6 +494,8 @@ public class Table extends ExecuteEngine implements Serializable {
     public void visit(Column tableColumn) {
         String columnName = tableColumn.getColumnName();
         Table table = new Table();
+        table.columnNames.add(columnName);
+        table.columnIndexes.put(columnName, 0);
         for (Map.Entry<String, DataRow> rowEntry : this.data.entrySet()) {
             DataRow dataRow = new DataRow(Arrays.asList(
                     rowEntry.getValue().getDataGrids().get(this.columnIndexes.get(columnName))));
@@ -510,61 +512,43 @@ public class Table extends ExecuteEngine implements Serializable {
         Expression rightExpression = equalsTo.getRightExpression();
         rightExpression.accept(this);
         Table table_r = this.returnValue;
-        if (table_l.data.containsKey("column") && table_r.data.containsKey("column")) {
-            //The case that where consists of two columns
-            String columnName_l = table_l.data.get("column").getDataGrids().get(0).toString();
-            String columnName_r = table_r.data.get("column").getDataGrids().get(0).toString();
-            if (columnName_l.compareTo(columnName_r) == 0) {
-                this.returnValue = this;
+        if (table_l.data.containsKey("result") || table_r.data.containsKey("result")) {
+            //The case that left or right contains result
+            if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
+                // The case that left and right are both result
+                DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
+                if (!dataGrid_l.compareTo(dataGrid_r)) {
+                    this.data = new HashMap<>();
+                }
             } else {
-                int idx_l = this.columnIndexes.get(columnName_l);
-                int idx_r = this.columnIndexes.get(columnName_r);
-                Iterator<String> iterator = this.data.keySet().iterator();
-                while (iterator.hasNext()) {
-                    String next = iterator.next();
-                    DataRow dataRow = this.data.get(next);
-                    if (!dataRow.getDataGrids().get(idx_l).compareTo(dataRow.getDataGrids().get(idx_r))) {
-                        //remove datarow from this table if datagrid is not equal
-                        iterator.remove();
+                // The case that only one side has result
+                if (table_l.data.containsKey("result")) {
+                    //Swap so table_l is always column
+                    Table table_tmp = table_l;
+                    table_l = table_r;
+                    table_r = table_tmp;
+                }
+                DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    if (!dataGrid.compareTo(rowEntry.getValue().getDataGrids().get(0))) {
+                        this.data.remove(rowEntry.getKey());
                     }
                 }
-                this.returnValue = this;
             }
-        } else if (table_l.data.containsKey("result") && table_r.data.containsKey("result")) {
-            // The case that where consists of one column and one data
-            DataGrid dataGrid_l = table_l.data.get("result").getDataGrids().get(0);
-            DataGrid dataGrid_r = table_r.data.get("result").getDataGrids().get(0);
-            if (!dataGrid_l.compareTo(dataGrid_r)) {
-                this.data = new HashMap<>();
-            }
-            this.returnValue = this;
         } else {
-            // The case that where consists of one column and one data
-            if (table_r.data.containsKey("column")) {
-                //Swap so table_l is always column
-                Table table_tmp = table_l;
-                table_l = table_r;
-                table_r = table_tmp;
-            }
-            String columnName = table_l.data.get("column").getDataGrids().get(0).toString();
-            if (!this.columnIndexes.containsKey(columnName)) {
-                throw new ExecutionException(columnName + " doesn't exist in " + table_l.getTableName());
-            }
-            int idx = this.columnIndexes.get(columnName);
-
-            DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
-
-            Iterator<String> iterator = this.data.keySet().iterator();
-            while (iterator.hasNext()) {
-                String next = iterator.next();
-                DataRow dataRow = this.data.get(next);
-                if (!dataRow.getDataGrids().get(idx).compareTo(dataGrid)) {
-                    //remove datarow from this table if datagrid is not equal
-                    iterator.remove();
+            //The case that left and right are both columns
+            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
+                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                    if (!dataGrid_l.compareTo(dataGrid_r)) {
+                        this.data.remove(rowEntry.getKey());
+                    }
                 }
             }
-            this.returnValue = this;
         }
+        this.returnValue = this;
     }
 
     @Override
