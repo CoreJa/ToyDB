@@ -234,7 +234,7 @@ public class Database extends ExecuteEngine implements Serializable {
             for (Join join : plainSelect.getJoins()) {
                 //assume we always get Table
                 String rightTableName = ((net.sf.jsqlparser.schema.Table) join.getRightItem()).getName();
-                Table rightTable = new Table(this.getTable(rightTableName));
+                Table rightTable = this.getTable(rightTableName);
                 //modify left table column names and indexes as we join right table
                 for (String columnName : rightTable.getColumnNames()) {
                     String name = rightTableName + "." + columnName;
@@ -296,6 +296,7 @@ public class Database extends ExecuteEngine implements Serializable {
                     } else {
                         throw new ExecutionException("joined table doesn't have key " + leftCol + " or " + rightCol);
                     }
+                    //check for cache
                     //build cache
                     Map<String, List<String>> cache = new HashMap<>();
                     for (Map.Entry<String, DataRow> rightEntry : rightData.entrySet()) {
