@@ -229,6 +229,10 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         this.returnValue = null;
         this.indexes = table.indexes;
+        //will shallow copy keys
+        this.primaryKey = table.primaryKey;
+        this.uniqueSet = table.uniqueSet;
+        this.foreignKeyList = table.foreignKeyList;
 
     }
 
