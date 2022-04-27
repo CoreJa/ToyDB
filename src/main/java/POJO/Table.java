@@ -2,10 +2,7 @@ package POJO;
 
 
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.LongValue;
-import net.sf.jsqlparser.expression.Parenthesis;
-import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
 import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
@@ -1270,4 +1267,10 @@ public class Table extends ExecuteEngine implements Serializable {
         parenthesis.getExpression().accept(this);
     }
 
+    @Override
+    public void visit(SignedExpression signedExpression) {
+        signedExpression.getExpression().accept(this);
+        int res = -(int) (this.returnValue.getData().get("result").getDataGrids().get(0).getData());
+        this.returnValue = new Table(res);
+    }
 }
