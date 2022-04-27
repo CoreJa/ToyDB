@@ -1201,18 +1201,12 @@ public class Table extends ExecuteEngine implements Serializable {
         for (int i = 0; i < table.size(); ++i) {
             sb.append("|");
             int len = table.get(i).toString().length();
-//            int left_space =   ①    ;
             int left_space =  (size-len)%2==0 ?(size-len)/2 :(size-len)/2+1 ;
-//            int right_space =    ②    ;
             int right_space =    (size-len)/2    ;
-//            for (int j = 0; j <   ③   ; ++j) {
-            //左边空格
             for (int j = 0; j <   left_space   ; ++j) {
                 sb.append(" ");
             }
             sb.append(table.get(i).toString());
-            //右边空格
-//            for (int j = 0; j <   ④     ; ++j) {
             for (int j = 0; j <   right_space     ; ++j) {
                 sb.append(" ");
             }
@@ -1224,7 +1218,6 @@ public class Table extends ExecuteEngine implements Serializable {
                 sb.append("-");
             }
         }
-//        sb.append("+\n");
     }
 
     @Override
