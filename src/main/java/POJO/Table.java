@@ -534,7 +534,7 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
-        this.returnValue = new Table(((Column) selectExpressionItem.getExpression()).getColumnName());
+        this.returnValue = new Table(((Column) selectExpressionItem.getExpression()).toString());
     }
 
     @Override
