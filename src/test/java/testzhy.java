@@ -72,6 +72,7 @@ public class testzhy {
         stmts.add("delete from tableName where col1>=50000;");
         stmts.add("update tableName set col2=col2+1;");
         stmts.add("select distinct col2 from tableName order by col2 asc limit 5");
+        stmts.add("select distinct * from tableName order by col2 asc limit 5");
 
 //        stmts.add("select col1 from tableName where col1 = 50000 order by col1 asc limit 5");
 //        stmts.add("select col2 from tableName where col2=\'1\' order by col2 desc limit 5");
