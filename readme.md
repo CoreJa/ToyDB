@@ -30,10 +30,10 @@ Authors:
       - [x] multiply -cr
       - [x] divide -cr
     - [ ] join -cr
-      - [ ] inner join -cr
-      - [ ] left join -cr
-      - [ ] right join -cr
-      - [ ] full join -cr
+      - [ ] join/inner join -cr
+      - [ ] left join/left outer join -cr
+      - [ ] right join/right outer join -cr
+      - [ ] full join/full outer join -cr
     - [ ] distinct -hy int√ string?
     - [ ] order by () -hy
     - [ ] limit () -hy
