@@ -29,11 +29,11 @@ Authors:
       - [x] subtract -cr
       - [x] multiply -cr
       - [x] divide -cr
-    - [x] join -cr //on这块的关键字不好写，特别是有and or 嵌套。目前完成了笛卡儿积
+    - [x] join -cr //on onley support one sub statement.
       - [x] join/inner join -cr
       - [x] left join/left outer join -cr
-      - [ ] right join/right outer join -cr
-      - [ ] full join/full outer join -cr
+      - [x] right join/right outer join -cr
+      - [x] full join/full outer join -cr
       - [x] on
       - [ ] and
       - [ ] or
