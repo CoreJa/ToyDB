@@ -257,7 +257,7 @@ public class Database extends ExecuteEngine implements Serializable{
                     }
                 }
             }
-            LinkedHashMap<String,DataRow> orderedMap=new LinkedHashMap<>();
+            Map<String,DataRow> orderedMap=new LinkedHashMap<>();
             for (Map.Entry<String, DataRow> entry : list) { // write into a hashmap that preserves order
                 orderedMap.put(entry.getKey(),entry.getValue());
             }
