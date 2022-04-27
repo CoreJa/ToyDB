@@ -18,7 +18,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class Database extends ExecuteEngine implements Serializable{
+public class Database extends ExecuteEngine implements Serializable {
     private static final long serialVersionUID = 1L;
     private Map<String, Table> tables;// tableName, table
     static String filename = "./ToyDB.db"; // Where to save
@@ -30,7 +30,7 @@ public class Database extends ExecuteEngine implements Serializable{
         this.returnValue = null;
     }
 
-    public void createMetadata(){//Load from file
+    public void createMetadata() {//Load from file
         List<String> columnNames = new ArrayList<>();
         columnNames.add("Table");
         List<Type> types = new ArrayList<>();
@@ -52,7 +52,7 @@ public class Database extends ExecuteEngine implements Serializable{
     }
 
 
-    public Database(Map<String, Table> tablesMap){
+    public Database(Map<String, Table> tablesMap) {
         this();
         this.tables = tablesMap;
     }
@@ -112,15 +112,15 @@ public class Database extends ExecuteEngine implements Serializable{
     public void visit(CreateTable createTable) {
         Table table = new Table(this, createTable); // create table object
         Table TABLES = this.tables.get("TABLES");
-        if (TABLES!= null
-                && TABLES.getColumnIndexes()!= null
+        if (TABLES != null
+                && TABLES.getColumnIndexes() != null
                 && TABLES.getColumnIndexes().containsKey(table.getTableName())) {
             throw new ExecutionException("Table already exists");
         }
         this.tables.put(table.getTableName(), table);
         this.returnValue = table.getReturnValue();
         //update metadata in TABLES
-        try{
+        try {
             CCJSqlParserUtil.parse("INSERT INTO TABLES VALUES (\'" + table.getTableName() + "\');").accept(this);
             for (int i = 0; i < table.getColumnNames().size(); i++) {
                 String type = table.getTypes().get(i) == Type.STRING ? "string" : "int";
@@ -130,7 +130,7 @@ public class Database extends ExecuteEngine implements Serializable{
                         "\'" + table.getTableName() + "." + table.getColumnNames().get(i) + "\')";
                 CCJSqlParserUtil.parse(insertCOLUMNSQuery).accept(this);
             }
-        }catch(JSQLParserException e) {
+        } catch (JSQLParserException e) {
             e.printStackTrace();
         }
     }
@@ -153,13 +153,13 @@ public class Database extends ExecuteEngine implements Serializable{
             try {
                 CCJSqlParserUtil.parse("DELETE FROM TABLES WHERE Table=\'" + tableName + "\'").accept(this);
                 CCJSqlParserUtil.parse("DELETE FROM COLUMNS WHERE Table=\'" + tableName + "\'").accept(this);
-            } catch(JSQLParserException e) {
+            } catch (JSQLParserException e) {
                 e.printStackTrace();
             }
         }
         if (drop.getType().toLowerCase().compareTo("index") == 0) {//Drop Index
             //DROP INDEX tableName.indexName
-            if (drop.getName().getSchemaName() == null || drop.getName().getName()==null) {
+            if (drop.getName().getSchemaName() == null || drop.getName().getName() == null) {
                 throw new ExecutionException("Should specify both table name and index name.");
             }
             String tableName = drop.getName().getSchemaName();
@@ -197,14 +197,38 @@ public class Database extends ExecuteEngine implements Serializable{
 
     @Override
     public void visit(Select select) {
-        String tableName = ((PlainSelect) select.getSelectBody()).getFromItem().toString();
+        PlainSelect plainSelect = ((PlainSelect) select.getSelectBody());
+        String tableName = plainSelect.getFromItem().toString();
         if (!tables.containsKey(tableName)) {
             throw new ExecutionException(tableName + " doesn't exist.");
         }
         // will duplicate a new table object here
         Table table = new Table(tables.get(tableName));
 
-        select.accept(table);
+        //join statement
+        if (plainSelect.getJoins() != null) {
+            int cnt=table.getColumnNames().size();
+
+            for (Join join : plainSelect.getJoins()) {
+                if (join.isFull()) {
+                    //full join
+                } else if (join.isLeft()) {
+                    //left outer join
+                } else if (join.isRight()) {
+                    //right outer join
+
+                } else if (join.isInner() || (!join.isOuter() && !join.isSimple() && !join.isNatural() && !join.isCross() && !join.isSemi() && !join.isStraight() && !join.isApply())) {
+                    //inner join
+//                    table.getColumnNames().add();
+
+                } else {
+                    throw new ExecutionException("This type of join is not implemented yet!");
+                }
+            }
+        }
+
+        // recursively parsing select
+        plainSelect.accept(table);
         this.returnValue = table.getReturnValue();
 
 
@@ -212,76 +236,74 @@ public class Database extends ExecuteEngine implements Serializable{
         -------------- Below are post-processes of select, write result to this.returnValue before get into this --------------
          */
 
-        if (((PlainSelect) select.getSelectBody()).getDistinct()!=null){ // if distinct
-            HashSet<String> set=new HashSet<>();
-            Map<String,DataRow> data=returnValue.getData();
-            Iterator<String> iterator=data.keySet().iterator();
+        if (plainSelect.getDistinct() != null) { // if distinct
+            HashSet<String> set = new HashSet<>();
+            Map<String, DataRow> data = returnValue.getData();
+            Iterator<String> iterator = data.keySet().iterator();
             while (iterator.hasNext()) {
                 String next = iterator.next();
-                String curVal = returnValue.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("",(x, y)->x+" # "+y);
+                String curVal = returnValue.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("", (x, y) -> x + " # " + y);
                 if (!set.add(curVal)) {
                     iterator.remove();
                 }
             }
         }
 
-        if (((PlainSelect) select.getSelectBody()).getOrderByElements()!=null){ // if order by
-            OrderByElement element=((PlainSelect) select.getSelectBody()).getOrderByElements().get(0);
-            Database temp=new Database();
+        if (plainSelect.getOrderByElements() != null) { // if order by
+            OrderByElement element = plainSelect.getOrderByElements().get(0);
+            Database temp = new Database();
             element.getExpression().accept(temp);
-            String colName=(String)temp.returnValue.getData().get("result").getDataGrids().get(0).getData();
-            int colInd=returnValue.getColumnIndex(colName); // get column index
+            String colName = (String) temp.returnValue.getData().get("result").getDataGrids().get(0).getData();
+            int colInd = returnValue.getColumnIndex(colName); // get column index
             List<Map.Entry<String, DataRow>> list = new ArrayList<>(returnValue.getData().entrySet()); //construct list from table
-            if (returnValue.getTypes().get(colInd)==Type.STRING){ // sort the list.
-                list.sort((o1, o2) -> ((String)o2.getValue().getDataGrids().get(colInd).getData())
+            if (returnValue.getTypes().get(colInd) == Type.STRING) { // sort the list.
+                list.sort((o1, o2) -> ((String) o2.getValue().getDataGrids().get(colInd).getData())
                         .compareTo((String) o1.getValue().getDataGrids().get(colInd).getData()));
-            }else{
-                list.sort((o1, o2) ->(int)o2.getValue().getDataGrids().get(colInd).getData()
-                                   - (int)o1.getValue().getDataGrids().get(colInd).getData());
+            } else {
+                list.sort((o1, o2) -> (int) o2.getValue().getDataGrids().get(colInd).getData()
+                        - (int) o1.getValue().getDataGrids().get(colInd).getData());
             }
             if (element.isAsc()) { // Ascending or Descending
-                if (((PlainSelect) select.getSelectBody()).getLimit() != null) { // if limit
-                    ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
+                if (plainSelect.getLimit() != null) { // if limit
+                    plainSelect.getLimit().getRowCount().accept(returnValue);
                     int lim = (int) returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
-                    if (list.size()>lim){
-                        list=list.subList(list.size()-lim, list.size());
+                    if (list.size() > lim) {
+                        list = list.subList(list.size() - lim, list.size());
                     }
                 }
                 Collections.reverse(list);
-            }else{
-                if (((PlainSelect) select.getSelectBody()).getLimit() != null) { // if limit
-                    ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
+            } else {
+                if (plainSelect.getLimit() != null) { // if limit
+                    plainSelect.getLimit().getRowCount().accept(returnValue);
                     int lim = (int) returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
-                    if (list.size()>lim){
-                        list=list.subList(0, lim);
+                    if (list.size() > lim) {
+                        list = list.subList(0, lim);
                     }
                 }
             }
-            Map<String,DataRow> orderedMap=new LinkedHashMap<>();
+            LinkedHashMap<String, DataRow> orderedMap = new LinkedHashMap<>();
             for (Map.Entry<String, DataRow> entry : list) { // write into a hashmap that preserves order
-                orderedMap.put(entry.getKey(),entry.getValue());
+                orderedMap.put(entry.getKey(), entry.getValue());
             }
             returnValue.setData(orderedMap);
-        }else {
-            if (((PlainSelect) select.getSelectBody()).getLimit() != null) { // if limit
-                ((PlainSelect) select.getSelectBody()).getLimit().getRowCount().accept(returnValue);
+        } else {
+            if (plainSelect.getLimit() != null) { // if limit
+                plainSelect.getLimit().getRowCount().accept(returnValue);
                 int lim = (int) returnValue.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
                 if (returnValue.getData().size() > lim) {
                     int cur = 0;
                     Map<String, DataRow> data = returnValue.getData();
                     Iterator<Map.Entry<String, DataRow>> iterator = returnValue.getData().entrySet().iterator();
-                    Map<String, DataRow> newdata= new HashMap<>();
-                    while (iterator.hasNext() && cur<lim) {
+                    Map<String, DataRow> newdata = new HashMap<>();
+                    while (iterator.hasNext() && cur < lim) {
                         Map.Entry<String, DataRow> next = iterator.next();
                         cur++;
-                        newdata.put(next.getKey(),next.getValue());
+                        newdata.put(next.getKey(), next.getValue());
                     }
                     returnValue.setData(newdata);
                 }
             }
         }
-
-
     }
 
     @Override
@@ -296,8 +318,9 @@ public class Database extends ExecuteEngine implements Serializable{
 
     @Override
     public void visit(Column tableColumn) {
-        this.returnValue=new Table(tableColumn.getColumnName());
+        this.returnValue = new Table(tableColumn.getColumnName());
     }
+
 
     public static void main(String[] args) {
         String selectDemo2 = "SELECT DISTINCT ID, ID2 " +
