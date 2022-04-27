@@ -384,12 +384,12 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public void visit(Update update) {
         ArrayList<UpdateSet> updateSets = update.getUpdateSets();
-        ArrayList<Pair<Integer,Expression>> ops=new ArrayList<>();
+        ArrayList<Pair<Integer, Expression>> ops = new ArrayList<>();
         for (UpdateSet set : updateSets) {
             set.getColumns().get(0).accept(this);
-            String colName=returnValue.columnNames.get(0);
-            int colInd=this.getColumnIndex(colName);
-            ops.add(new Pair<>(colInd,set.getExpressions().get(0)));
+            String colName = returnValue.columnNames.get(0);
+            int colInd = this.getColumnIndex(colName);
+            ops.add(new Pair<>(colInd, set.getExpressions().get(0)));
         }
         if (update.getWhere() != null) { // has where
             update.getWhere().accept(this);
@@ -397,74 +397,74 @@ public class Table extends ExecuteEngine implements Serializable {
                 throw new ExecutionException("No such row.");
             }
             for (Pair<Integer, Expression> op : ops) {
-                int colInd=op.getFirst();
-                if (colInd==primaryKey){ // if pk
+                int colInd = op.getFirst();
+                if (colInd == primaryKey) { // if pk
                     throw new ExecutionException("Primary key is not modifiable");
                 }
                 op.getSecond().accept(returnValue);
-                Map<String,DataRow> res=returnValue.returnValue.data;
-                if (res.size()==1){
-                    Object val=res.values().iterator().next().getDataGrids().get(0).getData();
-                    DataGrid valGrid=res.values().iterator().next().getDataGrids().get(0);
+                Map<String, DataRow> res = returnValue.returnValue.data;
+                if (res.size() == 1) {
+                    Object val = res.values().iterator().next().getDataGrids().get(0).getData();
+                    DataGrid valGrid = res.values().iterator().next().getDataGrids().get(0);
                     for (String s : returnValue.data.keySet()) {
                         update(colInd, s, val, valGrid);
                     }
-                }else {
+                } else {
                     for (String s : returnValue.data.keySet()) {
-                        Object val=res.get(s).getDataGrids().get(0).getData();
-                        DataGrid valGrid=res.get(s).getDataGrids().get(0);
+                        Object val = res.get(s).getDataGrids().get(0).getData();
+                        DataGrid valGrid = res.get(s).getDataGrids().get(0);
                         update(colInd, s, val, valGrid);
                     }
                 }
             }
-        }else{ // UPDATE ALL !!!
+        } else { // UPDATE ALL !!!
             for (Pair<Integer, Expression> op : ops) {
-                int colInd=op.getFirst();
+                int colInd = op.getFirst();
                 op.getSecond().accept(this);
-                Map<String,DataRow> res=returnValue.data;
-                if (res.size()==1){
-                    Object val=res.get("result").getDataGrids().get(0).getData();
-                    DataGrid valGrid=res.get("result").getDataGrids().get(0);
+                Map<String, DataRow> res = returnValue.data;
+                if (res.size() == 1) {
+                    Object val = res.get("result").getDataGrids().get(0).getData();
+                    DataGrid valGrid = res.get("result").getDataGrids().get(0);
                     for (String s : data.keySet()) {
                         update(colInd, s, val, valGrid);
                     }
-                }else {
+                } else {
                     for (String s : data.keySet()) {
-                        Object val=res.get(s).getDataGrids().get(0).getData();
-                        DataGrid valGrid=res.get(s).getDataGrids().get(0);
+                        Object val = res.get(s).getDataGrids().get(0).getData();
+                        DataGrid valGrid = res.get(s).getDataGrids().get(0);
                         update(colInd, s, val, valGrid);
                     }
                 }
             }
         }
-        this.returnValue=new Table("True");
+        this.returnValue = new Table("True");
     }
 
     private void update(int colInd, String s, Object val, DataGrid valGrid) {
-        if (foreignKeyList.get(colInd)!=null){ //check fk
-            DataGrid ref=findReferenceGrid(foreignKeyList.get(colInd).getFirst(),foreignKeyList.get(colInd).getSecond(),valGrid);
+        if (foreignKeyList.get(colInd) != null) { //check fk
+            DataGrid ref = findReferenceGrid(foreignKeyList.get(colInd).getFirst(), foreignKeyList.get(colInd).getSecond(), valGrid);
             if (ref == null) {
                 throw new ExecutionException("Failed by foreign key constraint.");
             }
             updateIndex(colInd, s, val);
-            this.data.get(s).getDataGrids().set(colInd,ref);
-        }else {
+            this.data.get(s).getDataGrids().set(colInd, ref);
+        } else {
             updateIndex(colInd, s, val);
             this.data.get(s).getDataGrids().get(colInd).setData(val);
         }
     }
 
     private void updateIndex(int colInd, String s, Object val) {
-        Map<String, Set<String>> index=indexes.getIndexes().get(colInd);
-        if (index!=null){ //update index
+        Map<String, Set<String>> index = indexes.getIndexes().get(colInd);
+        if (index != null) { //update index
             if (index.containsKey(val.toString())) {
                 index.get(val.toString()).add(s);
-            }else{
-                index.put(val.toString(),new HashSet<>(Arrays.asList(s)));
+            } else {
+                index.put(val.toString(), new HashSet<>(Arrays.asList(s)));
             }
-            Set<String> hits=index.get(data.get(s).getDataGrids().get(colInd).toString());
+            Set<String> hits = index.get(data.get(s).getDataGrids().get(colInd).toString());
             hits.remove(s);
-            if (hits.size()==0){
+            if (hits.size() == 0) {
                 index.remove(data.get(s).getDataGrids().get(colInd).toString());
             }
         }
@@ -477,12 +477,12 @@ public class Table extends ExecuteEngine implements Serializable {
             for (String s : returnValue.data.keySet()) {
                 delete(s);
             }
-        }else{ // DELETE ALL !!!
+        } else { // DELETE ALL !!!
             for (String s : this.data.keySet()) {
                 delete(s);
             }
         }
-        this.returnValue=new Table("True");
+        this.returnValue = new Table("True");
     }
 
     private void delete(String s) {
@@ -492,7 +492,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 index.get(data.get(s).getDataGrids().get(i).toString()).remove(s);
             }
         }
-        this.data.get(s).getDataGrids().forEach(x->x.setData(null));
+        this.data.get(s).getDataGrids().forEach(x -> x.setData(null));
         this.data.remove(s);
     }
 
@@ -519,9 +519,15 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(PlainSelect plainSelect) {
-        Table table = new Table();
-        table.setTableName(this.tableName);
-        table.simple = false;
+        Table table = new Table(this);
+        //processing where statement
+        if (plainSelect.getWhere() != null) {
+            plainSelect.getWhere().accept(table);
+            table = table.returnValue;
+        }
+        Table res = new Table();
+        res.setTableName(table.tableName);
+        res.simple = false;
         List<Integer> columnIndexFromOrigin = new ArrayList<>();
 
         //copying table object and re-construct its meta info.
@@ -530,40 +536,24 @@ public class Table extends ExecuteEngine implements Serializable {
             // not using recursive accept because *(all columns) is already atomic.
             // will immediately break from loop and only return itself.
             if (selectItem instanceof AllColumns) {
-                table = this;
+                res = table;
                 break;
             }
-            selectItem.accept(this);
-            String columnName = this.returnValue.data.get("result").getDataGrids().get(0).getData().toString();
-            if (!this.columnIndexes.containsKey(columnName)) {
+            selectItem.accept(table);
+            String columnName = table.returnValue.data.get("result").getDataGrids().get(0).getData().toString();
+            if (!table.columnIndexes.containsKey(columnName)) {
                 throw new ExecutionException(columnName + " doesn't exist");
             }
-            table.columnNames.add(columnName);
-            table.columnIndexes.put(columnName, cnt++);
-            int idx = this.columnIndexes.get(columnName);
+            res.columnNames.add(columnName);
+            res.columnIndexes.put(columnName, cnt++);
+            int idx = table.columnIndexes.get(columnName);
             columnIndexFromOrigin.add(idx);
-            table.types.add(this.types.get(idx));
+            res.types.add(table.types.get(idx));
         }
 
         //The case where table is actually re-constructed, copying its data to table
-        if (table != this) {
-            table.data = new HashMap<>();
-            for (Map.Entry<String, DataRow> entry : this.data.entrySet()) {
-                List<DataGrid> dataList = new ArrayList<>();
-                for (int idx : columnIndexFromOrigin) {
-                    dataList.add(entry.getValue().getDataGrids().get(idx));
-                }
-                DataRow dataRow = new DataRow(dataList);
-                table.data.put(entry.getKey(), dataRow);
-            }
-        }
-
-        //processing where statement
-        if (plainSelect.getWhere() != null) {
-            plainSelect.getWhere().accept(table);
-            table = table.returnValue;
-        }
-        this.returnValue = table;
+        res.data = table.data;
+        this.returnValue = res;
     }
 
     @Override
@@ -663,7 +653,7 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() ==0 ||
+            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() == 0 ||
                     table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
@@ -713,7 +703,7 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() ==0 ||
+            if (table_l.columnNames.size() == 0 || table_r.columnNames.size() == 0 ||
                     table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
                 for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
                     DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
