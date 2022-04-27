@@ -209,8 +209,7 @@ public class Database extends ExecuteEngine implements Serializable {
 //    }
 
     @Override
-    public void visit(Select select) {
-        PlainSelect plainSelect = ((PlainSelect) select.getSelectBody());
+    public void visit(PlainSelect plainSelect) {
         String tableName = plainSelect.getFromItem().toString();
         if (!tables.containsKey(tableName)) {
             throw new ExecutionException(tableName + " doesn't exist.");
@@ -384,13 +383,11 @@ public class Database extends ExecuteEngine implements Serializable {
         // recursively parsing select
         plainSelect.accept(table);
         this.returnValue = table.getReturnValue();
+    }
 
-
-        /*
-        -------------- Below are post-processes of select, write result to this.returnValue before get into this --------------
-         */
-
-
+    @Override
+    public void visit(Select select) {
+        select.getSelectBody().accept(this);
     }
 
     @Override
