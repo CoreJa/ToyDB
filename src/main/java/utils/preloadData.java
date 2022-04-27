@@ -39,7 +39,7 @@ public class preloadData {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
                 statement.accept(db);
-                System.out.println(db.getReturnValue().toString());
+//                System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
