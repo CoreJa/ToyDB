@@ -18,9 +18,12 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.*;
+import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.statement.update.UpdateSet;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
 import utils.ExecutionException;
@@ -293,14 +296,14 @@ public class Table extends ExecuteEngine implements Serializable {
             return false;
         }
         indexes.getIndexNames().set(colInd, indexName); // store index name
-        Map<String, List<String>> curIndex = new HashMap<>();
+        Map<String, Set<String>> curIndex = new HashMap<>();
         indexes.getIndexes().set(colInd, curIndex); // initialize new index object into table
         data.forEach((k, v) -> { // construct object
             String fieldValue = v.getDataGrids().get(colInd).toString();
             if (curIndex.containsKey(fieldValue)) {
                 curIndex.get(fieldValue).add(k);
             } else {
-                curIndex.put(fieldValue, new ArrayList<>(Arrays.asList(k)));
+                curIndex.put(fieldValue, new HashSet<>(Arrays.asList(k)));
             }
         });
         return true;
@@ -327,7 +330,7 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         for (int i = 0; i < newRow.getDataGrids().size(); i++) { //check value one by one
             DataGrid dataGrid = newRow.getDataGrids().get(i);
-            Map<String, List<String>> curIndex = indexes.getIndexes().get(i);
+            Map<String, Set<String>> curIndex = indexes.getIndexes().get(i);
             if (types.get(i) == Type.INT) {  //check if it should be integer
                 newRow.getDataGrids().set(i, new DataGrid(Type.INT, Integer.parseInt(dataGrid.toString())));
             }
@@ -336,7 +339,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 if (curIndex.containsKey(fieldValue)) {
                     curIndex.get(fieldValue).add(newRow.getDataGrids().get(primaryKey).toString());
                 } else {
-                    curIndex.put(fieldValue, new ArrayList<>(Arrays.asList(newRow.getDataGrids().get(primaryKey).toString())));
+                    curIndex.put(fieldValue, new HashSet<>(Arrays.asList(newRow.getDataGrids().get(primaryKey).toString())));
                 }
             }
             if (foreignKeyList.get(i) != null) {  // check if it has foreign key constraint
@@ -359,13 +362,13 @@ public class Table extends ExecuteEngine implements Serializable {
             DataRow refRow = table.data.get(data.toString());
             return refRow == null ? null : refRow.getDataGrids().get(colInd);
         }
-        Map<String, List<String>> index = table.indexes.getIndexes().get(colInd);
+        Map<String, Set<String>> index = table.indexes.getIndexes().get(colInd);
         if (index != null) {  // if column is indexed
-            List<String> primaryKeyValue = index.get(data.toString());
+            Set<String> primaryKeyValue = index.get(data.toString());
             if (primaryKeyValue == null) {
                 return null;
             }
-            DataRow refRow = table.data.get(primaryKeyValue.get(0));
+            DataRow refRow = table.data.get(primaryKeyValue.iterator().next());
             return refRow == null ? null : refRow.getDataGrids().get(colInd);
         } else {
             for (DataRow value : table.data.values()) {
@@ -376,6 +379,122 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         }
         return null;
+    }
+
+    @Override
+    public void visit(Update update) {
+        ArrayList<UpdateSet> updateSets = update.getUpdateSets();
+        ArrayList<Pair<Integer,Expression>> ops=new ArrayList<>();
+        for (UpdateSet set : updateSets) {
+            set.getColumns().get(0).accept(this);
+            String colName=returnValue.columnNames.get(0);
+            int colInd=this.getColumnIndex(colName);
+            ops.add(new Pair<>(colInd,set.getExpressions().get(0)));
+        }
+        if (update.getWhere() != null) { // has where
+            update.getWhere().accept(this);
+            if (this.returnValue.data == null) {
+                throw new ExecutionException("No such row.");
+            }
+            for (Pair<Integer, Expression> op : ops) {
+                int colInd=op.getFirst();
+                if (colInd==primaryKey){ // if pk
+                    throw new ExecutionException("Primary key is not modifiable");
+                }
+                op.getSecond().accept(returnValue);
+                Map<String,DataRow> res=returnValue.returnValue.data;
+                if (res.size()==1){
+                    Object val=res.values().iterator().next().getDataGrids().get(0).getData();
+                    DataGrid valGrid=res.values().iterator().next().getDataGrids().get(0);
+                    for (String s : returnValue.data.keySet()) {
+                        update(colInd, s, val, valGrid);
+                    }
+                }else {
+                    for (String s : returnValue.data.keySet()) {
+                        Object val=res.get(s).getDataGrids().get(0).getData();
+                        DataGrid valGrid=res.get(s).getDataGrids().get(0);
+                        update(colInd, s, val, valGrid);
+                    }
+                }
+            }
+        }else{ // UPDATE ALL !!!
+            for (Pair<Integer, Expression> op : ops) {
+                int colInd=op.getFirst();
+                op.getSecond().accept(this);
+                Map<String,DataRow> res=returnValue.data;
+                if (res.size()==1){
+                    Object val=res.get("result").getDataGrids().get(0).getData();
+                    DataGrid valGrid=res.get("result").getDataGrids().get(0);
+                    for (String s : data.keySet()) {
+                        update(colInd, s, val, valGrid);
+                    }
+                }else {
+                    for (String s : data.keySet()) {
+                        Object val=res.get(s).getDataGrids().get(0).getData();
+                        DataGrid valGrid=res.get(s).getDataGrids().get(0);
+                        update(colInd, s, val, valGrid);
+                    }
+                }
+            }
+        }
+        this.returnValue=new Table("True");
+    }
+
+    private void update(int colInd, String s, Object val, DataGrid valGrid) {
+        if (foreignKeyList.get(colInd)!=null){ //check fk
+            DataGrid ref=findReferenceGrid(foreignKeyList.get(colInd).getFirst(),foreignKeyList.get(colInd).getSecond(),valGrid);
+            if (ref == null) {
+                throw new ExecutionException("Failed by foreign key constraint.");
+            }
+            updateIndex(colInd, s, val);
+            this.data.get(s).getDataGrids().set(colInd,ref);
+        }else {
+            updateIndex(colInd, s, val);
+            this.data.get(s).getDataGrids().get(colInd).setData(val);
+        }
+
+    }
+
+    private void updateIndex(int colInd, String s, Object val) {
+        Map<String, Set<String>> index=indexes.getIndexes().get(colInd);
+        if (index!=null){ //update index
+            if (index.containsKey(val.toString())) {
+                index.get(val.toString()).add(s);
+            }else{
+                index.put(val.toString(),new HashSet<>(Arrays.asList(s)));
+            }
+            Set<String> hits=index.get(data.get(s).getDataGrids().get(colInd).toString());
+            hits.remove(s);
+            if (hits.size()==0){
+                index.remove(data.get(s).getDataGrids().get(colInd).toString());
+            }
+        }
+    }
+
+    @Override
+    public void visit(Delete delete) {
+        if (delete.getWhere() != null) { // has where
+            delete.getWhere().accept(this);
+            for (String s : returnValue.data.keySet()) {
+                delete(s);
+            }
+        }else{ // DELETE ALL !!!
+            for (String s : this.data.keySet()) {
+                delete(s);
+            }
+        }
+        this.returnValue=new Table("True");
+    }
+
+    private void delete(String s) {
+        for (int i = 0; i < this.indexes.getIndexes().size(); i++) {
+            Map<String, Set<String>> index = this.indexes.getIndexes().get(i);
+            if (index != null) {
+                index.get(data.get(s).getDataGrids().get(i).toString()).remove(s);
+            }
+        }
+        this.data.get(s).getDataGrids().forEach(x->x.setData(null));
+        this.data.remove(s);
     }
 
     @Override

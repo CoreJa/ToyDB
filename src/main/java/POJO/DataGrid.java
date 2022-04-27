@@ -10,6 +10,10 @@ public class DataGrid implements Serializable {
     private Object data;
     private Type type; //enum type, a list of supported types
 
+    public void setType(Type type) {
+        this.type = type;
+    }
+
     public DataGrid(Type type, Object data) {
         this.data = data;
         this.type = type;
@@ -33,7 +37,7 @@ public class DataGrid implements Serializable {
     }
 
     public String toString() {//shi
-        return this.data.toString();
+        return String.valueOf(data);
     }
 
     public boolean compareTo(DataGrid dataGrid) {

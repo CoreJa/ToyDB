@@ -11,12 +11,13 @@ public class testzhy {
         Database db = new Database();
         db.load();
         ArrayList<String> stmts=new ArrayList<>();
+//        stmts.add("Update tableName set col1=col1+1, col2='1' where col1=2;");
         stmts.add("create table tableName ("+
                 "    col1 int UNIQUE,\n" +
-                "    col2 char NOT NULL,\n"+
+                "    col2 int NOT NULL,\n"+
                 "    PRIMARY KEY (col1));");
-//        stmts.add("insert into tableName "+
-//                "  values (1,1);");
+        stmts.add("insert into tableName "+
+                "  values (1,1);");
         stmts.add("create table table2 ("+
                 "  col3 int unique,"+
                 "  col4 int not null,"+
@@ -24,12 +25,15 @@ public class testzhy {
                 "  foreign key (col4) references tableName(col1));");
         stmts.add("create index myIndex on tableName(col2);");
         stmts.add("insert into tableName "+
-                "  values (2,'2');");
+                "  values (2,2);");
         stmts.add("insert into table2 "+
                 "  values (2,2);");
         stmts.add("insert into table2 "+
                 "  values (3,3);");
+        stmts.add("update tableName set col1=2 where col1 =1;");
+        stmts.add("update tableName set col2=col2+1 where col1 =2;");
         stmts.add("drop index tableName.myIndex;");
+
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
@@ -59,14 +63,24 @@ public class testzhy {
 //        stmts.add("create index myIndex on tableName(col2);");
 //        stmts.add("insert into table2 "+
 //                "  values (3,3);");
-        stmts.add("select col1 from tableName order by col1 asc limit 5");
-        stmts.add("select col1 from tableName order by col1 asc limit 5");
-        stmts.add("select col1 from tableName order by col1 desc limit 5");
-        stmts.add("select distinct col2 from tableName order by col2 asc");
+        stmts.add("update tableName set col2=col2+1 where col1>50000;");
+//        stmts.add("select col1 from tableName where col1 = 50000 order by col1 asc limit 5");
+//        stmts.add("select col2 from tableName where col2=\'1\' order by col2 desc limit 5");
+        stmts.add("select distinct col2 from tableName order by col2 asc limit 5");
+        stmts.add("create index myIndex on tableName(col2);");
+        stmts.add("update tableName set col2=col2+1 where col1<50000;");
+        stmts.add("delete from tableName where col1>=50000;");
+        stmts.add("update tableName set col2=col2+1;");
+        stmts.add("select distinct col2 from tableName order by col2 asc limit 5");
+
+//        stmts.add("select col1 from tableName where col1 = 50000 order by col1 asc limit 5");
+//        stmts.add("select col2 from tableName where col2=\'1\' order by col2 desc limit 5");
+//        stmts.add("select distinct col2 from tableName order by col2 asc limit 5");
+
 //        stmts.add("select distinct col2 from tableName order by col2 asc");
 //        stmts.add("select col1 from tableName order by col1 asc");
 //        stmts.add("select col1,col2 from tableName order by col1 asc");
-        stmts.add("select * from tableName limit 5");
+//        stmts.add("select * from tableName where col2=\'1\' limit 5");
 //        stmts.add("select col1 from tableName");
 
         for (String stmt : stmts) {
