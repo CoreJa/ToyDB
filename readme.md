@@ -17,7 +17,23 @@ Authors:
   - [ ] delete -hy
   - [x] select -cr
     - [x] where -cr
+      - [x] or -cr
+      - [x] and -cr
+      - [x] equals to -cr
+      - [x] not equals to -cr
+      - [x] minor than -cr
+      - [x] minor than equals -cr
+      - [x] greater than -cr
+      - [x] greater than equals -cr
+      - [x] add -cr
+      - [x] subtract -cr
+      - [x] multiply -cr
+      - [x] divide -cr
     - [ ] join -cr
+      - [ ] inner join -cr
+      - [ ] left join -cr
+      - [ ] right join -cr
+      - [ ] full join -cr
     - [ ] distinct -hy int√ string?
     - [ ] order by () -hy
     - [ ] limit () -hy
