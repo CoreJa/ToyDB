@@ -640,8 +640,12 @@ public class Table extends ExecuteEngine implements Serializable {
         table.columnNames.add(columnName);
         table.columnIndexes.put(columnName, 0);
         for (Map.Entry<String, DataRow> rowEntry : this.data.entrySet()) {
+            Integer colInd=this.columnIndexes.get(columnName);
+            if (colInd == null) {
+                colInd=this.getColumnIndex(tableColumn.getTable().getName()+"."+columnName);
+            }
             DataRow dataRow = new DataRow(Arrays.asList(
-                    rowEntry.getValue().getDataGrids().get(this.columnIndexes.get(columnName))));
+                    rowEntry.getValue().getDataGrids().get(colInd)));
             table.data.put(rowEntry.getKey(), dataRow);
         }
         this.returnValue = table;

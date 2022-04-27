@@ -3,6 +3,7 @@ package POJO;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -199,6 +200,14 @@ public class Database extends ExecuteEngine implements Serializable {
         this.returnValue = table.getReturnValue();
     }
 
+//    private Pair<String,String> getEq(AndExpression expr){
+//        Expression l=expr.getLeftExpression();
+//        Expression r=expr.getRightExpression();
+//        if (l instanceof  EqualsTo){
+//
+//        }
+//    }
+
     @Override
     public void visit(Select select) {
         PlainSelect plainSelect = ((PlainSelect) select.getSelectBody());
@@ -241,6 +250,10 @@ public class Database extends ExecuteEngine implements Serializable {
                     onExpression.accept(this);
                     leftCol = this.returnValue.getData().get("result1").getDataGrids().get(0).getData().toString();
                     rightCol = this.returnValue.getData().get("result2").getDataGrids().get(0).getData().toString();
+                }
+
+                if (rightCol == null||leftCol == null) {
+
                 }
 
                 Map<String, DataRow> leftData = leftTable.getData();

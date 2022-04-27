@@ -11,8 +11,9 @@ public class testzhy {
         Database db = new Database();
         db.load();
         ArrayList<String> stmts=new ArrayList<>();
-        stmts.add("select table1i.col1,table2i.col2 from table1i,table2i where table1i.col2=table2i.col1 order by table1i.col1 desc limit 5;");
-//        stmts.add("select * from table1i join table2i on table1i.col2=table2i.col1 limit 5;");
+//        stmts.add("select table1i.col1,table2i.col2 from table1i,table2i where table1i.col1>2000 and table1i.col2=table2i.col1 order by table1i.col1 desc limit 5;");
+//        stmts.add("select * from table1i join table2i on table1i.col2=table2i.col1 order by table1i.col2 desc limit 5;");
+        stmts.add("select col1 from table1i order by col1 desc limit 5;");
 //        stmts.add("create table tableName ("+
 //                "    col1 int UNIQUE,\n" +
 //                "    col2 int NOT NULL,\n"+
@@ -36,6 +37,7 @@ public class testzhy {
 //        stmts.add("drop index tableName.myIndex;");
 //
         for (String stmt : stmts) {
+            long start=System.currentTimeMillis();
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
                 statement.accept(db);
@@ -45,6 +47,7 @@ public class testzhy {
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
+            System.out.println(System.currentTimeMillis()-start);
         }
 //        for (int i = 3; i < 100000; i++) {
 //            try {
