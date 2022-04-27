@@ -298,7 +298,7 @@ public class Database extends ExecuteEngine implements Serializable{
 
     @Override
     public void visit(Column tableColumn) {
-        this.returnValue=new Table(tableColumn.getColumnName());
+        this.returnValue=new Table(tableColumn.toString());
     }
 
     public static void main(String[] args) {
