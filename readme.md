@@ -13,8 +13,8 @@ Authors:
   - [ ] drop table -yc
 - [ ] Tables
   - [x] insert -hy
-  - [ ] update -hy
-  - [ ] delete -hy
+  - [x] update -hy
+  - [x] delete -hy
   - [x] select -cr
     - [x] where -cr
       - [x] or -cr
@@ -34,19 +34,17 @@ Authors:
       - [ ] left join/left outer join -cr
       - [ ] right join/right outer join -cr
       - [ ] full join/full outer join -cr
-    - [ ] distinct -hy int√ string?
-    - [ ] order by () -hy
-    - [ ] limit () -hy
+    - [x] distinct -hy int√ string?
+    - [x] order by () -hy
+    - [x] limit () -hy
   - [x] Indexing -hy
     - [x] create -hy
     - [x] delete -hy
   - [ ] check foreign key -hycr
-    - [ ] on insert -hy
-      - [ ] unique
-    - [ ] on update
-      - [ ] unique
-    - [ ] on delete
-      - [ ] on dependence
+    - [x] on insert -hy
+    - [x] on update
+    - [x] on delete
+      - [x] on dependence
 ## Constraints
 ### On the Structure
 - [ ] 兩個基礎表格: `TABLES, COLUMNS`
