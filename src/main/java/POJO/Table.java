@@ -292,6 +292,10 @@ public class Table extends ExecuteEngine implements Serializable {
         return types;
     }
 
+    public void setTypes(List<Type> types) {
+        this.types = types;
+    }
+
     public boolean isSimple() {
         return simple;
     }
