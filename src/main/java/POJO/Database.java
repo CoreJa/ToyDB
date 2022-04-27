@@ -219,6 +219,7 @@ public class Database extends ExecuteEngine implements Serializable {
                 String name = table.getTableName() + "." + columnName;
                 leftTable.getColumnNames().add(name);
                 leftTable.getColumnIndexes().put(name, cnt++);
+                leftTable.getTypes().add(table.getTypes().get(table.getColumnIndex(columnName)));
             }
             leftTable.setData(table.getData());
 
@@ -231,6 +232,7 @@ public class Database extends ExecuteEngine implements Serializable {
                     String name = rightTableName + "." + columnName;
                     leftTable.getColumnNames().add(name);
                     leftTable.getColumnIndexes().put(name, cnt++);
+                    leftTable.getTypes().add(rightTable.getTypes().get(rightTable.getColumnIndex(columnName)));
                 }
                 //detect if we have on statement
                 String leftCol = null;
