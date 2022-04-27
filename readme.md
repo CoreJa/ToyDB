@@ -34,7 +34,7 @@ Authors:
       - [x] left join/left outer join -cr
       - [x] right join/right outer join -cr
       - [x] full join/full outer join -cr
-      - [x] on
+      - [x] on (with optimization)
       - [ ] and
       - [ ] or
       - [x] equals to
