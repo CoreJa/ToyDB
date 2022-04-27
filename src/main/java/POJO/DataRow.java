@@ -22,6 +22,12 @@ public class DataRow implements Serializable {
         this.dataGrids = datagrids;
     }
 
+    public DataRow(DataRow dataRow1, DataRow dataRow2) {
+        this.dataGrids = new ArrayList<>();
+        this.dataGrids.addAll(dataRow1.getDataGrids());
+        this.dataGrids.addAll(dataRow2.getDataGrids());
+    }
+
     public List<DataGrid> getDataGrids() {
         return dataGrids;
     }
