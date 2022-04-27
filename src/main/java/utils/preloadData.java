@@ -46,7 +46,7 @@ public class preloadData {
                 e.printStackTrace();
             }
         }
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 1; i < 1001; i++) {
             try {
                 Statement statement = CCJSqlParserUtil.parse("insert into table1i "+
                         "  values ("+i+","+i+");");
@@ -61,7 +61,7 @@ public class preloadData {
                 e.printStackTrace();
             }
         }
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 1; i < 10001; i++) {
             try {
                 Statement statement = CCJSqlParserUtil.parse("insert into table2i "+
                         "  values ("+i+","+i+");");
@@ -76,7 +76,7 @@ public class preloadData {
                 e.printStackTrace();
             }
         }
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 1; i < 100001; i++) {
             try {
                 Statement statement = CCJSqlParserUtil.parse("insert into table3i "+
                         "  values ("+i+","+i+");");

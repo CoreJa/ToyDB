@@ -11,7 +11,7 @@ public class testzhy {
         Database db = new Database();
         db.load();
         ArrayList<String> stmts=new ArrayList<>();
-        stmts.add("select distinct col2 from table31 where col2!=1;");
+        stmts.add("select distinct col2 from table3i order by col1 desc limit 5;");
 //        stmts.add("create table tableName ("+
 //                "    col1 int UNIQUE,\n" +
 //                "    col2 int NOT NULL,\n"+
