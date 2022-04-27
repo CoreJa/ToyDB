@@ -285,6 +285,14 @@ public class Table extends ExecuteEngine implements Serializable {
         return types;
     }
 
+    public boolean isSimple() {
+        return simple;
+    }
+
+    public void setSimple(boolean simple) {
+        this.simple = simple;
+    }
+
     //create index
     public boolean createIndex(String indexName, String columnName) {
         int colInd = columnIndexes.get(columnName); //get column index by column name
@@ -553,14 +561,16 @@ public class Table extends ExecuteEngine implements Serializable {
         }
 
         //The case where table is actually re-constructed, copying its data to table
-        res.data = new HashMap<>();
-        for (Map.Entry<String, DataRow> entry : table.data.entrySet()) {
-            List<DataGrid> dataList = new ArrayList<>();
-            for (int idx : columnIndexFromOrigin) {
-                dataList.add(entry.getValue().getDataGrids().get(idx));
+        if (res != table) {
+            res.data = new HashMap<>();
+            for (Map.Entry<String, DataRow> entry : table.data.entrySet()) {
+                List<DataGrid> dataList = new ArrayList<>();
+                for (int idx : columnIndexFromOrigin) {
+                    dataList.add(entry.getValue().getDataGrids().get(idx));
+                }
+                DataRow dataRow = new DataRow(dataList);
+                res.data.put(entry.getKey(), dataRow);
             }
-            DataRow dataRow = new DataRow(dataList);
-            res.data.put(entry.getKey(), dataRow);
         }
         this.returnValue = res;
     }
@@ -1166,10 +1176,10 @@ public class Table extends ExecuteEngine implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         int size = 12;
-        if (data.size()==0){
-            List<DataGrid> head= new ArrayList<>();
+        if (data.size() == 0) {
+            List<DataGrid> head = new ArrayList<>();
             for (String columnName : columnNames) {
-                head.add(new DataGrid(Type.STRING,columnName));
+                head.add(new DataGrid(Type.STRING, columnName));
             }
             for (int i = 0; i < head.size(); ++i) {
                 sb.append("+");
@@ -1177,7 +1187,7 @@ public class Table extends ExecuteEngine implements Serializable {
                     sb.append("-");
                 }
             }
-            print_row(sb,new DataRow(head));
+            print_row(sb, new DataRow(head));
             sb.append("+\n");
             return sb.toString();
         }
@@ -1189,20 +1199,20 @@ public class Table extends ExecuteEngine implements Serializable {
         }
 
         if (simple) {
-            List<DataGrid> head= new ArrayList<>();
-            head.add(new DataGrid(Type.STRING,"result"));
-            print_row(sb,new DataRow(head));
+            List<DataGrid> head = new ArrayList<>();
+            head.add(new DataGrid(Type.STRING, "result"));
+            print_row(sb, new DataRow(head));
             for (String s : data.keySet()) {
-                print_row(sb,data.get(s));
+                print_row(sb, data.get(s));
             }
         } else {
-            List<DataGrid> head= new ArrayList<>();
+            List<DataGrid> head = new ArrayList<>();
             for (String columnName : columnNames) {
-                head.add(new DataGrid(Type.STRING,columnName));
+                head.add(new DataGrid(Type.STRING, columnName));
             }
-            print_row(sb,new DataRow(head));
+            print_row(sb, new DataRow(head));
             for (String s : data.keySet()) {
-                print_row(sb,data.get(s));
+                print_row(sb, data.get(s));
             }
         }
         sb.append("+\n");
@@ -1216,13 +1226,13 @@ public class Table extends ExecuteEngine implements Serializable {
         for (int i = 0; i < table.size(); ++i) {
             sb.append("|");
             int len = table.get(i).toString().length();
-            int left_space =  (size-len)%2==0 ?(size-len)/2 :(size-len)/2+1 ;
-            int right_space =    (size-len)/2    ;
-            for (int j = 0; j <   left_space   ; ++j) {
+            int left_space = (size - len) % 2 == 0 ? (size - len) / 2 : (size - len) / 2 + 1;
+            int right_space = (size - len) / 2;
+            for (int j = 0; j < left_space; ++j) {
                 sb.append(" ");
             }
             sb.append(table.get(i).toString());
-            for (int j = 0; j <   right_space     ; ++j) {
+            for (int j = 0; j < right_space; ++j) {
                 sb.append(" ");
             }
         }
