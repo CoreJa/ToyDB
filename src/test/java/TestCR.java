@@ -77,14 +77,19 @@ public class TestCR {
 //        stmts.add("select * from tableName where col1<col2/col3/2");
 
         stmts.add("select * from tableName join table2 on table2.col3=tableName.col3;");
-        stmts.add("select * from tableName inner join table2 on table2.col3=tableName.col3;");
-        stmts.add("select * from tableName join table2 on col4=col1;");
-        stmts.add("select * from tableName join table2 on table2.col4=tableName.col1;");
-        stmts.add("select * from tableName join table2 on col3=col3;");
+//        stmts.add("select * from tableName inner join table2 on table2.col3=tableName.col3;");
+//        stmts.add("select * from tableName join table2 on col4=col1;");
+//        stmts.add("select * from tableName join table2 on table2.col4=tableName.col1;");
+//        stmts.add("select * from tableName join table2 on col3=col3;");
 
         stmts.add("select * from tableName left join table2 on table2.col3=tableName.col3;");
-        stmts.add("select * from tableName left outer join table2 on table2.col3=tableName.col3;");
+//        stmts.add("select * from tableName left outer join table2 on table2.col3=tableName.col3;");
 
+        stmts.add("select * from tableName right join table2 on table2.col3=tableName.col3;");
+//        stmts.add("select * from tableName right outer join table2 on table2.col3=tableName.col3;");
+
+        stmts.add("select * from tableName full join table2 on table2.col3=tableName.col3;");
+//        stmts.add("select * from tableName full outer join table2 on table2.col3=tableName.col3;");
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
@@ -121,6 +126,8 @@ public class TestCR {
 //        stmts.add("insert into table2 " +
 //                "  values (3,3);");
         stmts.add("insert into table2 values (3,1);");
+        stmts.add("insert into table2 values (-5,2);");
+
         stmts.add("drop index tableName.myIndex;");
 
         for (int i = 3; i <= 1000; i++) {
