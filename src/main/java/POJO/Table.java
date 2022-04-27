@@ -296,14 +296,14 @@ public class Table extends ExecuteEngine implements Serializable {
             return false;
         }
         indexes.getIndexNames().set(colInd, indexName); // store index name
-        Map<String, List<String>> curIndex = new HashMap<>();
+        Map<String, Set<String>> curIndex = new HashMap<>();
         indexes.getIndexes().set(colInd, curIndex); // initialize new index object into table
         data.forEach((k, v) -> { // construct object
             String fieldValue = v.getDataGrids().get(colInd).toString();
             if (curIndex.containsKey(fieldValue)) {
                 curIndex.get(fieldValue).add(k);
             } else {
-                curIndex.put(fieldValue, new ArrayList<>(Arrays.asList(k)));
+                curIndex.put(fieldValue, new HashSet<>(Arrays.asList(k)));
             }
         });
         return true;
@@ -330,7 +330,7 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         for (int i = 0; i < newRow.getDataGrids().size(); i++) { //check value one by one
             DataGrid dataGrid = newRow.getDataGrids().get(i);
-            Map<String, List<String>> curIndex = indexes.getIndexes().get(i);
+            Map<String, Set<String>> curIndex = indexes.getIndexes().get(i);
             if (types.get(i) == Type.INT) {  //check if it should be integer
                 newRow.getDataGrids().set(i, new DataGrid(Type.INT, Integer.parseInt(dataGrid.toString())));
             }
@@ -339,7 +339,7 @@ public class Table extends ExecuteEngine implements Serializable {
                 if (curIndex.containsKey(fieldValue)) {
                     curIndex.get(fieldValue).add(newRow.getDataGrids().get(primaryKey).toString());
                 } else {
-                    curIndex.put(fieldValue, new ArrayList<>(Arrays.asList(newRow.getDataGrids().get(primaryKey).toString())));
+                    curIndex.put(fieldValue, new HashSet<>(Arrays.asList(newRow.getDataGrids().get(primaryKey).toString())));
                 }
             }
             if (foreignKeyList.get(i) != null) {  // check if it has foreign key constraint
@@ -362,13 +362,13 @@ public class Table extends ExecuteEngine implements Serializable {
             DataRow refRow = table.data.get(data.toString());
             return refRow == null ? null : refRow.getDataGrids().get(colInd);
         }
-        Map<String, List<String>> index = table.indexes.getIndexes().get(colInd);
+        Map<String, Set<String>> index = table.indexes.getIndexes().get(colInd);
         if (index != null) {  // if column is indexed
-            List<String> primaryKeyValue = index.get(data.toString());
+            Set<String> primaryKeyValue = index.get(data.toString());
             if (primaryKeyValue == null) {
                 return null;
             }
-            DataRow refRow = table.data.get(primaryKeyValue.get(0));
+            DataRow refRow = table.data.get(primaryKeyValue.iterator().next());
             return refRow == null ? null : refRow.getDataGrids().get(colInd);
         } else {
             for (DataRow value : table.data.values()) {
@@ -404,8 +404,8 @@ public class Table extends ExecuteEngine implements Serializable {
                 op.getSecond().accept(returnValue);
                 Map<String,DataRow> res=returnValue.returnValue.data;
                 if (res.size()==1){
-                    Object val=res.get("result").getDataGrids().get(0).getData();
-                    DataGrid valGrid=res.get("result").getDataGrids().get(0);
+                    Object val=res.values().iterator().next().getDataGrids().get(0).getData();
+                    DataGrid valGrid=res.values().iterator().next().getDataGrids().get(0);
                     for (String s : returnValue.data.keySet()) {
                         update(colInd, s, val, valGrid);
                     }
@@ -456,14 +456,14 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     private void updateIndex(int colInd, String s, Object val) {
-        Map<String, List<String>> index=indexes.getIndexes().get(colInd);
+        Map<String, Set<String>> index=indexes.getIndexes().get(colInd);
         if (index!=null){ //update index
             if (index.containsKey(val.toString())) {
                 index.get(val.toString()).add(s);
             }else{
-                index.put(val.toString(),new ArrayList<>(Arrays.asList(s)));
+                index.put(val.toString(),new HashSet<>(Arrays.asList(s)));
             }
-            List<String> hits=index.get(data.get(s).getDataGrids().get(colInd).toString());
+            Set<String> hits=index.get(data.get(s).getDataGrids().get(colInd).toString());
             hits.remove(s);
             if (hits.size()==0){
                 index.remove(data.get(s).getDataGrids().get(colInd).toString());
@@ -476,15 +476,25 @@ public class Table extends ExecuteEngine implements Serializable {
         if (delete.getWhere() != null) { // has where
             delete.getWhere().accept(this);
             for (String s : returnValue.data.keySet()) {
-                this.data.get(s).getDataGrids().forEach(x->x.setData(null));
-                this.data.remove(s);
+                delete(s);
             }
         }else{ // DELETE ALL !!!
             for (String s : this.data.keySet()) {
-                this.data.get(s).getDataGrids().forEach(x->x.setData(null));
-                this.data.remove(s);
+                delete(s);
             }
         }
+        this.returnValue=new Table("True");
+    }
+
+    private void delete(String s) {
+        for (int i = 0; i < this.indexes.getIndexes().size(); i++) {
+            Map<String, Set<String>> index = this.indexes.getIndexes().get(i);
+            if (index != null) {
+                index.get(data.get(s).getDataGrids().get(i).toString()).remove(s);
+            }
+        }
+        this.data.get(s).getDataGrids().forEach(x->x.setData(null));
+        this.data.remove(s);
     }
 
     @Override
