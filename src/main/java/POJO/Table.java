@@ -545,6 +545,9 @@ public class Table extends ExecuteEngine implements Serializable {
             plainSelect.getWhere().accept(table);
             table = table.returnValue;
         }
+
+        //TODO: order by limit distinct
+
         Table res = new Table();
         res.setTableName(table.tableName);
         res.simple = false;
