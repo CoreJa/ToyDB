@@ -34,6 +34,7 @@ public class main {
             if(statementText.compareTo("exit ") == 0) {
                 break;
             }
+            long start=System.currentTimeMillis();
             try {
                 Statement statement = CCJSqlParserUtil.parse(statementBuilder.toString());
                 statement.accept(db);// TODO: what should we print if the statement is valid
@@ -45,6 +46,7 @@ public class main {
             } finally {
                 statementBuilder.delete(0, statementBuilder.capacity());
             }
+            System.out.println(System.currentTimeMillis()-start+"ms");
         }
 
         //尾处理

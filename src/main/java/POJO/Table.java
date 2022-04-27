@@ -547,6 +547,74 @@ public class Table extends ExecuteEngine implements Serializable {
         }
 
         //TODO: order by limit distinct
+        if (plainSelect.getDistinct() != null) { // if distinct
+            HashSet<String> set = new HashSet<>();
+            Map<String, DataRow> data = table.getData();
+            Iterator<String> iterator = data.keySet().iterator();
+            while (iterator.hasNext()) {
+                String next = iterator.next();
+                String curVal = table.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("", (x, y) -> x + " # " + y);
+                if (!set.add(curVal)) {
+                    iterator.remove();
+                }
+            }
+        }
+
+        if (plainSelect.getOrderByElements() != null) { // if order by
+            OrderByElement element = plainSelect.getOrderByElements().get(0);
+            Database temp = new Database();
+            element.getExpression().accept(temp);
+            String colName = (String) temp.getReturnValue().getData().get("result").getDataGrids().get(0).getData();
+            int colInd = table.getColumnIndex(colName); // get column index
+            List<Map.Entry<String, DataRow>> list = new ArrayList<>(table.getData().entrySet()); //construct list from table
+            if (table.getTypes().get(colInd) == Type.STRING) { // sort the list.
+                list.sort((o1, o2) -> ((String) o2.getValue().getDataGrids().get(colInd).getData())
+                        .compareTo((String) o1.getValue().getDataGrids().get(colInd).getData()));
+            } else {
+                list.sort((o1, o2) -> (int) o2.getValue().getDataGrids().get(colInd).getData()
+                        - (int) o1.getValue().getDataGrids().get(colInd).getData());
+            }
+            if (element.isAsc()) { // Ascending or Descending
+                if (plainSelect.getLimit() != null) { // if limit
+                    plainSelect.getLimit().getRowCount().accept(table);
+                    int lim = (int) table.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
+                    if (list.size() > lim) {
+                        list = list.subList(list.size() - lim, list.size());
+                    }
+                }
+                Collections.reverse(list);
+            } else {
+                if (plainSelect.getLimit() != null) { // if limit
+                    plainSelect.getLimit().getRowCount().accept(table);
+                    int lim = (int) table.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
+                    if (list.size() > lim) {
+                        list = list.subList(0, lim);
+                    }
+                }
+            }
+            Map<String, DataRow> orderedMap = new LinkedHashMap<>();
+            for (Map.Entry<String, DataRow> entry : list) { // write into a hashmap that preserves order
+                orderedMap.put(entry.getKey(), entry.getValue());
+            }
+            table.setData(orderedMap);
+        } else {
+            if (plainSelect.getLimit() != null) { // if limit
+                plainSelect.getLimit().getRowCount().accept(table);
+                int lim = (int) table.getReturnValue().getData().get("result").getDataGrids().get(0).getData(); //get lim count
+                if (table.getData().size() > lim) {
+                    int cur = 0;
+                    Map<String, DataRow> data = table.getData();
+                    Iterator<Map.Entry<String, DataRow>> iterator = table.getData().entrySet().iterator();
+                    Map<String, DataRow> newdata = new HashMap<>();
+                    while (iterator.hasNext() && cur < lim) {
+                        Map.Entry<String, DataRow> next = iterator.next();
+                        cur++;
+                        newdata.put(next.getKey(), next.getValue());
+                    }
+                    table.setData(newdata);
+                }
+            }
+        }
 
         Table res = new Table();
         res.setTableName(table.tableName);
@@ -576,7 +644,7 @@ public class Table extends ExecuteEngine implements Serializable {
 
         //The case where table is actually re-constructed, copying its data to table
         if (res != table) {
-            res.data = new HashMap<>();
+            res.data = new LinkedHashMap<>();
             for (Map.Entry<String, DataRow> entry : table.data.entrySet()) {
                 List<DataGrid> dataList = new ArrayList<>();
                 for (int idx : columnIndexFromOrigin) {
