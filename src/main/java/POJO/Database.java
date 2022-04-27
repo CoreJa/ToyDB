@@ -13,6 +13,7 @@ import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
+import utils.preloadData;
 
 import java.io.*;
 import java.util.*;
@@ -82,6 +83,7 @@ public class Database extends ExecuteEngine implements Serializable{
 //            e.printStackTrace();
             System.out.println("DB file not found, creating an empty one.");
             this.createMetadata();
+            preloadData.preload(this);
         } catch (ClassNotFoundException e) {
             System.out.println("Table Class not found");
         } finally {

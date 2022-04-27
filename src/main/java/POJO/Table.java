@@ -1167,12 +1167,28 @@ public class Table extends ExecuteEngine implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         int size = 12;
+        if (data.size()==0){
+            List<DataGrid> head= new ArrayList<>();
+            for (String columnName : columnNames) {
+                head.add(new DataGrid(Type.STRING,columnName));
+            }
+            for (int i = 0; i < head.size(); ++i) {
+                sb.append("+");
+                for (int j = 0; j < size; ++j) {
+                    sb.append("-");
+                }
+            }
+            print_row(sb,new DataRow(head));
+            sb.append("+\n");
+            return sb.toString();
+        }
         for (int i = 0; i < data.values().iterator().next().getDataGrids().size(); ++i) {
             sb.append("+");
             for (int j = 0; j < size; ++j) {
                 sb.append("-");
             }
         }
+
         if (simple) {
             List<DataGrid> head= new ArrayList<>();
             head.add(new DataGrid(Type.STRING,"result"));
