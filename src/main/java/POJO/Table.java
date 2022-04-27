@@ -452,7 +452,6 @@ public class Table extends ExecuteEngine implements Serializable {
             updateIndex(colInd, s, val);
             this.data.get(s).getDataGrids().get(colInd).setData(val);
         }
-
     }
 
     private void updateIndex(int colInd, String s, Object val) {
