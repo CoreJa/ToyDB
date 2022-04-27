@@ -39,9 +39,9 @@ public class main {
                 statement.accept(db);// TODO: what should we print if the statement is valid
                 System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             } catch (ExecutionException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             } finally {
                 statementBuilder.delete(0, statementBuilder.capacity());
             }

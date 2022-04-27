@@ -11,7 +11,8 @@ public class testzhy {
         Database db = new Database();
         db.load();
         ArrayList<String> stmts=new ArrayList<>();
-        stmts.add("select distinct col2 from table3i order by col2 desc limit 5;");
+        stmts.add("select table1i.col1,table2i.col2 from table1i,table2i where table1i.col2=table2i.col1 order by table1i.col1 desc limit 5;");
+//        stmts.add("select * from table1i join table2i on table1i.col2=table2i.col1 limit 5;");
 //        stmts.add("create table tableName ("+
 //                "    col1 int UNIQUE,\n" +
 //                "    col2 int NOT NULL,\n"+
