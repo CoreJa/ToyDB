@@ -3,6 +3,7 @@ package POJO;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Parenthesis;
+import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
@@ -232,17 +233,36 @@ public class Database extends ExecuteEngine implements Serializable {
                     leftTable.getColumnIndexes().put(name, cnt++);
                 }
                 //detect if we have on statement
+                String leftCol = null;
+                String rightCol = null;
                 for (Expression onExpression : join.getOnExpressions()) {
                     onExpression.accept(this);
+                    leftCol = this.returnValue.getData().get("result1").getDataGrids().get(0).getData().toString();
+                    rightCol = this.returnValue.getData().get("result2").getDataGrids().get(0).getData().toString();
                 }
-                Table cache = null;
-                //TODO: need on statement returnValue to get keywords to build cache
 
-                if (cache == null) {
-                    // the case that no on statement is found
-                    Map<String, DataRow> leftData = leftTable.getData();
-                    Map<String, DataRow> rightData = rightTable.getData();
-                    Map<String, DataRow> joinedData = new HashMap<>();
+                Map<String, DataRow> leftData = leftTable.getData();
+                Map<String, DataRow> rightData = rightTable.getData();
+                Map<String, DataRow> joinedData = new HashMap<>();
+
+                if ((leftCol == null || rightCol == null) ||
+                        (leftCol.split("\\.")[0].compareTo(rightCol.split("\\.")[0]) == 0)) {
+                    // the case that no on statement is found or cols are from the same table
+
+                    if (leftCol != null && rightCol != null && leftCol.compareTo(rightCol) != 0) {
+                        // clean left data first
+                        int colIdx1 = leftTable.getColumnIndex(leftCol);
+                        int colIdx2 = rightTable.getColumnIndex(rightCol);
+                        Iterator<String> iterator = leftData.keySet().iterator();
+                        while (iterator.hasNext()) {
+                            String next = iterator.next();
+                            DataRow dataRow = leftData.get(next);
+                            if (dataRow.getDataGrids().get(colIdx1).compareTo(dataRow.getDataGrids().get(colIdx2))) {
+                                iterator.remove();
+                            }
+                        }
+                    }
+                    // then joining right data
                     for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
                         for (Map.Entry<String, DataRow> rightEntry : rightData.entrySet()) {
                             joinedData.put(leftEntry.getKey() + "#" + rightEntry.getKey(),
@@ -251,17 +271,64 @@ public class Database extends ExecuteEngine implements Serializable {
                     }
                     leftTable.setData(joinedData);
                 } else {
+                    //the case that leftCol and rightCol are from different table
+                    int cacheColIdx = -1;
+                    int leftIdx = -1;
+                    if (rightTableName.compareTo(leftCol.split("\\.")[0]) == 0) {
+                        cacheColIdx = rightTable.getColumnIndex(leftCol.split("\\.")[1]);
+                        leftIdx = leftTable.getColumnIndex(rightCol);
+                    } else if (rightTableName.compareTo(rightCol.split("\\.")[0]) == 0) {
+                        cacheColIdx = rightTable.getColumnIndex(rightCol.split("\\.")[1]);
+                        leftIdx = leftTable.getColumnIndex(leftCol);
+                    } else {
+                        throw new ExecutionException("joined table doesn't have key " + leftCol + " or " + rightCol);
+                    }
+                    //build cache
+                    Map<String, List<String>> cache = new HashMap<>();
+                    for (Map.Entry<String, DataRow> rightEntry : rightData.entrySet()) {
+                        String key = rightEntry.getValue().getDataGrids().get(cacheColIdx).toString();
+                        if (cache.containsKey(key)) {
+                            cache.get(key).add(rightEntry.getKey());
+                        } else {
+                            cache.put(key, Arrays.asList(rightEntry.getKey()));
+                        }
+                    }
+
                     if (join.isFull()) {
                         //full join
                     } else if (join.isLeft()) {
                         //left outer join
+                        int n = rightTable.getColumnNames().size();
+                        for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
+                            String x = leftEntry.getValue().getDataGrids().get(leftIdx).toString();
+                            if (cache.containsKey(x)) {
+                                for (String pk : cache.get(x)) {
+                                    joinedData.put(leftEntry.getKey() + "#" + pk,
+                                            new DataRow(leftEntry.getValue(), rightTable.getData().get(pk)));
+                                }
+                            } else {
+                                joinedData.put(leftEntry.getKey() + "#",
+                                        new DataRow(leftEntry.getValue(), new DataRow(n)));
+                            }
+                        }
                     } else if (join.isRight()) {
                         //right outer join
-                    } else if (join.isInner() || (!join.isOuter() && !join.isSimple() && !join.isNatural() && !join.isCross() && !join.isSemi() && !join.isStraight() && !join.isApply())) {
+                    } else if (join.isInner() || (!join.isOuter() && !join.isSimple() && !join.isNatural() &&
+                            !join.isCross() && !join.isSemi() && !join.isStraight() && !join.isApply())) {
                         //inner join
+                        for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
+                            String x = leftEntry.getValue().getDataGrids().get(leftIdx).toString();
+                            if (cache.containsKey(x)) {
+                                for (String pk : cache.get(x)) {
+                                    joinedData.put(leftEntry.getKey() + "#" + pk,
+                                            new DataRow(leftEntry.getValue(), rightTable.getData().get(pk)));
+                                }
+                            }
+                        }
                     } else {
                         throw new ExecutionException("This type of join is not implemented yet!");
                     }
+                    leftTable.setData(joinedData);
                 }
             }
             table = leftTable;
@@ -344,6 +411,15 @@ public class Database extends ExecuteEngine implements Serializable {
                 }
             }
         }
+    }
+
+    @Override
+    public void visit(EqualsTo equalsTo) {
+        equalsTo.getLeftExpression().accept(this);
+        String left = this.returnValue.getData().get("result").getDataGrids().get(0).getData().toString();
+        equalsTo.getRightExpression().accept(this);
+        String right = this.returnValue.getData().get("result").getDataGrids().get(0).getData().toString();
+        this.returnValue = new Table(left, right);
     }
 
     @Override
