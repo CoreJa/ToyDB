@@ -1,6 +1,7 @@
 package POJO;
 
 import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
@@ -209,24 +210,61 @@ public class Database extends ExecuteEngine implements Serializable {
 
         //join statement
         if (plainSelect.getJoins() != null) {
-            int cnt=table.getColumnNames().size();
+            Table leftTable = new Table();
+            leftTable.setSimple(false);
+            // modify column names and indexes
+            int cnt = 0;
+            for (String columnName : table.getColumnNames()) {
+                String name = table.getTableName() + "." + columnName;
+                leftTable.getColumnNames().add(name);
+                leftTable.getColumnIndexes().put(name, cnt++);
+            }
+            leftTable.setData(table.getData());
 
             for (Join join : plainSelect.getJoins()) {
-                if (join.isFull()) {
-                    //full join
-                } else if (join.isLeft()) {
-                    //left outer join
-                } else if (join.isRight()) {
-                    //right outer join
+                //assume we always get Table
+                String rightTableName = ((net.sf.jsqlparser.schema.Table) join.getRightItem()).getName();
+                Table rightTable = new Table(this.getTable(rightTableName));
+                //modify left table column names and indexes as we join right table
+                for (String columnName : rightTable.getColumnNames()) {
+                    String name = rightTableName + "." + columnName;
+                    leftTable.getColumnNames().add(name);
+                    leftTable.getColumnIndexes().put(name, cnt++);
+                }
+                //detect if we have on statement
+                for (Expression onExpression : join.getOnExpressions()) {
+                    onExpression.accept(this);
+                }
+                Table cache = null;
+                //TODO: need on statement returnValue to get keywords to build cache
 
-                } else if (join.isInner() || (!join.isOuter() && !join.isSimple() && !join.isNatural() && !join.isCross() && !join.isSemi() && !join.isStraight() && !join.isApply())) {
-                    //inner join
-//                    table.getColumnNames().add();
-
+                if (cache == null) {
+                    // the case that no on statement is found
+                    Map<String, DataRow> leftData = leftTable.getData();
+                    Map<String, DataRow> rightData = rightTable.getData();
+                    Map<String, DataRow> joinedData = new HashMap<>();
+                    for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
+                        for (Map.Entry<String, DataRow> rightEntry : rightData.entrySet()) {
+                            joinedData.put(leftEntry.getKey() + "#" + rightEntry.getKey(),
+                                    new DataRow(leftEntry.getValue(), rightEntry.getValue()));
+                        }
+                    }
+                    leftTable.setData(joinedData);
                 } else {
-                    throw new ExecutionException("This type of join is not implemented yet!");
+                    if (join.isFull()) {
+                        //full join
+                    } else if (join.isLeft()) {
+                        //left outer join
+                    } else if (join.isRight()) {
+                        //right outer join
+                    } else if (join.isInner() || (!join.isOuter() && !join.isSimple() && !join.isNatural() && !join.isCross() && !join.isSemi() && !join.isStraight() && !join.isApply())) {
+                        //inner join
+                    } else {
+                        throw new ExecutionException("This type of join is not implemented yet!");
+                    }
                 }
             }
+            table = leftTable;
         }
 
         // recursively parsing select
@@ -320,7 +358,7 @@ public class Database extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(Column tableColumn) {
-        this.returnValue=new Table(tableColumn.toString());
+        this.returnValue = new Table(tableColumn.toString());
     }
 
     public static void main(String[] args) {

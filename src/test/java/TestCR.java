@@ -10,19 +10,21 @@ public class TestCR {
     public static void main(String[] args) {
         Database db = new Database();
         db.load();
-        loadData(db);
+//        loadData(db);
+//        db.save();
         ArrayList<String> stmts = new ArrayList<>();
 //        stmts.add("select col3,col4 from table2");
 //        stmts.add("select col3,col2 from table2");
 //
 //        stmts.add("select * from tableName");
 //        stmts.add("select col1 from tableName");
-//
+
+//        stmts.add("select * from tableName where tableName.col1=10");
 //        stmts.add("select * from tableName where col1=10");
 //        stmts.add("select * from tableName where col1=col1");
 //        stmts.add("select * from tableName where col1=col2");
 //        stmts.add("select * from tableName where 10=col1");
-
+//
 //        stmts.add("select * from tableName where col1!=10");
 //        stmts.add("select * from tableName where 10!=10");
 //        stmts.add("select * from tableName where 10!=15");
@@ -30,7 +32,7 @@ public class TestCR {
 //        stmts.add("select * from tableName where col1!=col2");
 //        stmts.add("select * from tableName where col1!=col2 and col2!=col3");
 //        stmts.add("select * from tableName where col1!=col2 or col2!=col3");
-
+//
 //        stmts.add("select * from tableName where col1<10");
 //        stmts.add("select * from tableName where col1<=10");
 //        stmts.add("select * from tableName where col1>1000");
@@ -43,7 +45,7 @@ public class TestCR {
 //        stmts.add("select * from tableName where col1<10 or col2<15");
 //        stmts.add("select * from tableName where col1<10 and col1>10");
 //        stmts.add("select * from tableName where col1<=10 and col1>=10");
-
+//
 //        stmts.add("select * from tableName where col1=10 or col2=10");
 //        stmts.add("select * from tableName where col1=10 or col1=15");
 //        stmts.add("select * from tableName where col1=10 or col1=15 or col1=100");
@@ -53,26 +55,30 @@ public class TestCR {
 //        stmts.add("select * from tableName where col1=10 and col2=10 and col3=10");
 //        stmts.add("select * from tableName where col1=10 and col1=15");
 //        stmts.add("select * from tableName where col1=10 and col2=15");
+//
+//        stmts.add("select * from tableName where col1<10+5");
+//        stmts.add("select * from tableName where col1>col2+5");
+//        stmts.add("select * from tableName where col1>col2+col3");
+//        stmts.add("select * from tableName where col1>col2+col3+999");
+//
+//        stmts.add("select * from tableName where col1<10-5");
+//        stmts.add("select * from tableName where col1>col2-5");
+//        stmts.add("select * from tableName where col1>col2-col3");
+//        stmts.add("select * from tableName where col1>col2-col3+999");
+//
+//        stmts.add("select * from tableName where col1<10*2");
+//        stmts.add("select * from tableName where col1>col2*2");
+//        stmts.add("select * from tableName where col1>col2*col3");
+//        stmts.add("select * from tableName where col1>col2*col3*2");
+//
+//        stmts.add("select * from tableName where col1<10/2");
+//        stmts.add("select * from tableName where col1<col2/2");
+//        stmts.add("select * from tableName where col1<col2/col3");
+//        stmts.add("select * from tableName where col1<col2/col3/2");
 
-        stmts.add("select * from tableName where col1<10+5");
-        stmts.add("select * from tableName where col1>col2+5");
-        stmts.add("select * from tableName where col1>col2+col3");
-        stmts.add("select * from tableName where col1>col2+col3+999");
-
-        stmts.add("select * from tableName where col1<10-5");
-        stmts.add("select * from tableName where col1>col2-5");
-        stmts.add("select * from tableName where col1>col2-col3");
-        stmts.add("select * from tableName where col1>col2-col3+999");
-
-        stmts.add("select * from tableName where col1<10*2");
-        stmts.add("select * from tableName where col1>col2*2");
-        stmts.add("select * from tableName where col1>col2*col3");
-        stmts.add("select * from tableName where col1>col2*col3*2");
-
-        stmts.add("select * from tableName where col1<10/2");
-        stmts.add("select * from tableName where col1<col2/2");
-        stmts.add("select * from tableName where col1<col2/col3");
-        stmts.add("select * from tableName where col1<col2/col3/2");
+        stmts.add("select * from tableName join table2 on table2.col3=tableName.col3 and table2.col4=tableName.col1;");
+        stmts.add("select * from tableName join table2 on col4=col1;");
+        stmts.add("select * from tableName join table2 on col3=col3;");
 
         for (String stmt : stmts) {
             try {
