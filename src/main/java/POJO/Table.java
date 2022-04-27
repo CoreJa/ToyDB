@@ -72,7 +72,7 @@ public class Table extends ExecuteEngine implements Serializable {
 
     //Constructors (with DB)
     public Table() {//by default
-        this(true, null, null, new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, new Indexes(0), null, new ArrayList<>(), new ArrayList<>());
+        this(true, null, "", new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, new Indexes(0), null, new ArrayList<>(), new ArrayList<>());
 
     }
 
