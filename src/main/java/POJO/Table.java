@@ -1165,14 +1165,74 @@ public class Table extends ExecuteEngine implements Serializable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if (simple) {
-            sb.append(this.data.toString()).append("\n");
-        } else {
-            sb.append(this.tableName).append("\n")
-                    .append(this.columnNames.toString()).append("\n")
-                    .append(this.data.toString()).append("\n");
+        int size = 12;
+        if (data.size()==0){
+            List<DataGrid> head= new ArrayList<>();
+            for (String columnName : columnNames) {
+                head.add(new DataGrid(Type.STRING,columnName));
+            }
+            for (int i = 0; i < head.size(); ++i) {
+                sb.append("+");
+                for (int j = 0; j < size; ++j) {
+                    sb.append("-");
+                }
+            }
+            print_row(sb,new DataRow(head));
+            sb.append("+\n");
+            return sb.toString();
         }
+        for (int i = 0; i < data.values().iterator().next().getDataGrids().size(); ++i) {
+            sb.append("+");
+            for (int j = 0; j < size; ++j) {
+                sb.append("-");
+            }
+        }
+
+        if (simple) {
+            List<DataGrid> head= new ArrayList<>();
+            head.add(new DataGrid(Type.STRING,"result"));
+            print_row(sb,new DataRow(head));
+            for (String s : data.keySet()) {
+                print_row(sb,data.get(s));
+            }
+        } else {
+            List<DataGrid> head= new ArrayList<>();
+            for (String columnName : columnNames) {
+                head.add(new DataGrid(Type.STRING,columnName));
+            }
+            print_row(sb,new DataRow(head));
+            for (String s : data.keySet()) {
+                print_row(sb,data.get(s));
+            }
+        }
+        sb.append("+\n");
         return new String(sb);
+    }
+
+    static void print_row(StringBuilder sb, DataRow row) {
+        int size = 12;
+        List<DataGrid> table = row.getDataGrids();
+        sb.append("+\n");
+        for (int i = 0; i < table.size(); ++i) {
+            sb.append("|");
+            int len = table.get(i).toString().length();
+            int left_space =  (size-len)%2==0 ?(size-len)/2 :(size-len)/2+1 ;
+            int right_space =    (size-len)/2    ;
+            for (int j = 0; j <   left_space   ; ++j) {
+                sb.append(" ");
+            }
+            sb.append(table.get(i).toString());
+            for (int j = 0; j <   right_space     ; ++j) {
+                sb.append(" ");
+            }
+        }
+        sb.append("|\n");
+        for (int i = 0; i < table.size(); ++i) {
+            sb.append("+");
+            for (int j = 0; j < size; ++j) {
+                sb.append("-");
+            }
+        }
     }
 
     @Override

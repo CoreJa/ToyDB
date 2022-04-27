@@ -13,6 +13,7 @@ import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.update.Update;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
+import utils.preloadData;
 
 import java.io.*;
 import java.util.*;
@@ -82,6 +83,7 @@ public class Database extends ExecuteEngine implements Serializable {
 //            e.printStackTrace();
             System.out.println("DB file not found, creating an empty one.");
             this.createMetadata();
+            preloadData.preload(this);
         } catch (ClassNotFoundException e) {
             System.out.println("Table Class not found");
         } finally {
@@ -281,7 +283,7 @@ public class Database extends ExecuteEngine implements Serializable {
                     }
                 }
             }
-            LinkedHashMap<String, DataRow> orderedMap = new LinkedHashMap<>();
+            Map<String, DataRow> orderedMap = new LinkedHashMap<>();
             for (Map.Entry<String, DataRow> entry : list) { // write into a hashmap that preserves order
                 orderedMap.put(entry.getKey(), entry.getValue());
             }
@@ -318,9 +320,8 @@ public class Database extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(Column tableColumn) {
-        this.returnValue = new Table(tableColumn.getColumnName());
+        this.returnValue=new Table(tableColumn.toString());
     }
-
 
     public static void main(String[] args) {
         String selectDemo2 = "SELECT DISTINCT ID, ID2 " +
