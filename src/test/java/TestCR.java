@@ -59,6 +59,21 @@ public class TestCR {
         stmts.add("select * from tableName where col1>col2+col3");
         stmts.add("select * from tableName where col1>col2+col3+999");
 
+        stmts.add("select * from tableName where col1<10-5");
+        stmts.add("select * from tableName where col1>col2-5");
+        stmts.add("select * from tableName where col1>col2-col3");
+        stmts.add("select * from tableName where col1>col2-col3+999");
+
+        stmts.add("select * from tableName where col1<10*2");
+        stmts.add("select * from tableName where col1>col2*2");
+        stmts.add("select * from tableName where col1>col2*col3");
+        stmts.add("select * from tableName where col1>col2*col3*2");
+
+        stmts.add("select * from tableName where col1<10/2");
+        stmts.add("select * from tableName where col1<col2/2");
+        stmts.add("select * from tableName where col1<col2/col3");
+        stmts.add("select * from tableName where col1<col2/col3/2");
+
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
