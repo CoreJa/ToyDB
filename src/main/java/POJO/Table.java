@@ -452,6 +452,7 @@ public class Table extends ExecuteEngine implements Serializable {
             updateIndex(colInd, s, val);
             this.data.get(s).getDataGrids().get(colInd).setData(val);
         }
+
     }
 
     private void updateIndex(int colInd, String s, Object val) {
@@ -552,7 +553,15 @@ public class Table extends ExecuteEngine implements Serializable {
         }
 
         //The case where table is actually re-constructed, copying its data to table
-        res.data = table.data;
+        res.data = new HashMap<>();
+        for (Map.Entry<String, DataRow> entry : table.data.entrySet()) {
+            List<DataGrid> dataList = new ArrayList<>();
+            for (int idx : columnIndexFromOrigin) {
+                dataList.add(entry.getValue().getDataGrids().get(idx));
+            }
+            DataRow dataRow = new DataRow(dataList);
+            res.data.put(entry.getKey(), dataRow);
+        }
         this.returnValue = res;
     }
 
