@@ -269,11 +269,10 @@ public class Database extends ExecuteEngine implements Serializable {
                                     new DataRow(leftEntry.getValue(), rightEntry.getValue()));
                         }
                     }
-                    leftTable.setData(joinedData);
                 } else {
                     //the case that leftCol and rightCol are from different table
-                    int cacheColIdx = -1;
-                    int leftIdx = -1;
+                    int cacheColIdx;
+                    int leftIdx;
                     if (rightTableName.compareTo(leftCol.split("\\.")[0]) == 0) {
                         cacheColIdx = rightTable.getColumnIndex(leftCol.split("\\.")[1]);
                         leftIdx = leftTable.getColumnIndex(rightCol);
@@ -293,12 +292,31 @@ public class Database extends ExecuteEngine implements Serializable {
                             cache.put(key, Arrays.asList(rightEntry.getKey()));
                         }
                     }
+                    int rightPaddingSize = rightTable.getColumnNames().size();
+                    int leftPaddingSize = leftTable.getColumnNames().size() - rightPaddingSize;
 
                     if (join.isFull()) {
                         //full join
+                        Set<String> notJoinedRow = new HashSet<>(rightTable.getData().keySet());
+                        for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
+                            String x = leftEntry.getValue().getDataGrids().get(leftIdx).toString();
+                            if (cache.containsKey(x)) {
+                                for (String pk : cache.get(x)) {
+                                    joinedData.put(leftEntry.getKey() + "#" + pk,
+                                            new DataRow(leftEntry.getValue(), rightTable.getData().get(pk)));
+                                    notJoinedRow.remove(pk);
+                                }
+                            } else {
+                                joinedData.put(leftEntry.getKey() + "#",
+                                        new DataRow(leftEntry.getValue(), new DataRow(rightPaddingSize)));
+                            }
+                        }
+                        for (String s : notJoinedRow) {
+                            joinedData.put("#" + s,
+                                    new DataRow(new DataRow(leftPaddingSize), rightTable.getData().get(s)));
+                        }
                     } else if (join.isLeft()) {
                         //left outer join
-                        int n = rightTable.getColumnNames().size();
                         for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
                             String x = leftEntry.getValue().getDataGrids().get(leftIdx).toString();
                             if (cache.containsKey(x)) {
@@ -308,11 +326,26 @@ public class Database extends ExecuteEngine implements Serializable {
                                 }
                             } else {
                                 joinedData.put(leftEntry.getKey() + "#",
-                                        new DataRow(leftEntry.getValue(), new DataRow(n)));
+                                        new DataRow(leftEntry.getValue(), new DataRow(rightPaddingSize)));
                             }
                         }
                     } else if (join.isRight()) {
                         //right outer join
+                        Set<String> notJoinedRow = new HashSet<>(rightTable.getData().keySet());
+                        for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
+                            String x = leftEntry.getValue().getDataGrids().get(leftIdx).toString();
+                            if (cache.containsKey(x)) {
+                                for (String pk : cache.get(x)) {
+                                    joinedData.put(leftEntry.getKey() + "#" + pk,
+                                            new DataRow(leftEntry.getValue(), rightTable.getData().get(pk)));
+                                    notJoinedRow.remove(pk);
+                                }
+                            }
+                        }
+                        for (String s : notJoinedRow) {
+                            joinedData.put("#" + s,
+                                    new DataRow(new DataRow(leftPaddingSize), rightTable.getData().get(s)));
+                        }
                     } else if (join.isInner() || (!join.isOuter() && !join.isSimple() && !join.isNatural() &&
                             !join.isCross() && !join.isSemi() && !join.isStraight() && !join.isApply())) {
                         //inner join
@@ -328,12 +361,11 @@ public class Database extends ExecuteEngine implements Serializable {
                     } else {
                         throw new ExecutionException("This type of join is not implemented yet!");
                     }
-                    leftTable.setData(joinedData);
                 }
+                leftTable.setData(joinedData);
             }
             table = leftTable;
         }
-
         // recursively parsing select
         plainSelect.accept(table);
         this.returnValue = table.getReturnValue();
