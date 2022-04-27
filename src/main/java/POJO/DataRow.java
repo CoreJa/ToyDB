@@ -3,6 +3,7 @@ package POJO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class DataRow implements Serializable {
@@ -26,6 +27,9 @@ public class DataRow implements Serializable {
         this.dataGrids = new ArrayList<>();
         this.dataGrids.addAll(dataRow1.getDataGrids());
         this.dataGrids.addAll(dataRow2.getDataGrids());
+    }
+    public DataRow(int n){
+        this.dataGrids=new ArrayList<>(Collections.nCopies(n,new DataGrid()));
     }
 
     public List<DataGrid> getDataGrids() {
