@@ -248,6 +248,13 @@ public class Table extends ExecuteEngine implements Serializable {
         data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str)));
     }
 
+    public Table(String str1, String str2) {
+        this.data = new HashMap<>();
+        data.put("result1", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str1)));
+        data.put("result2", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str2)));
+    }
+
+
     public Table(int n) {
         this.data = new HashMap<>();
         data.put("result", new DataRow(Arrays.asList(Type.INT), Arrays.asList(n)));
@@ -270,6 +277,9 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     public int getColumnIndex(String columnName) {
+        if (!this.columnIndexes.containsKey(columnName)) {
+            throw new ExecutionException(columnName + " doesn't exist in table " + this.getTableName());
+        }
         return this.columnIndexes.get(columnName);
     }
 
