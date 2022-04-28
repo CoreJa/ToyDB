@@ -1094,14 +1094,12 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
-                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
-                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
-                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
-                    DataGrid dataGrid = new DataGrid(dataGrid_l);
-                    dataGrid.add(dataGrid_r);
-                    res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
-                }
+            for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                DataGrid dataGrid = new DataGrid(dataGrid_l);
+                dataGrid.add(dataGrid_r);
+                res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
             }
         }
         this.returnValue = res;
@@ -1144,14 +1142,12 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
-                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
-                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
-                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
-                    DataGrid dataGrid = new DataGrid(dataGrid_l);
-                    dataGrid.sub(dataGrid_r);
-                    res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
-                }
+            for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                DataGrid dataGrid = new DataGrid(dataGrid_l);
+                dataGrid.sub(dataGrid_r);
+                res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
             }
         }
         this.returnValue = res;
@@ -1194,15 +1190,14 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
-                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
-                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
-                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
-                    DataGrid dataGrid = new DataGrid(dataGrid_l);
-                    dataGrid.mul(dataGrid_r);
-                    res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
-                }
+            for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                DataGrid dataGrid = new DataGrid(dataGrid_l);
+                dataGrid.mul(dataGrid_r);
+                res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
             }
+
         }
         this.returnValue = res;
     }
@@ -1244,15 +1239,14 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         } else {
             //The case that left and right are both columns
-            if (table_l.columnNames.get(0).compareTo(table_r.columnNames.get(0)) != 0) {
-                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
-                    DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
-                    DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
-                    DataGrid dataGrid = new DataGrid(dataGrid_l);
-                    dataGrid.div(dataGrid_r);
-                    res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
-                }
+            for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                DataGrid dataGrid_l = rowEntry.getValue().getDataGrids().get(0);
+                DataGrid dataGrid_r = table_r.data.get(rowEntry.getKey()).getDataGrids().get(0);
+                DataGrid dataGrid = new DataGrid(dataGrid_l);
+                dataGrid.div(dataGrid_r);
+                res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
             }
+
         }
         this.returnValue = res;
     }

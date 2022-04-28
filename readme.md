@@ -55,8 +55,11 @@ select * from COLUMNS;
 ## SELECT
 
 ```SQL
-select
-```
+select * from table1i;
+
+select * from table2i;
+
+select * from table3i;
 
 
 
