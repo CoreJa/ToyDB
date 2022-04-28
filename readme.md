@@ -16,29 +16,42 @@ select * from COLUMNS;
 
 ## CREATE table
 
-### constraints(keys)
-
-
-
+- constraints(keys)
+  - primary key
+```SQL
+create table company(compName char(255), compNo int, primary key(compNo));
+create table company(compName char(255), compNo int, primary key(compNo)); -- table already exists
+```
+  - foreign key
+```SQL
+create table employee(empName char(255), empNo int, empCNo char(255),  
+primary key(empNo), foreign key (empCNo) references company(compName));
+drop table company; -- cannot drop
+```
 ### insert not valid
+```SQL
+insert into company values('GU',1);
+insert into company values('GWU',2);
 
+insert into employee values('Amy',1,'GU');
+insert into employee values('Tom',2,'GWUUU'); -- insert not valid
 
-
+select * from employee;
+```
 ### update cascade
-
+```SQL
+update company set compName = 'Georgetown' where compNo = 1;
+select * from employee;
+```
 
 
 ### delete set null
+```SQL
+delete from company where compNo = 1;
+select * from employee;
+```
 
 
-
-## DROP table
-
-### save
-
-
-
-### load
 
 
 

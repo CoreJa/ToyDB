@@ -114,14 +114,12 @@ public class Database extends ExecuteEngine implements Serializable {
         return returnValue;
     }
 
+
     // visit
     @Override
     public void visit(CreateTable createTable) {
         Table table = new Table(this, createTable); // create table object
-        Table TABLES = this.tables.get("TABLES");
-        if (TABLES != null
-                && TABLES.getColumnIndexes() != null
-                && TABLES.getColumnIndexes().containsKey(table.getTableName())) {
+        if (this.tables.containsKey(table.getTableName())) {
             throw new ExecutionException("Table already exists");
         }
         this.tables.put(table.getTableName(), table);
@@ -156,6 +154,8 @@ public class Database extends ExecuteEngine implements Serializable {
     public void visit(Drop drop) {
         if (drop.getType().toLowerCase().compareTo("table") == 0) {//Drop Table
             String tableName = drop.getName().getName();
+            // set null
+
             // use dropped to check if the statement is valid
             if (this.tables.get(tableName) == null) {// Check: if tableName exists
                 throw new ExecutionException("Drop table failed: TABLE " + tableName + " not exists");
