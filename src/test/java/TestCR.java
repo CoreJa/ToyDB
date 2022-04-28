@@ -76,20 +76,26 @@ public class TestCR {
 //        stmts.add("select * from tableName where col1<col2/col3");
 //        stmts.add("select * from tableName where col1<col2/col3/2");
 
-        stmts.add("select * from tableName join table2 on table2.col3=tableName.col3;");
+//        stmts.add("select * from tableName join table2 on table2.col3=tableName.col3;");
 //        stmts.add("select * from tableName inner join table2 on table2.col3=tableName.col3;");
 //        stmts.add("select * from tableName join table2 on col4=col1;");
 //        stmts.add("select * from tableName join table2 on table2.col4=tableName.col1;");
 //        stmts.add("select * from tableName join table2 on col3=col3;");
-
-        stmts.add("select * from tableName left join table2 on table2.col3=tableName.col3;");
+//
+//        stmts.add("select * from tableName left join table2 on table2.col3=tableName.col3;");
 //        stmts.add("select * from tableName left outer join table2 on table2.col3=tableName.col3;");
 
-        stmts.add("select * from tableName right join table2 on table2.col3=tableName.col3;");
+//        stmts.add("select * from tableName right join table2 on table2.col3=tableName.col3;");
 //        stmts.add("select * from tableName right outer join table2 on table2.col3=tableName.col3;");
-
-        stmts.add("select * from tableName full join table2 on table2.col3=tableName.col3;");
+//
+//        stmts.add("select * from tableName full join table2 on table2.col3=tableName.col3;");
 //        stmts.add("select * from tableName full outer join table2 on table2.col3=tableName.col3;");
+
+//        stmts.add("select table1i.col1 from table1i join table3i on table1i.col2=table3i.col2 limit 5;");
+//        stmts.add("select table1i.col1 from table1i join table3i on table1i.col2=table3i.col2 order by table1i.col1 limit 5;");
+
+
+        stmts.add("select * from table31 right join table3i on table3i.col2=table31.col2 order by table31.col1 limit 50;");
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
@@ -97,10 +103,9 @@ public class TestCR {
                 statement.accept(db);
                 System.out.println(db.getReturnValue().toString());
             } catch (JSQLParserException | ExecutionException e) {
-                System.out.println(e.getMessage());
+                e.printStackTrace();
             }
         }
-
     }
 
     private static void loadData(Database db) {
