@@ -229,6 +229,10 @@ public class Table extends ExecuteEngine implements Serializable {
         }
         this.returnValue = null;
         this.indexes = table.indexes;
+        //will shallow copy keys
+        this.primaryKey = table.primaryKey;
+        this.uniqueSet = table.uniqueSet;
+        this.foreignKeyList = table.foreignKeyList;
 
     }
 
@@ -534,7 +538,7 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(SelectExpressionItem selectExpressionItem) {
-        this.returnValue = new Table(((Column) selectExpressionItem.getExpression()).getColumnName());
+        this.returnValue = new Table(((Column) selectExpressionItem.getExpression()).toString());
     }
 
     @Override
@@ -711,9 +715,9 @@ public class Table extends ExecuteEngine implements Serializable {
         table.columnNames.add(columnName);
         table.columnIndexes.put(columnName, 0);
         for (Map.Entry<String, DataRow> rowEntry : this.data.entrySet()) {
-            Integer colInd=this.columnIndexes.get(columnName);
+            Integer colInd = this.columnIndexes.get(columnName);
             if (colInd == null) {
-                colInd=this.getColumnIndex(tableColumn.getTable().getName()+"."+columnName);
+                colInd = this.getColumnIndex(tableColumn.getTable().getName() + "." + columnName);
             }
             DataRow dataRow = new DataRow(Arrays.asList(
                     rowEntry.getValue().getDataGrids().get(colInd)));
