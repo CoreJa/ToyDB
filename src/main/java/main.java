@@ -10,6 +10,7 @@ import utils.ExecutionException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class main {
     public static void main (String[] args)throws IOException{
@@ -17,6 +18,7 @@ public class main {
         Database db = new Database();
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         db.load();
+        jitPreheat(db);
         while(true){//单语句
             StringBuilder statementBuilder = new StringBuilder();
             while (true) {//单行
@@ -60,5 +62,34 @@ public class main {
 
         return;
 
+    }
+    public static void jitPreheat(Database db){
+        ArrayList<String> stmts=new ArrayList<>();
+        stmts.add("select * from table31 where col2=1;");
+        stmts.add("select * from table31 where col2=1 order by col1;");
+        stmts.add("select distinct col1 from table31 where col2=1 order by col1 limit 5;");
+        stmts.add("create index3i on table3i(col2);");
+        stmts.add("update table3i set col2=col1/col2;");
+        stmts.add("drop index table3i.index3i;");
+        stmts.add("update table3i set col2=col1/col2;");
+        stmts.add("select col1 from table31 where col1>50000;");
+        stmts.add("select col1 from table31 where col1<50000;");
+        stmts.add("select col1 from table31 where col1>=50000;");
+        stmts.add("select col1 from table31 where col1<=50000;");
+        stmts.add("update table3i set col2=col1+col2;");
+        stmts.add("update table3i set col2=col2-col1;");
+        for (String stmt : stmts) {
+            long start=System.currentTimeMillis();
+            try {
+                Statement statement = CCJSqlParserUtil.parse(stmt);
+                statement.accept(db);
+//                System.out.println(db.getReturnValue().toString());
+            } catch (JSQLParserException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+            System.out.println(System.currentTimeMillis()-start);
+        }
     }
 }
