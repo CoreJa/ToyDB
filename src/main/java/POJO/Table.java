@@ -1197,7 +1197,6 @@ public class Table extends ExecuteEngine implements Serializable {
                 dataGrid.mul(dataGrid_r);
                 res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
             }
-
         }
         this.returnValue = res;
     }
@@ -1246,7 +1245,6 @@ public class Table extends ExecuteEngine implements Serializable {
                 dataGrid.div(dataGrid_r);
                 res.data.put(rowEntry.getKey(), new DataRow(Arrays.asList(dataGrid)));
             }
-
         }
         this.returnValue = res;
     }
