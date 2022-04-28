@@ -71,6 +71,16 @@ public class testzhy {
         stmts.add("update table3i set col2=col1/col2;");
         stmts.add("select distinct col2 from table3i limit 5;");
 
+        stmts.add("select col1 from table4i where col2=75828;");
+        stmts.add("create index index4i on table4i(col2);");
+        stmts.add("select col1 from table4i where col2=75828;");
+        stmts.add("select col1 from table4i where col2>500000 order by col1 limit 5;");
+        stmts.add("update table4i set col2=col1/col2;");
+        stmts.add("select distinct col2 from table4i;");
+        stmts.add("drop index table4i.index4i;");
+        stmts.add("update table4i set col2=col1/col2;");
+        stmts.add("select * from table4i order by col1 limit 5;");
+
 
         for (String stmt : stmts) {
             long start=System.currentTimeMillis();
