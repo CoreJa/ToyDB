@@ -196,21 +196,33 @@ public class Database extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(Insert insert) {
-        Table table = tables.get(insert.getTable().getName());
+        String tableName = insert.getTable().getName();
+        Table table = tables.get(tableName);
+        if(table == null){
+            throw new ExecutionException("Insert failed: table "+ tableName +" not exist");
+        }
         insert.accept(table);
         this.returnValue = table.getReturnValue();
     }
 
     @Override
     public void visit(Update update) {
-        Table table = tables.get(update.getTable().getName());
+        String tableName = update.getTable().getName();
+        Table table = tables.get(tableName);
+        if(table == null) {
+            throw new ExecutionException("Update failed: table "+ tableName +" not exist");
+        }
         update.accept(table);
         this.returnValue = table.getReturnValue();
     }
 
     @Override
     public void visit(Delete delete) {
-        Table table = tables.get(delete.getTable().getName());
+        String tableName = delete.getTable().getName();
+        Table table = tables.get(tableName);
+        if(table == null) {
+            throw new ExecutionException("Delete failed: table "+ tableName +" not exist");
+        }
         delete.accept(table);
         this.returnValue = table.getReturnValue();
     }
