@@ -708,7 +708,7 @@ public class Table extends ExecuteEngine implements Serializable {
 
     @Override
     public void visit(Column tableColumn) {
-        String columnName = tableColumn.getColumnName();
+        String columnName = tableColumn.toString();
         Table table = new Table();
         table.columnNames.add(columnName);
         table.columnIndexes.put(columnName, 0);

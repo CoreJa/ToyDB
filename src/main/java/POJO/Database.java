@@ -433,6 +433,7 @@ public class Database extends ExecuteEngine implements Serializable {
                 leftTable.setData(joinedData);
             }
             table = leftTable;
+            table.getIndexes().getIndexes().addAll(Collections.nCopies(table.getColumnNames().size(),null));
         }
         // recursively parsing select
         plainSelect.accept(table);
