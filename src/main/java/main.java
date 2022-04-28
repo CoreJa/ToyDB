@@ -49,7 +49,7 @@ public class main {
             } finally {
                 statementBuilder.delete(0, statementBuilder.capacity());
             }
-            System.out.println(System.currentTimeMillis()-start+"ms");
+            System.out.println(System.currentTimeMillis()-start+"ms\n");
         }
 
         //Saving, exit

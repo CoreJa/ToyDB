@@ -548,7 +548,7 @@ public class Table extends ExecuteEngine implements Serializable {
             table = table.returnValue;
         }
 
-        //TODO: order by limit distinct
+        //order by limit distinct
         if (plainSelect.getDistinct() != null) { // if distinct
             HashSet<String> set = new HashSet<>();
             Map<String, DataRow> data = table.getData();
@@ -1315,7 +1315,7 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         }
         sb.append("+\n");
-        sb.append(this.getData().size()).append(" rows in total").append("\n");
+        sb.append(this.getData().size()).append(" rows in total");
         return new String(sb);
     }
 
