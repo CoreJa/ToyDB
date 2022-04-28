@@ -5,14 +5,6 @@ Authors:
 - Haoyang Zhang
 - Kevin Qi
 
-# DEMO (Implementation)
-
-# //TODO: UI
-
-blabla
-
-# //TODO: 删表外键依赖
-
 # Preloaded Data
 
 ```SQL
@@ -61,6 +53,12 @@ select * from COLUMNS;
 # Data Manipulation Language
 
 ## SELECT
+
+```SQL
+select
+```
+
+
 
 ### WHERE
 
