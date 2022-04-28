@@ -302,8 +302,10 @@ public class Database extends ExecuteEngine implements Serializable {
                         }
                     } else if (exp != null && exp instanceof AndExpression) {
                         Pair<String, String> eq = getEq((AndExpression) plainSelect.getWhere());
-                        leftCol = eq.getFirst();
-                        rightCol = eq.getSecond();
+                        if (eq != null) {
+                            leftCol = eq.getFirst();
+                            rightCol = eq.getSecond();
+                        }
                     }
                 }
 

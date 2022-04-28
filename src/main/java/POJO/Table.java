@@ -578,8 +578,11 @@ public class Table extends ExecuteEngine implements Serializable {
                 list.sort((o1, o2) -> ((String) o2.getValue().getDataGrids().get(colInd).getData())
                         .compareTo((String) o1.getValue().getDataGrids().get(colInd).getData()));
             } else {
-                list.sort((o1, o2) -> (int) o2.getValue().getDataGrids().get(colInd).getData()
-                        - (int) o1.getValue().getDataGrids().get(colInd).getData());
+                list.sort((o1, o2) -> {
+                    Object data2=o2.getValue().getDataGrids().get(colInd).getData();
+                    Object data1=o1.getValue().getDataGrids().get(colInd).getData();
+                    return (int) (data2==null?0:data2) - (int) (data1==null?0:data1);
+                });
             }
             if (element.isAsc()) { // Ascending or Descending
                 if (plainSelect.getLimit() != null) { // if limit
