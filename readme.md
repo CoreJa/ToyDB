@@ -6,11 +6,10 @@ Authors:
 - Kevin Qi
 
 # Checklist
-- [ ] Database
+- [x] Database
   - [x] create table -yc
     - [x] create foreign key -yc
-    - [ ] as -yc
-  - [ ] drop table -yc
+  - [x] drop table -yc
 - [ ] Tables
   - [x] insert -hy
   - [x] update -hy
