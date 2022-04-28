@@ -266,6 +266,9 @@ public class Table extends ExecuteEngine implements Serializable {
         data.put("result", row);
     }
 
+    public Indexes getIndexes() {
+        return indexes;
+    }
 
     //setters and getters
     public void setTableName(String tableName) {
@@ -1312,6 +1315,7 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         }
         sb.append("+\n");
+        sb.append(this.getData().size()).append(" rows in total").append("\n");
         return new String(sb);
     }
 
