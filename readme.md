@@ -61,37 +61,87 @@ select * from table2i;
 
 select * from table3i;
 
+select col1 from table1i;
 
+select col3 from table1i; --col3 doesn't exists in table3i
+```
 
 ### WHERE
 
+```sql
+select * from table1i where col1=1 or col1=10 or col1=100;
+
+select * from table1i where col1=1 or col1=10 or col1=100 and col1=5;
+
+select * from table1i where (col1=1 or col1=10 or col1=100) and col1=5;
+
+select * from table1i where col1<100 and col1>50;
+
+select * from table1i where col1<100 and col1>50 and col2<70;
+
+
+
+select * from table11 where 10>=col1+col2;
+
+select * from table1i where col1*col2<10;
+
+select * from table1i where col1*col2<10 and col1!=1;
+
+select * from table1i where col1+col1*col2-col1/col2<12;
+
+```
+
+**will recursively searching for:**
+
 #### operands
 
-
+- Column
+- Integer Value
+- String Value
 
 #### operators
 
-
-
-#### recursively searching
-
-
+- And Expression `and`
+- Or Expression `or`
+- Equal to (optimized with hashed indexes) `=`
+- Not Equal to `!=`/`<>`
+- Greater Than `>`
+- GreaterEqual Than `>=`
+- Minor Than `<`
+- MinorEqual Than `<=`
+- Parenthesis `()`
+- Addition `+`
+- Substraction `-`
+- Multiplication `*`
+- Division `/`
 
 ### JOIN
 
 #### (INNER) JOIN
 
-
+```sql
+select * from table3i join table31 on table3i.col2=table31.col1 order by table3i.col1 limit 50;
+select * from table3i join table31 on table3i.col2=table31.col1 order by table3i.col1 DESC limit 50;
+```
 
 #### LEFT (OUTER) JOIN
 
-
+```sql
+select * from table3i left join table31 on table3i.col2=table31.col2 order by table3i.col1 limit 50;
+select * from table3i left join table31 on table3i.col2=table31.col2 order by table3i.col1 desc limit 50;
+```
 
 #### RIGHT (OUTER) JOIN
 
-
+```sql
+select * from table31 right join table3i on table3i.col2=table31.col2 order by table31.col1 limit 50;
+select * from table31 right join table3i on table3i.col2=table31.col2 order by table31.col1 desc limit 50;
+```
 
 #### FULL (OUTER) JOIN
+
+```sql
+```
 
 
 
