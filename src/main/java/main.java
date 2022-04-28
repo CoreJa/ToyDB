@@ -22,7 +22,8 @@ public class main {
             while (true) {//单行
                 System.out.print("> "); // > means the program is excepting the user input
                 String line = stdin.readLine();
-                if (line == null || line.length() == 0) {
+                if (line == null || line.length() != 0 && (line.charAt(line.length()-1)==';') ) {
+                    statementBuilder.append(line);
                     break;
                 }//用户输入空行时代表语句结束
                 statementBuilder.append(line + " ");
@@ -31,7 +32,7 @@ public class main {
             // Handle the statement
             if(statementBuilder.length()==0){continue;} // skip empty lines
             String statementText = statementBuilder.toString();
-            if(statementText.compareTo("exit ") == 0) {
+            if(statementText.length() >= 5 && statementText.substring(0,5).compareTo("exit;") == 0) {
                 break;
             }
             long start=System.currentTimeMillis();
