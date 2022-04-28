@@ -60,14 +60,15 @@ public class Table extends ExecuteEngine implements Serializable {
     //Constraints
     private Integer primaryKey; // index in columnNames
     private List<Set<String>> uniqueSet; // maintain a HashSet of value of . Always cast to String.
+
     private List<Pair<String, Integer>> foreignKeyList;
 
     //Constructors (with DB)
+
     public Table() {//by default
         this(true, null, "", new ArrayList<>(), new HashMap<>(), new ArrayList<>(), new HashMap<>(), null, new Indexes(0), null, new ArrayList<>(), new ArrayList<>());
 
     }
-
     public Table(boolean simple, Database db, String tableName, List<String> columnNames, Map<String, Integer> columnIndexes,
                  List<Type> types, Map<String, DataRow> data, Table returnValue, Indexes indexes,
                  Integer primaryKey, List<Set<String>> uniqueSet, List<Pair<String, Integer>> foreignKeyList) {
@@ -199,8 +200,8 @@ public class Table extends ExecuteEngine implements Serializable {
 
     }
 
-    //Constructors (without DB)
 
+    //Constructors (without DB)
     public Table(String tableName, List<String> columnNames, Map<String, DataRow> data) {
         this.tableName = tableName;
         this.columnNames = columnNames;
@@ -208,6 +209,7 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     //Copying all the data to a new table object
+
     public Table(Table table) {
         this.simple = table.simple;
         this.db = table.db;
@@ -230,15 +232,14 @@ public class Table extends ExecuteEngine implements Serializable {
         this.foreignKeyList = table.foreignKeyList;
 
     }
-
     //Coping without meta
+
     public Table(Map<String, DataRow> data) {
         this();
         for (Map.Entry<String, DataRow> entry : data.entrySet()) {
             this.data.put(entry.getKey(), entry.getValue().clone());
         }
     }
-
     public Table(String str) {
         this.data = new HashMap<>();
         data.put("result", new DataRow(Arrays.asList(Type.STRING), Arrays.asList(str)));
@@ -271,10 +272,10 @@ public class Table extends ExecuteEngine implements Serializable {
     }
 
     //setters and getters
+
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
-
     public int getColumnIndex(String columnName) {
         if (!this.columnIndexes.containsKey(columnName)) {
             throw new ExecutionException(columnName + " doesn't exist in table " + this.getTableName());
@@ -304,6 +305,10 @@ public class Table extends ExecuteEngine implements Serializable {
 
     public void setSimple(boolean simple) {
         this.simple = simple;
+    }
+
+    public List<Pair<String, Integer>> getForeignKeyList() {
+        return foreignKeyList;
     }
 
     //create index

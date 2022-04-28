@@ -150,17 +150,29 @@ public class Database extends ExecuteEngine implements Serializable {
     @Override
     public void visit(Drop drop) {
         if (drop.getType().toLowerCase().compareTo("table") == 0) {//Drop Table
-            String tableName = drop.getName().getName(); //和下面的句式结构不一样, 注意
+            String tableName = drop.getName().getName();
             // use dropped to check if the statement is valid
-            if (this.tables.remove(tableName) == null) {
-                throw new ExecutionException("Drop table: TABLE " + tableName + " not exists");
+            if (this.tables.get(tableName) == null) {// Check: if tableName exists
+                throw new ExecutionException("Drop table failed: TABLE " + tableName + " not exists");
             }
-            try {
+            for(Map.Entry<String, Table> tableElement: this.tables.entrySet()) {// Check: if is depended on by other tables
+                Table table = tableElement.getValue();
+                List<Pair<String, Integer>>foreignKeyList = table.getForeignKeyList();
+                for( int i = 0; i < foreignKeyList.size(); i++){
+                    Pair<String,Integer> pair = foreignKeyList.get(i);
+                    if(pair != null && pair.getFirst().compareTo(tableName) == 0) {
+                        throw new ExecutionException("Drop table failed: "+table.getTableName()+"."+table.getColumnNames().get(i)+" still depends on "+tableName);
+                    }
+                }
+            }
+            //check passed. start deleting
+            try {//update metadata
                 CCJSqlParserUtil.parse("DELETE FROM TABLES WHERE Table=\'" + tableName + "\'").accept(this);
                 CCJSqlParserUtil.parse("DELETE FROM COLUMNS WHERE Table=\'" + tableName + "\'").accept(this);
             } catch (JSQLParserException e) {
                 e.printStackTrace();
             }
+            this.tables.remove(tableName);
         }
         if (drop.getType().toLowerCase().compareTo("index") == 0) {//Drop Index
             //DROP INDEX tableName.indexName
