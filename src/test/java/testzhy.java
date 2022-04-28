@@ -37,7 +37,7 @@ public class testzhy {
 //        stmts.add("update tableName set col2=col2+1 where col1 =2;");
 //        stmts.add("drop index tableName.myIndex;");
 //
-        stmts.add("select distinct col2 from table31;");
+//        stmts.add("select distinct col2 from table31;");
         stmts.add("select * from table3i where col2=75828;");
         stmts.add("create index index3i on table3i(col2);");
         stmts.add("select * from table3i where col2=75828;");
@@ -61,6 +61,16 @@ public class testzhy {
         stmts.add("select * from table3i where col1<=2000 order by col1 desc limit 10;");
 
         stmts.add("select distinct col2 from table31;");
+        stmts.add("select distinct col2 from table31 limit 10;");
+
+        stmts.add("update table31 set col2=2 where col1=1;");
+        stmts.add("select * from table31 order by col1 limit 5;");
+        stmts.add("update table31 set col2=2 where col1=0;");
+        stmts.add("update table3i set col2=col1/col2;");
+        stmts.add("select distinct col2 from table3i;");
+        stmts.add("update table3i set col2=col1/col2;");
+        stmts.add("select distinct col2 from table3i limit 5;");
+
 
         for (String stmt : stmts) {
             long start=System.currentTimeMillis();

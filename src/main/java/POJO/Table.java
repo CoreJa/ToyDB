@@ -429,6 +429,9 @@ public class Table extends ExecuteEngine implements Serializable {
                 }
                 op.getSecond().accept(returnValue);
                 Map<String, DataRow> res = returnValue.returnValue.data;
+                if (returnValue.data.size()==0){
+                    throw new ExecutionException("No such row");
+                }
                 if (res.size() == 1) {
                     Object val = res.values().iterator().next().getDataGrids().get(0).getData();
                     DataGrid valGrid = res.values().iterator().next().getDataGrids().get(0);
