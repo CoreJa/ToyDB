@@ -757,8 +757,10 @@ public class Table extends ExecuteEngine implements Serializable {
                 if (index!=null){
                     Map<String, DataRow> newData=new HashMap<>();
                     Set<String> hits=index.get(dataGrid.toString());
-                    for (String hit : hits) {
-                        newData.put(hit,res.data.get(hit));
+                    if (hits != null) {
+                        for (String hit : hits) {
+                            newData.put(hit,res.data.get(hit));
+                        }
                     }
                     res.data=newData;
                 }else {

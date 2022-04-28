@@ -42,9 +42,7 @@ public class main {
                 Statement statement = CCJSqlParserUtil.parse(statementBuilder.toString());
                 statement.accept(db);// TODO: what should we print if the statement is valid
                 System.out.println(db.getReturnValue().toString());
-            } catch (JSQLParserException e) {
-                System.out.println(e.getMessage());
-            } catch (ExecutionException e) {
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             } finally {
                 statementBuilder.delete(0, statementBuilder.capacity());

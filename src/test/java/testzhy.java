@@ -40,11 +40,12 @@ public class testzhy {
         stmts.add("select * from table3i where col2=75828;");
         stmts.add("create index index3i on table3i(col2);");
         stmts.add("select * from table3i where col2=75828;");
+        stmts.add("select * from table3i where col2=100001;");
         stmts.add("create index index3i on table4i(col2);");
         stmts.add("drop index table3i.index3i;");
         stmts.add("drop index table3i.index3i;");
         stmts.add("select * from table3i where col2=75828;");
-        stmts.add("select * from table3i where col2=100001;");
+
 
 
         stmts.add("select table2i.col1, table31.col2 from table2i, table31 where table2i.col1>=5001 and table2i.col2=table31.col1 limit 5;");
