@@ -697,9 +697,9 @@ public class Table extends ExecuteEngine implements Serializable {
         /*
          * logically or two tables, left combine, so traversing table_r is faster.
          * */
-        Table res = new Table(table_r);
-        for (Map.Entry<String, DataRow> entry : res.data.entrySet()) {
-            if (!table_l.data.containsKey(entry.getKey())) {
+        Table res = new Table(table_l);
+        for (Map.Entry<String, DataRow> entry : table_r.data.entrySet()) {
+            if (!res.data.containsKey(entry.getKey())) {
                 res.data.put(entry.getKey(), entry.getValue());
             }
         }
