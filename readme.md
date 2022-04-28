@@ -5,51 +5,86 @@ Authors:
 - Haoyang Zhang
 - Kevin Qi
 
-# Checklist
-- [x] jit preheat
-- [x] Database
-  - [x] create table -yc
-    - [x] create foreign key -yc
-    - [ ] as -yc
-  - [x] drop table -yc
-- [x] Tables
-  - [x] insert -hy
-  - [x] update -hy
-  - [x] delete -hy
-  - [x] select -cr
-    - [x] where -cr
-      - [x] or -cr
-      - [x] and -cr
-      - [x] equals to -cr
-      - [x] not equals to -cr
-      - [x] minor than -cr
-      - [x] minor than equals -cr
-      - [x] greater than -cr
-      - [x] greater than equals -cr
-      - [x] add -cr
-      - [x] subtract -cr
-      - [x] multiply -cr
-      - [x] divide -cr
-    - [x] join -cr //on onley support one sub statement.
-      - [x] join/inner join -cr
-      - [x] left join/left outer join -cr
-      - [x] right join/right outer join -cr
-      - [x] full join/full outer join -cr
-      - [x] on (with optimization) -cr
-      - [ ] and
-      - [ ] or
-      - [x] equals to
-    - [x] distinct -hy int√ string?
-    - [x] order by () -hy
-    - [x] limit () -hy
-  - [x] Indexing -hy
-    - [x] create -hy
-    - [x] delete -hy
-  - [x] check foreign key -hycr
-    - [x] on insert -hy
-    - [x] on update
-    - [x] on delete
-      - [x] on dependence
+# Introduction
+Good afternoon, professor. Today we are going to show the project3 - a DBMS project.
+
+Firstly, I'd like to introduce the overall structure of our project.
+
+1. Programming language: Java
+    1. Strong, static
+        - Easily to collaborate
+        - hard way: challenging
+            - popular
+            - fast
+            - eco-friendly
+            - less error-prone
+1. Design Pattern - Visitor
+2. **Hierarchy** of our project - Object-Oriented Design
+    2. DB, table (top-down)
+        1. TABLES, COLUMNS
+        2.
+        3. DataRow, DataGrid
+            1. Supported type...
+    3. JSqlParser
+        1. JSqlParser parses an SQL statement and translate it into a hierarchy of Java classes.
+    4. Workflow
+        1. load(), save()
+        2. Abstract Syntax Tree
+---
+# DEMO (Implementation)
+2. TODO: UI
+3. TODO: DROP TABLE WHILE HAVing foreign key constraints
+4. (Preloaded)
+    - Select * from TABLES
+    - Select * from COLUMNS
+5. Data Definition Language & DML
+    - Create table
+        - Constraints(keys)
+        - Insert not valid
+        - update cascade
+        - delete set null
+        -
+    - Drop Table
+        - 1. STORAGE
+            - SAVE & LOAD
+    - Create index
+    - Drop index
+6. Data Manipulation Language
+    1.  SELECT
+        2. ***WHERE***(10min)
+            1. operands, operator
+                1. column integer string
+                2. and, or, =, !=, >,>=,<,<=,+-\/\*
+                    1. <span style = "color:red">《輕鬆了很多》</span>
+                    2. Recursively thanks to our visitor pattern
+        3. **JOIN**
+            1. (INNER) JOIN
+            2. OUTER JOIN
+                1. LEFT
+                2. RIGHT
+                3. FULL
+            3. Optimization
+                1. cost-based: dynamic hash
+                    1. not added in documnt
+                    2. index auto creation
+                2. rule-based:
+                    1.  Finding Join condition in WHERE
+        4. ORDER BY
+            1. ASCEND
+            2. DE~
+        5. DISTINCT
+            1. All-field
+        6. LIMIT... - ORDER BY
+            1. Optimization(rule-based)
+    2. UPDATE
+        1. expression
+        2. value
+
+## Citation
+JSQL parser
+
+
+
 ## Constraints
 ### On the Structure
 - [ ] 兩個基礎表格: `TABLES, COLUMNS`
@@ -64,7 +99,3 @@ Authors:
   - [ ] `Set<String> primaryKeySet` in `POJO.Table` : maintain a HashSet
 - **Referential integrity** 參照完整性
   - any column in a base table that is declared a foreign key can only contain either null values or values from a parent table's primary key or a candidate key.
-  - [ ] `List<List<String>> foreignKeyList`: 每一個表的外碼列表. 同樣要檢查是否重複tableName, 同表重複ColumnName
-  - [ ] `checkRefIntegrity(Database db)`:
-    - 等待所有表格都加上之後, 檢查check foreign key(s)? --- database
-    - 還是每create一個table就檢查? --- table
