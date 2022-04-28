@@ -554,18 +554,7 @@ public class Table extends ExecuteEngine implements Serializable {
         }
 
         //order by limit distinct
-        if (plainSelect.getDistinct() != null) { // if distinct
-            HashSet<String> set = new HashSet<>();
-            Map<String, DataRow> data = table.getData();
-            Iterator<String> iterator = data.keySet().iterator();
-            while (iterator.hasNext()) {
-                String next = iterator.next();
-                String curVal = table.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("", (x, y) -> x + " # " + y);
-                if (!set.add(curVal)) {
-                    iterator.remove();
-                }
-            }
-        }
+
 
         if (plainSelect.getOrderByElements() != null) { // if order by
             OrderByElement element = plainSelect.getOrderByElements().get(0);
