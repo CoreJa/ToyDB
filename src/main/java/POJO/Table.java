@@ -1,7 +1,6 @@
 package POJO;
 
 
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.*;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.Division;
@@ -10,9 +9,7 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.*;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.*;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -23,12 +20,10 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.statement.update.UpdateSet;
 import utils.ExecuteEngine;
 import utils.ExecutionException;
-import utils.ExecutionException;
 
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Table extends ExecuteEngine implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -714,6 +709,7 @@ public class Table extends ExecuteEngine implements Serializable {
         Table table = new Table();
         table.columnNames.add(columnName);
         table.columnIndexes.put(columnName, 0);
+        table.indexes.getIndexes().add(this.indexes.getIndexes().get(this.getColumnIndex(columnName)));
         for (Map.Entry<String, DataRow> rowEntry : this.data.entrySet()) {
             Integer colInd = this.columnIndexes.get(columnName);
             if (colInd == null) {
@@ -754,9 +750,19 @@ public class Table extends ExecuteEngine implements Serializable {
                     table_r = table_tmp;
                 }
                 DataGrid dataGrid = table_r.data.get("result").getDataGrids().get(0);
-                for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
-                    if (!dataGrid.compareTo(rowEntry.getValue().getDataGrids().get(0))) {
-                        res.data.remove(rowEntry.getKey());
+                Map<String, Set<String>> index=table_l.indexes.getIndexes().get(0);
+                if (index!=null){
+                    Map<String, DataRow> newData=new HashMap<>();
+                    Set<String> hits=index.get(dataGrid.toString());
+                    for (String hit : hits) {
+                        newData.put(hit,res.data.get(hit));
+                    }
+                    res.data=newData;
+                }else {
+                    for (Map.Entry<String, DataRow> rowEntry : table_l.data.entrySet()) {
+                        if (!dataGrid.compareTo(rowEntry.getValue().getDataGrids().get(0))) {
+                            res.data.remove(rowEntry.getKey());
+                        }
                     }
                 }
             }

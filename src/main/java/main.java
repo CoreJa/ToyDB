@@ -66,12 +66,13 @@ public class main {
         return;
 
     }
+    }
     public static void jitPreheat(Database db){
         ArrayList<String> stmts=new ArrayList<>();
         stmts.add("select * from table31 where col2=1;");
         stmts.add("select * from table31 where col2=1 order by col1;");
         stmts.add("select distinct col1 from table31 where col2=1 order by col1 limit 5;");
-        stmts.add("create index3i on table3i(col2);");
+        stmts.add("create index index3i on table3i(col2);");
         stmts.add("update table3i set col2=col1/col2;");
         stmts.add("drop index table3i.index3i;");
         stmts.add("update table3i set col2=col1/col2;");
@@ -82,7 +83,6 @@ public class main {
         stmts.add("update table3i set col2=col1+col2;");
         stmts.add("update table3i set col2=col2-col1;");
         for (String stmt : stmts) {
-            long start=System.currentTimeMillis();
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
                 statement.accept(db);
@@ -92,7 +92,6 @@ public class main {
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
-            System.out.println(System.currentTimeMillis()-start);
         }
     }
 }
