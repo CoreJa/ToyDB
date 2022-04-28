@@ -19,13 +19,12 @@ public class main {
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         db.load();
         jitPreheat(db);
-        while(true){//单语句
         while(true){//each statement
             StringBuilder statementBuilder = new StringBuilder();
             while (true) {//each line
                 System.out.print("> "); // '>' means the program is excepting the user input
                 String line = stdin.readLine();
-                if (line == null || line.length() != 0 && (line.charAt(line.length()-1)==';') ) {//';' meaning end of a statement
+                if (line == null || line.length() == 0) {//';' meaning end of a statement
                     statementBuilder.append(line);
                     break;
                 }
@@ -35,7 +34,7 @@ public class main {
             // Handle the statement
             if(statementBuilder.length()==0){continue;} // skip empty lines
             String statementText = statementBuilder.toString();
-            if(statementText.length() >= 5 && statementText.substring(0,5).compareTo("exit;") == 0) {
+            if(statementText.compareTo("exit ") == 0) {
                 break;
             }
             long start=System.currentTimeMillis();
@@ -65,7 +64,6 @@ public class main {
 
         return;
 
-    }
     }
     public static void jitPreheat(Database db){
         ArrayList<String> stmts=new ArrayList<>();
