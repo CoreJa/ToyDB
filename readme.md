@@ -6,10 +6,12 @@ Authors:
 - Kevin Qi
 
 # Checklist
-- [x] Database
+- [ ] jit preheat
+- [ ] Database
   - [x] create table -yc
     - [x] create foreign key -yc
-  - [x] drop table -yc
+    - [ ] as -yc
+  - [ ] drop table -yc
 - [ ] Tables
   - [x] insert -hy
   - [x] update -hy
