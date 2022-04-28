@@ -332,15 +332,32 @@ public class Database extends ExecuteEngine implements Serializable {
                     // the case that no on statement is found or cols are from the same table
 
                     if (leftCol != null && rightCol != null && leftCol.compareTo(rightCol) != 0) {
-                        // clean left data first
-                        int colIdx1 = leftTable.getColumnIndex(leftCol);
-                        int colIdx2 = rightTable.getColumnIndex(rightCol);
-                        Iterator<String> iterator = leftData.keySet().iterator();
-                        while (iterator.hasNext()) {
-                            String next = iterator.next();
-                            DataRow dataRow = leftData.get(next);
-                            if (dataRow.getDataGrids().get(colIdx1).compareTo(dataRow.getDataGrids().get(colIdx2))) {
-                                iterator.remove();
+                        // the case cols are from the same table but not the same column
+                        // we need to clean data first
+                        String tmpName = leftCol.split("\\.")[0];
+                        if (tmpName.compareTo(rightTableName) == 0) {
+                            //if cols are from right table
+                            int colIdx1 = rightTable.getColumnIndex(leftCol.split("\\.")[1]);
+                            int colIdx2 = rightTable.getColumnIndex(rightCol.split("\\.")[1]);
+                            Iterator<String> iterator = rightData.keySet().iterator();
+                            while (iterator.hasNext()) {
+                                String next = iterator.next();
+                                DataRow dataRow = rightData.get(next);
+                                if (!dataRow.getDataGrids().get(colIdx1).compareTo(dataRow.getDataGrids().get(colIdx2))) {
+                                    iterator.remove();
+                                }
+                            }
+                        } else {
+                            //if they are from left table
+                            int colIdx1 = leftTable.getColumnIndex(leftCol);
+                            int colIdx2 = leftTable.getColumnIndex(rightCol);
+                            Iterator<String> iterator = leftData.keySet().iterator();
+                            while (iterator.hasNext()) {
+                                String next = iterator.next();
+                                DataRow dataRow = leftData.get(next);
+                                if (!dataRow.getDataGrids().get(colIdx1).compareTo(dataRow.getDataGrids().get(colIdx2))) {
+                                    iterator.remove();
+                                }
                             }
                         }
                     }
