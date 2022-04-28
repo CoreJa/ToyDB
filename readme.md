@@ -195,11 +195,12 @@ Firstly, I'd like to introduce the overall structure of our project.
                     2. index auto creation
                 2. rule-based:
                     1.  Finding Join condition in WHERE
-        4. ORDER BY
+        4. DISTINCT
+           1. All-field
+        5. ORDER BY
             1. ASCEND
             2. DE~
-        5. DISTINCT
-            1. All-field
+        
         6. LIMIT... - ORDER BY
             1. Optimization(rule-based)
     2. UPDATE

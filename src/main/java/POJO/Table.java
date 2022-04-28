@@ -553,7 +553,7 @@ public class Table extends ExecuteEngine implements Serializable {
             table = table.returnValue;
         }
 
-        //TODO: order by limit distinct
+        //order by limit distinct
         if (plainSelect.getDistinct() != null) { // if distinct
             HashSet<String> set = new HashSet<>();
             Map<String, DataRow> data = table.getData();
@@ -702,9 +702,9 @@ public class Table extends ExecuteEngine implements Serializable {
         /*
          * logically or two tables, left combine, so traversing table_r is faster.
          * */
-        Table res = new Table(table_r);
-        for (Map.Entry<String, DataRow> entry : res.data.entrySet()) {
-            if (!table_l.data.containsKey(entry.getKey())) {
+        Table res = new Table(table_l);
+        for (Map.Entry<String, DataRow> entry : table_r.data.entrySet()) {
+            if (!res.data.containsKey(entry.getKey())) {
                 res.data.put(entry.getKey(), entry.getValue());
             }
         }
@@ -762,8 +762,10 @@ public class Table extends ExecuteEngine implements Serializable {
                 if (index!=null){
                     Map<String, DataRow> newData=new HashMap<>();
                     Set<String> hits=index.get(dataGrid.toString());
-                    for (String hit : hits) {
-                        newData.put(hit,res.data.get(hit));
+                    if (hits != null) {
+                        for (String hit : hits) {
+                            newData.put(hit,res.data.get(hit));
+                        }
                     }
                     res.data=newData;
                 }else {
@@ -1320,7 +1322,7 @@ public class Table extends ExecuteEngine implements Serializable {
             }
         }
         sb.append("+\n");
-        sb.append(this.getData().size()).append(" rows in total").append("\n");
+        sb.append(this.getData().size()).append(" rows in total");
         return new String(sb);
     }
 
