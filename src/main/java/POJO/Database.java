@@ -143,6 +143,9 @@ public class Database extends ExecuteEngine implements Serializable {
     @Override
     public void visit(CreateIndex createIndex) {
         Table table = tables.get(createIndex.getTable().getName());
+        if (table == null) {
+            throw new ExecutionException("No such table");
+        }
         createIndex.accept(table);
         this.returnValue = table.getReturnValue();
     }
