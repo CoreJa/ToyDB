@@ -12,7 +12,7 @@ select * from TABLES;
 select * from COLUMNS;
 ```
 
-# Data Definition Language & DML
+# Data Definition Language
 
 ## CREATE table
 
@@ -63,7 +63,7 @@ select * from table3i;
 
 select col1 from table1i;
 
-select col3 from table1i; --col3 doesn't exists in table3i
+select col3 from table1i; -- col3 doesn't exists in table3i
 ```
 
 ### WHERE
@@ -117,39 +117,70 @@ select * from table1i where col1+col1*col2-col1/col2<12;
 
 ### JOIN
 
+```sql
+create table test (col1 int, col2 int NOT NULL, col3 int NOT NULL, PRIMARY KEY (col1));
+insert into test values (1,1,1);
+insert into test values (2,2,2);
+insert into test values (3,3,3);
+insert into test values (-5,-5,-5);
+```
+
 #### (INNER) JOIN
 
 ```sql
-select * from table3i join table31 on table3i.col2=table31.col1 order by table3i.col1 limit 50;
-select * from table3i join table31 on table3i.col2=table31.col1 order by table3i.col1 DESC limit 50;
+select * from table31 join test on table31.col1=test.col1;
+select * from table31 inner join test on table31.col1=test.col1;
+
+select * from table31 join test on table3i.col1=test.foobar; -- on statement with column name that doesn't exist!
+select * from table31 join test on test.col1=test.col1; -- on statement with column names both from same table with same column
+select * from table31 join test on table31.col1=table31.col2; -- on statement with column names both from same table only
 ```
 
 #### LEFT (OUTER) JOIN
 
 ```sql
-select * from table3i left join table31 on table3i.col2=table31.col2 order by table3i.col1 limit 50;
-select * from table3i left join table31 on table3i.col2=table31.col2 order by table3i.col1 desc limit 50;
+select * from table31 left join test on test.col1=table31.col1 order by table31.col1 limit 10;
 ```
 
 #### RIGHT (OUTER) JOIN
 
 ```sql
-select * from table31 right join table3i on table3i.col2=table31.col2 order by table31.col1 limit 50;
-select * from table31 right join table3i on table3i.col2=table31.col2 order by table31.col1 desc limit 50;
+select * from table31 right join test on test.col1=table31.col1;
 ```
 
 #### FULL (OUTER) JOIN
 
 ```sql
+select * from table31 full join test on test.col1=table31.col1 order by table31.col1 limit 10;
 ```
-
-
 
 #### Optimization
 
 ##### COST-BASED
 
+```sql
+select * from table11 join table1i on table11.col1=table1i.col1;
+```
 
+Normally, without `indexing`, this statement would have the same speed as below:
+
+```sql
+select * from table11 join table1i;
+```
+
+And it's slow. But the first one is fast in our program. That's because our program can dynamically select join algorithm.
+
+First it will detect whether there exists `indexing` for the current column in `on` statement. If there is one, it will directly use that `indexing`. So picking a record from this table would only cost constant time.
+
+If there's no `indexing`,  it will then detect whether the total searching space is too large (we've set it to be 10k right now). So if the searching space is too large, it will temporarily build a `indexing` and then speed up the searching. 
+
+On the other hand, if the searching space is not that large, we will just do `Cartesian product` for the two table and it won't be too slow.
+
+We can try out this 100k joining 100k data to test it out.
+
+```sql
+select * from table31 join table3i on table31.col1=table3i.col1;
+```
 
 ##### RULE-BASED
 
