@@ -17,15 +17,15 @@ public class main {
         Database db = new Database();
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         db.load();
-        while(true){//单语句
+        while(true){//each statement
             StringBuilder statementBuilder = new StringBuilder();
-            while (true) {//单行
-                System.out.print("> "); // > means the program is excepting the user input
+            while (true) {//each line
+                System.out.print("> "); // '>' means the program is excepting the user input
                 String line = stdin.readLine();
-                if (line == null || line.length() != 0 && (line.charAt(line.length()-1)==';') ) {
+                if (line == null || line.length() != 0 && (line.charAt(line.length()-1)==';') ) {//';' meaning end of a statement
                     statementBuilder.append(line);
                     break;
-                }//用户输入空行时代表语句结束
+                }
                 statementBuilder.append(line + " ");
             }
 
@@ -50,7 +50,8 @@ public class main {
             System.out.println(System.currentTimeMillis()-start+"ms");
         }
 
-        //尾处理
+        //Saving, exit
+        System.out.println("Exiting the program. Saving the database...");
         db.save();
         try {
             stdin.close();
