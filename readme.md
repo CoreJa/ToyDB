@@ -114,25 +114,15 @@ select col3 from table1i; -- col3 doesn't exists in table3i
 
 ```sql
 select * from table1i where col1=1 or col1=10 or col1=100;
-
 select * from table1i where col1=1 or col1=10 or col1=100 and col1=5;
-
 select * from table1i where (col1=1 or col1=10 or col1=100) and col1=5;
-
 select * from table1i where col1<100 and col1>50;
-
 select * from table1i where col1<100 and col1>50 and col2<70;
 
-
-
 select * from table11 where 10>=col1+col2;
-
 select * from table1i where col1*col2<10;
-
 select * from table1i where col1*col2<10 and col1!=1;
-
 select * from table1i where col1+col1*col2-col1/col2<12;
-
 ```
 
 **will recursively searching for:**
