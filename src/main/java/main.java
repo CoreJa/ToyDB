@@ -4,6 +4,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import utils.ExecutionException;
 
@@ -13,13 +14,13 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class main {
-    public static void main (String[] args)throws IOException{
+    public static void main(String[] args) throws IOException {
         //Initialization
         Database db = new Database();
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
         db.load();
         jitPreheat(db);
-        while(true){//each statement
+        while (true) {//each statement
             StringBuilder statementBuilder = new StringBuilder();
             while (true) {//each line
                 System.out.print("> "); // '>' means the program is excepting the user input
@@ -32,22 +33,24 @@ public class main {
             }
 
             // Handle the statement
-            if(statementBuilder.length()==0){continue;} // skip empty lines
+            if (statementBuilder.length() == 0) {
+                continue;
+            } // skip empty lines
             String statementText = statementBuilder.toString();
-            if(statementText.compareTo("exit ") == 0) {
+            if (statementText.compareTo("exit ") == 0) {
                 break;
             }
-            long start=System.currentTimeMillis();
+            long start = System.currentTimeMillis();
             try {
-                Statement statement = CCJSqlParserUtil.parse(statementBuilder.toString());
-                statement.accept(db);// TODO: what should we print if the statement is valid
+                Statements statements = CCJSqlParserUtil.parseStatements(statementBuilder.toString());
+                statements.accept(db);
                 System.out.println(db.getReturnValue().toString());
             } catch (Exception e) {
                 System.out.println(e.getMessage());
             } finally {
                 statementBuilder.delete(0, statementBuilder.capacity());
             }
-            System.out.println(System.currentTimeMillis()-start+"ms\n");
+            System.out.println(System.currentTimeMillis() - start + "ms\n");
         }
 
         //Saving, exit
@@ -63,8 +66,9 @@ public class main {
         return;
 
     }
-    public static void jitPreheat(Database db){
-        ArrayList<String> stmts=new ArrayList<>();
+
+    public static void jitPreheat(Database db) {
+        ArrayList<String> stmts = new ArrayList<>();
         stmts.add("select * from table31 where col2=1;");
         stmts.add("select * from table31 where col2=1 order by col1;");
         stmts.add("select distinct col1 from table31 where col2=1 order by col1 limit 5;");

@@ -7,6 +7,8 @@ import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.delete.Delete;
@@ -158,13 +160,13 @@ public class Database extends ExecuteEngine implements Serializable {
             if (this.tables.get(tableName) == null) {// Check: if tableName exists
                 throw new ExecutionException("Drop table failed: TABLE " + tableName + " not exists");
             }
-            for(Map.Entry<String, Table> tableElement: this.tables.entrySet()) {// Check: if is depended on by other tables
+            for (Map.Entry<String, Table> tableElement : this.tables.entrySet()) {// Check: if is depended on by other tables
                 Table table = tableElement.getValue();
-                List<Pair<String, Integer>>foreignKeyList = table.getForeignKeyList();
-                for( int i = 0; i < foreignKeyList.size(); i++){
-                    Pair<String,Integer> pair = foreignKeyList.get(i);
-                    if(pair != null && pair.getFirst().compareTo(tableName) == 0) {
-                        throw new ExecutionException("Drop table failed: "+table.getTableName()+"."+table.getColumnNames().get(i)+" still depends on "+tableName);
+                List<Pair<String, Integer>> foreignKeyList = table.getForeignKeyList();
+                for (int i = 0; i < foreignKeyList.size(); i++) {
+                    Pair<String, Integer> pair = foreignKeyList.get(i);
+                    if (pair != null && pair.getFirst().compareTo(tableName) == 0) {
+                        throw new ExecutionException("Drop table failed: " + table.getTableName() + "." + table.getColumnNames().get(i) + " still depends on " + tableName);
                     }
                 }
             }
@@ -198,8 +200,8 @@ public class Database extends ExecuteEngine implements Serializable {
     public void visit(Insert insert) {
         String tableName = insert.getTable().getName();
         Table table = tables.get(tableName);
-        if(table == null){
-            throw new ExecutionException("Insert failed: table "+ tableName +" not exist");
+        if (table == null) {
+            throw new ExecutionException("Insert failed: table " + tableName + " not exist");
         }
         insert.accept(table);
         this.returnValue = table.getReturnValue();
@@ -209,8 +211,8 @@ public class Database extends ExecuteEngine implements Serializable {
     public void visit(Update update) {
         String tableName = update.getTable().getName();
         Table table = tables.get(tableName);
-        if(table == null) {
-            throw new ExecutionException("Update failed: table "+ tableName +" not exist");
+        if (table == null) {
+            throw new ExecutionException("Update failed: table " + tableName + " not exist");
         }
         update.accept(table);
         this.returnValue = table.getReturnValue();
@@ -220,8 +222,8 @@ public class Database extends ExecuteEngine implements Serializable {
     public void visit(Delete delete) {
         String tableName = delete.getTable().getName();
         Table table = tables.get(tableName);
-        if(table == null) {
-            throw new ExecutionException("Delete failed: table "+ tableName +" not exist");
+        if (table == null) {
+            throw new ExecutionException("Delete failed: table " + tableName + " not exist");
         }
         delete.accept(table);
         this.returnValue = table.getReturnValue();
@@ -233,7 +235,7 @@ public class Database extends ExecuteEngine implements Serializable {
         if (l instanceof EqualsTo) {
             if (((EqualsTo) l).getLeftExpression() instanceof Column && ((EqualsTo) l).getRightExpression() instanceof Column) {
                 if (((Column) ((EqualsTo) l).getLeftExpression()).getTable().getName().compareTo(
-                        ((Column) ((EqualsTo) l).getRightExpression()).getTable().getName())!=0){
+                        ((Column) ((EqualsTo) l).getRightExpression()).getTable().getName()) != 0) {
                     return new Pair<>(((EqualsTo) l).getLeftExpression().toString(), ((EqualsTo) l).getRightExpression().toString());
                 }
             }
@@ -241,7 +243,7 @@ public class Database extends ExecuteEngine implements Serializable {
         if (r instanceof EqualsTo) {
             if (((EqualsTo) r).getLeftExpression() instanceof Column && ((EqualsTo) r).getRightExpression() instanceof Column) {
                 if (((Column) ((EqualsTo) r).getLeftExpression()).getTable().getName().compareTo(
-                        ((Column) ((EqualsTo) r).getRightExpression()).getTable().getName())!=0) {
+                        ((Column) ((EqualsTo) r).getRightExpression()).getTable().getName()) != 0) {
                     return new Pair<>(((EqualsTo) r).getLeftExpression().toString(), ((EqualsTo) r).getRightExpression().toString());
                 }
             }
@@ -468,7 +470,7 @@ public class Database extends ExecuteEngine implements Serializable {
                 leftTable.setData(joinedData);
             }
             table = leftTable;
-            table.getIndexes().getIndexes().addAll(Collections.nCopies(table.getColumnNames().size(),null));
+            table.getIndexes().getIndexes().addAll(Collections.nCopies(table.getColumnNames().size(), null));
         }
         // recursively parsing select
         plainSelect.accept(table);
@@ -504,19 +506,10 @@ public class Database extends ExecuteEngine implements Serializable {
         this.returnValue = new Table(tableColumn.toString());
     }
 
-    public static void main(String[] args) {
-        String selectDemo2 = "SELECT DISTINCT ID, ID2 " +
-                "FROM MY_TABLE1, MY_TABLE2, (SELECT * FROM MY_TABLE3) LEFT OUTER JOIN MY_TABLE4 " +
-                "WHERE ID = (SELECT MAX(ID) FROM MY_TABLE5) AND ID2 IN (SELECT * FROM MY_TABLE6)";
-        try {
-            new Database().visit((Select) CCJSqlParserUtil.parse(selectDemo2));
-        } catch (JSQLParserException e) {
-            throw new RuntimeException(e);
+    @Override
+    public void visit(Statements stmts) {
+        for (Statement stmt : stmts.getStatements()) {
+            stmt.accept(this);
         }
-        HashMap<String, DataRow> stringDataRowHashMap = new HashMap<>();
-        stringDataRowHashMap.put("a", new DataRow(Arrays.asList(Type.STRING, Type.INT), Arrays.asList("a", 1)));
-        Database database = new Database();
-//        database.createTable("test",new Table(Arrays.asList("s","b"),stringDataRowHashMap));
-        database.save();
     }
 }
