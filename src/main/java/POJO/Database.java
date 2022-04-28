@@ -492,6 +492,18 @@ public class Database extends ExecuteEngine implements Serializable {
         // recursively parsing select
         plainSelect.accept(table);
         this.returnValue = table.getReturnValue();
+        if (plainSelect.getDistinct() != null) { // if distinct
+            HashSet<String> set = new HashSet<>();
+            Map<String, DataRow> data = returnValue.getData();
+            Iterator<String> iterator = data.keySet().iterator();
+            while (iterator.hasNext()) {
+                String next = iterator.next();
+                String curVal = returnValue.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("", (x, y) -> x + " # " + y);
+                if (!set.add(curVal)) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     @Override

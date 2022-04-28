@@ -37,7 +37,7 @@ public class testzhy {
 //        stmts.add("update tableName set col2=col2+1 where col1 =2;");
 //        stmts.add("drop index tableName.myIndex;");
 //
-        stmts.add("select * from table31 right join table3i on table3i.col2=table31.col2 order by table31.col1 limit 50;");
+//        stmts.add("select distinct col2 from table31;");
         stmts.add("select * from table3i where col2=75828;");
         stmts.add("create index index3i on table3i(col2);");
         stmts.add("select * from table3i where col2=75828;");
@@ -51,6 +51,36 @@ public class testzhy {
         stmts.add("select table1i.col1, table21.col1, table21.col2 from table1i, table21 where table1i.col1=1 and table1i.col2=table1i.col1 limit 5;");
         stmts.add("select table2i.col1, table31.col1, table31.col2 from table2i, table31 where table2i.col2=table31.col1 order by table2i.col1 limit 5;");
         stmts.add("select table2i.col1, table31.col1, table31.col2 from table2i, table31 where table2i.col1>=5001 and table2i.col2=table31.col1 order by table2i.col1 limit 5;");
+
+        stmts.add("select * from table1i order by col1;");
+        stmts.add("select * from table1i order by col1 asc;");
+        stmts.add("select * from table1i order by col1 desc;");
+
+        stmts.add("select * from table3i order by col1 limit 10;");
+        stmts.add("select * from table3i order by col1 desc limit 10;");
+        stmts.add("select * from table3i where col1<=2000 order by col1 desc limit 10;");
+
+        stmts.add("select distinct col2 from table31;");
+        stmts.add("select distinct col2 from table31 limit 10;");
+
+        stmts.add("update table31 set col2=2 where col1=1;");
+        stmts.add("select * from table31 order by col1 limit 5;");
+        stmts.add("update table31 set col2=2 where col1=0;");
+        stmts.add("update table3i set col2=col1/col2;");
+        stmts.add("select distinct col2 from table3i;");
+        stmts.add("update table3i set col2=col1/col2;");
+        stmts.add("select distinct col2 from table3i limit 5;");
+
+        stmts.add("select col1 from table4i where col2=75828;");
+        stmts.add("create index index4i on table4i(col2);");
+        stmts.add("select col1 from table4i where col2=75828;");
+        stmts.add("select col1 from table4i where col2>500000 order by col1 limit 5;");
+        stmts.add("update table4i set col2=col1/col2;");
+        stmts.add("select distinct col2 from table4i;");
+        stmts.add("drop index table4i.index4i;");
+        stmts.add("update table4i set col2=col1/col2;");
+        stmts.add("select * from table4i order by col1 limit 5;");
+
 
         for (String stmt : stmts) {
             long start=System.currentTimeMillis();

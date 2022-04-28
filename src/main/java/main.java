@@ -41,16 +41,19 @@ public class main {
                 break;
             }
             long start = System.currentTimeMillis();
+            long time;
             try {
                 Statements statements = CCJSqlParserUtil.parseStatements(statementBuilder.toString());
                 statements.accept(db);
+                time = System.currentTimeMillis() - start;
                 System.out.println(db.getReturnValue().toString());
             } catch (Exception e) {
+                time = System.currentTimeMillis() - start;
                 System.out.println(e.getMessage());
             } finally {
                 statementBuilder.delete(0, statementBuilder.capacity());
             }
-            System.out.println(System.currentTimeMillis() - start + "ms\n");
+            System.out.println(time + "ms\n");
         }
 
         //Saving, exit

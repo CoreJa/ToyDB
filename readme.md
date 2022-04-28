@@ -44,11 +44,55 @@ select * from COLUMNS;
 
 ## CREATE index
 
+Before indexing:
 
+```sql
+select * from table3i where col2=75828;
+```
+
+Create index:
+
+```sql
+create index index3i on table3i(col2);
+```
+
+Select again:
+
+```sql
+select * from table3i where col2=75828;
+```
+
+Select non-existing condition with index:
+
+```sql
+select * from table3i where col2=100001;
+```
+
+Create duplicate index:
+
+```sql
+create index index3i on table4i(col2);
+```
 
 ## DROP index
 
+Drop index:
 
+```sql
+drop index table3i.index3i;
+```
+
+Drop non-existing index:
+
+```sql
+drop index table3i.index3i;
+```
+
+Select again:
+
+```sql
+select * from table3i where col2=75828;
+```
 
 # Data Manipulation Language
 
@@ -184,38 +228,162 @@ select * from table31 join table3i on table31.col1=table3i.col1;
 
 ##### RULE-BASED
 
+###### Inside WHERE Sub-clause
+
+Cartesian product:
+
+```sql
+select table1i.col1, table21.col1, table21.col2 from table1i, table21 where table1i.col1=1 and table1i.col2=table1i.col1 limit 5;
+```
+
+Practical join condition:
+
+```sql
+select table2i.col1, table31.col1, table31.col2 from table2i, table31 where table2i.col2=table31.col1 order by table2i.col1 limit 5;
+```
+
+More complex condition expressions:
+
+```sql
+select table2i.col1, table31.col1, table31.col2 from table2i, table31 where table2i.col1>=5001 and table2i.col2=table31.col1 order by table2i.col1 limit 5;
+```
+
+
+
 
 
 ### ORDER BY
 
+#### Default
+
+```sql
+select * from table1i order by col1;
+```
+
 #### ASC
 
-
+```sql
+select * from table1i order by col1 asc;
+```
 
 #### DESC
 
+```sql
+select * from table1i order by col1 desc;
+```
 
+### LIMIT
+
+```sql
+select * from table3i order by col1 limit 10;
+```
+
+```sql
+select * from table3i order by col1 desc limit 10;
+```
+
+```sql
+select * from table3i where col1<=2000 order by col1 desc limit 10;
+```
 
 ### DISTINCT
 
 ALL-field
 
+```sql
+select distinct col2 from table31;
+```
 
+Limit larger than actual results:
 
-### LIMIT
-
-#### Optimization
-
-RULE-BASED
-
-
+```sql
+select distinct col2 from table31 limit 10;
+```
 
 ## UPDATE
 
+Update with value:
+
+```sql
+update table31 set col2=2 where col1=1;
+```
+
+```sql
+select * from table31 order by col1 limit 5;
+```
+
+Updating non-existing row:
+
+```sql
+update table31 set col2=2 where col1=0;
+```
+
+Update with expression:
+
+```sql
+update table3i set col2=col1/col2;
+```
+
+```sql
+select distinct col2 from table3i;
+```
+
+```sql
+update table3i set col2=col1/col2;
+```
+
+```sql
+select distinct col2 from table3i limit 5;
+```
 
 
+
+## 1 MILLION Records!
+
+```sql
+select col1 from table4i where col2=75828;
+```
+
+```sql
+create index index4i on table4i(col2);
+```
+
+```sql
+select col1 from table4i where col2=75828;
+```
+
+```sql
+select col1 from table4i where col2>500000 order by col1 limit 5;
+```
+
+Update the index as well:
+
+```sql
+update table4i set col2=col1/col2;
+```
+
+```sql
+select distinct col2 from table4i;
+```
+
+Drop the index:
+
+```sql
+stmts.add("drop index table4i.index4i;");
+```
+
+Update again:
+
+```sql
+update table4i set col2=col1/col2;
+```
+
+```sql
+select * from table4i order by col1 limit 5;
+```
 
 # Introduction
+
 Good afternoon, professor. Today we are going to show the project3 - a DBMS project.
 
 Firstly, I'd like to introduce the overall structure of our project.

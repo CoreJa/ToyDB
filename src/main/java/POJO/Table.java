@@ -429,6 +429,9 @@ public class Table extends ExecuteEngine implements Serializable {
                 }
                 op.getSecond().accept(returnValue);
                 Map<String, DataRow> res = returnValue.returnValue.data;
+                if (returnValue.data.size()==0){
+                    throw new ExecutionException("No such row");
+                }
                 if (res.size() == 1) {
                     Object val = res.values().iterator().next().getDataGrids().get(0).getData();
                     DataGrid valGrid = res.values().iterator().next().getDataGrids().get(0);
@@ -554,18 +557,7 @@ public class Table extends ExecuteEngine implements Serializable {
         }
 
         //order by limit distinct
-        if (plainSelect.getDistinct() != null) { // if distinct
-            HashSet<String> set = new HashSet<>();
-            Map<String, DataRow> data = table.getData();
-            Iterator<String> iterator = data.keySet().iterator();
-            while (iterator.hasNext()) {
-                String next = iterator.next();
-                String curVal = table.getData().get(next).getDataGrids().stream().map(DataGrid::toString).reduce("", (x, y) -> x + " # " + y);
-                if (!set.add(curVal)) {
-                    iterator.remove();
-                }
-            }
-        }
+
 
         if (plainSelect.getOrderByElements() != null) { // if order by
             OrderByElement element = plainSelect.getOrderByElements().get(0);
