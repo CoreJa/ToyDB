@@ -5,6 +5,134 @@ Authors:
 - Haoyang Zhang
 - Kevin Qi
 
+# DEMO (Implementation)
+
+# //TODO: UI
+
+blabla
+
+# //TODO: 删表外键依赖
+
+# Preloaded Data
+
+```SQL
+select * from TABLES;
+select * from COLUMNS;
+```
+
+# Data Definition Language & DML
+
+## CREATE table
+
+### constraints(keys)
+
+
+
+### insert not valid
+
+
+
+### update cascade
+
+
+
+### delete set null
+
+
+
+## DROP table
+
+### save
+
+
+
+### load
+
+
+
+## CREATE index
+
+
+
+## DROP index
+
+
+
+# Data Manipulation Language
+
+## SELECT
+
+### WHERE
+
+#### operands
+
+
+
+#### operators
+
+
+
+#### recursively searching
+
+
+
+### JOIN
+
+#### (INNER) JOIN
+
+
+
+#### LEFT (OUTER) JOIN
+
+
+
+#### RIGHT (OUTER) JOIN
+
+
+
+#### FULL (OUTER) JOIN
+
+
+
+#### Optimization
+
+##### COST-BASED
+
+
+
+##### RULE-BASED
+
+
+
+### ORDER BY
+
+#### ASC
+
+
+
+#### DESC
+
+
+
+### DISTINCT
+
+ALL-field
+
+
+
+### LIMIT
+
+#### Optimization
+
+RULE-BASED
+
+
+
+## UPDATE
+
+
+
+
 # Introduction
 Good afternoon, professor. Today we are going to show the project3 - a DBMS project.
 
