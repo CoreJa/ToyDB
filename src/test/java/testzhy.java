@@ -11,7 +11,7 @@ public class testzhy {
         Database db = new Database();
         db.load();
         ArrayList<String> stmts=new ArrayList<>();
-        stmts.add("select table1i.col1,table2i.col2 from table1i,table2i where table1i.col2=table2i.col1 and table1i.col1=680 order by table1i.col1 desc limit 5;");
+//        stmts.add("select table1i.col1,table2i.col2 from table1i,table2i where table1i.col2=table2i.col1 and table1i.col1=680 order by table1i.col1 desc limit 5;");
 //        stmts.add("select * from table2i join table3i on table2i.col2=table3i.col1 order by table2i.col2 desc limit 5;");
 //        stmts.add("select table1i.col1 from table1i join table3i on table1i.col2=table3i.col2 limit 5;");
 //        stmts.add("select distinct col1 from table1i order by col2 desc limit 5;");
@@ -37,6 +37,13 @@ public class testzhy {
 //        stmts.add("update tableName set col2=col2+1 where col1 =2;");
 //        stmts.add("drop index tableName.myIndex;");
 //
+        stmts.add("select * from table3i where col2=75828;");
+        stmts.add("create index index3i on table4i(col2);");
+        stmts.add("select * from table3i where col2=75828;");
+        stmts.add("drop index table3i.index3i;");
+        stmts.add("select * from table3i where col2=75828;");
+
+
         for (String stmt : stmts) {
             long start=System.currentTimeMillis();
             try {

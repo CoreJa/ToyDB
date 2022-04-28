@@ -35,6 +35,10 @@ public class preloadData {
                 "    col1 int UNIQUE,\n" +
                 "    col2 int ,\n"+
                 "    PRIMARY KEY (col1));");
+//        stmts.add("create table table4i ("+
+//                "    col1 int UNIQUE,\n" +
+//                "    col2 int ,\n"+
+//                "    PRIMARY KEY (col1));");
         for (String stmt : stmts) {
             try {
                 Statement statement = CCJSqlParserUtil.parse(stmt);
@@ -91,6 +95,17 @@ public class preloadData {
                 e.printStackTrace();
             }
         }
+//        for (int i = 1; i < 1000001; i++) {
+//            try {
+//                Statement statement = CCJSqlParserUtil.parse("insert into table4i "+
+//                        "  values ("+i+","+i+");");
+//                statement.accept(db);
+//            } catch (JSQLParserException e) {
+//                e.printStackTrace();
+//            } catch (ExecutionException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
     }
 }
