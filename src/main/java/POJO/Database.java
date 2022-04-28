@@ -207,13 +207,19 @@ public class Database extends ExecuteEngine implements Serializable {
         Expression l = expr.getLeftExpression();
         Expression r = expr.getRightExpression();
         if (l instanceof EqualsTo) {
-            if (((EqualsTo) l).getLeftExpression() instanceof Column && ((EqualsTo) l).getLeftExpression() instanceof Column) {
-                return new Pair<>(((EqualsTo) l).getLeftExpression().toString(), ((EqualsTo) l).getRightExpression().toString());
+            if (((EqualsTo) l).getLeftExpression() instanceof Column && ((EqualsTo) l).getRightExpression() instanceof Column) {
+                if (((Column) ((EqualsTo) l).getLeftExpression()).getTable().getName().compareTo(
+                        ((Column) ((EqualsTo) l).getRightExpression()).getTable().getName())!=0){
+                    return new Pair<>(((EqualsTo) l).getLeftExpression().toString(), ((EqualsTo) l).getRightExpression().toString());
+                }
             }
         }
         if (r instanceof EqualsTo) {
             if (((EqualsTo) r).getLeftExpression() instanceof Column && ((EqualsTo) r).getRightExpression() instanceof Column) {
-                return new Pair<>(((EqualsTo) r).getLeftExpression().toString(), ((EqualsTo) r).getRightExpression().toString());
+                if (((Column) ((EqualsTo) r).getLeftExpression()).getTable().getName().compareTo(
+                        ((Column) ((EqualsTo) r).getRightExpression()).getTable().getName())!=0) {
+                    return new Pair<>(((EqualsTo) r).getLeftExpression().toString(), ((EqualsTo) r).getRightExpression().toString());
+                }
             }
         }
         Pair<String, String> ret;
