@@ -200,13 +200,34 @@ public class Database extends ExecuteEngine implements Serializable {
         this.returnValue = table.getReturnValue();
     }
 
-//    private Pair<String,String> getEq(AndExpression expr){
-//        Expression l=expr.getLeftExpression();
-//        Expression r=expr.getRightExpression();
-//        if (l instanceof  EqualsTo){
-//
-//        }
-//    }
+    private Pair<String,String> getEq(AndExpression expr){
+        Expression l=expr.getLeftExpression();
+        Expression r=expr.getRightExpression();
+        if (l instanceof  EqualsTo){
+            if (((EqualsTo) l).getLeftExpression() instanceof Column && ((EqualsTo) l).getLeftExpression() instanceof Column){
+                return new Pair<>(((EqualsTo) l).getLeftExpression().toString(),((EqualsTo) l).getRightExpression().toString());
+            }
+        }
+        if (r instanceof  EqualsTo){
+            if (((EqualsTo) r).getLeftExpression() instanceof Column && ((EqualsTo) r).getRightExpression() instanceof Column){
+                return new Pair<>(((EqualsTo) r).getLeftExpression().toString(),((EqualsTo) r).getRightExpression().toString());
+            }
+        }
+        Pair<String, String> ret;
+        if (l instanceof AndExpression){
+            ret=getEq((AndExpression) l);
+            if (ret != null) {
+                return ret;
+            }
+        }
+        if (r instanceof AndExpression){
+            ret=getEq((AndExpression) r);
+            if (ret != null) {
+                return ret;
+            }
+        }
+        return null;
+    }
 
     @Override
     public void visit(PlainSelect plainSelect) {
@@ -252,7 +273,17 @@ public class Database extends ExecuteEngine implements Serializable {
                 }
 
                 if (rightCol == null||leftCol == null) {
-
+                    Expression exp=plainSelect.getWhere();
+                    if (exp instanceof EqualsTo){
+                        if (((EqualsTo) exp).getLeftExpression()instanceof Column && ((EqualsTo) exp).getRightExpression()instanceof Column){
+                            leftCol=((EqualsTo) exp).getLeftExpression().toString();
+                            rightCol=((EqualsTo) exp).getRightExpression().toString();
+                        }
+                    } else if (exp!=null&& exp instanceof AndExpression) {
+                        Pair<String, String> eq = getEq((AndExpression) plainSelect.getWhere());
+                        leftCol=eq.getFirst();
+                        rightCol=eq.getSecond();
+                    }
                 }
 
                 Map<String, DataRow> leftData = leftTable.getData();
@@ -361,7 +392,7 @@ public class Database extends ExecuteEngine implements Serializable {
                             joinedData.put("#" + s,
                                     new DataRow(new DataRow(leftPaddingSize), rightTable.getData().get(s)));
                         }
-                    } else if (join.isInner() || (!join.isOuter() && !join.isSimple() && !join.isNatural() &&
+                    } else if (join.isInner() ||join.isSimple()|| (!join.isOuter()  && !join.isNatural() &&
                             !join.isCross() && !join.isSemi() && !join.isStraight() && !join.isApply())) {
                         //inner join
                         for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
