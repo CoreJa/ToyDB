@@ -200,28 +200,28 @@ public class Database extends ExecuteEngine implements Serializable {
         this.returnValue = table.getReturnValue();
     }
 
-    private Pair<String,String> getEq(AndExpression expr){
-        Expression l=expr.getLeftExpression();
-        Expression r=expr.getRightExpression();
-        if (l instanceof  EqualsTo){
-            if (((EqualsTo) l).getLeftExpression() instanceof Column && ((EqualsTo) l).getLeftExpression() instanceof Column){
-                return new Pair<>(((EqualsTo) l).getLeftExpression().toString(),((EqualsTo) l).getRightExpression().toString());
+    private Pair<String, String> getEq(AndExpression expr) {
+        Expression l = expr.getLeftExpression();
+        Expression r = expr.getRightExpression();
+        if (l instanceof EqualsTo) {
+            if (((EqualsTo) l).getLeftExpression() instanceof Column && ((EqualsTo) l).getLeftExpression() instanceof Column) {
+                return new Pair<>(((EqualsTo) l).getLeftExpression().toString(), ((EqualsTo) l).getRightExpression().toString());
             }
         }
-        if (r instanceof  EqualsTo){
-            if (((EqualsTo) r).getLeftExpression() instanceof Column && ((EqualsTo) r).getRightExpression() instanceof Column){
-                return new Pair<>(((EqualsTo) r).getLeftExpression().toString(),((EqualsTo) r).getRightExpression().toString());
+        if (r instanceof EqualsTo) {
+            if (((EqualsTo) r).getLeftExpression() instanceof Column && ((EqualsTo) r).getRightExpression() instanceof Column) {
+                return new Pair<>(((EqualsTo) r).getLeftExpression().toString(), ((EqualsTo) r).getRightExpression().toString());
             }
         }
         Pair<String, String> ret;
-        if (l instanceof AndExpression){
-            ret=getEq((AndExpression) l);
+        if (l instanceof AndExpression) {
+            ret = getEq((AndExpression) l);
             if (ret != null) {
                 return ret;
             }
         }
-        if (r instanceof AndExpression){
-            ret=getEq((AndExpression) r);
+        if (r instanceof AndExpression) {
+            ret = getEq((AndExpression) r);
             if (ret != null) {
                 return ret;
             }
@@ -272,17 +272,17 @@ public class Database extends ExecuteEngine implements Serializable {
                     rightCol = this.returnValue.getData().get("result2").getDataGrids().get(0).getData().toString();
                 }
 
-                if (rightCol == null||leftCol == null) {
-                    Expression exp=plainSelect.getWhere();
-                    if (exp instanceof EqualsTo){
-                        if (((EqualsTo) exp).getLeftExpression()instanceof Column && ((EqualsTo) exp).getRightExpression()instanceof Column){
-                            leftCol=((EqualsTo) exp).getLeftExpression().toString();
-                            rightCol=((EqualsTo) exp).getRightExpression().toString();
+                if (rightCol == null || leftCol == null) {
+                    Expression exp = plainSelect.getWhere();
+                    if (exp instanceof EqualsTo) {
+                        if (((EqualsTo) exp).getLeftExpression() instanceof Column && ((EqualsTo) exp).getRightExpression() instanceof Column) {
+                            leftCol = ((EqualsTo) exp).getLeftExpression().toString();
+                            rightCol = ((EqualsTo) exp).getRightExpression().toString();
                         }
-                    } else if (exp!=null&& exp instanceof AndExpression) {
+                    } else if (exp != null && exp instanceof AndExpression) {
                         Pair<String, String> eq = getEq((AndExpression) plainSelect.getWhere());
-                        leftCol=eq.getFirst();
-                        rightCol=eq.getSecond();
+                        leftCol = eq.getFirst();
+                        rightCol = eq.getSecond();
                     }
                 }
 
@@ -327,20 +327,42 @@ public class Database extends ExecuteEngine implements Serializable {
                     } else {
                         throw new ExecutionException("joined table doesn't have key " + leftCol + " or " + rightCol);
                     }
-                    //check for cache
-                    //build cache
-                    Map<String, List<String>> cache = new HashMap<>();
-                    for (Map.Entry<String, DataRow> rightEntry : rightData.entrySet()) {
-                        String key = rightEntry.getValue().getDataGrids().get(cacheColIdx).toString();
-                        if (cache.containsKey(key)) {
-                            cache.get(key).add(rightEntry.getKey());
-                        } else {
-                            cache.put(key, Arrays.asList(rightEntry.getKey()));
+                    //optimization
+                    Map<String, Set<String>> cache = null;
+                    //check for existed cache
+                    if (rightTable.getIndexes().getIndexes().get(cacheColIdx) != null) {
+                        cache = rightTable.getIndexes().getIndexes().get(cacheColIdx);
+                    } else {
+                        //calculate if we need to build this cache
+                        if (leftTable.getData().size() * rightTable.getData().size() > 10000) {
+                            //build cache if cache doesn't exists
+                            cache = new HashMap<>();
+                            for (Map.Entry<String, DataRow> rightEntry : rightData.entrySet()) {
+                                String key = rightEntry.getValue().getDataGrids().get(cacheColIdx).toString();
+                                if (cache.containsKey(key)) {
+                                    cache.get(key).add(rightEntry.getKey());
+                                } else {
+                                    cache.put(key, new HashSet<>(Arrays.asList(rightEntry.getKey())));
+                                }
+                            }
                         }
                     }
                     int rightPaddingSize = rightTable.getColumnNames().size();
                     int leftPaddingSize = leftTable.getColumnNames().size() - rightPaddingSize;
 
+                    if (cache == null) {
+                        Map<String, Set<String>> x = new HashMap<>();
+                        for (Map.Entry<String, DataRow> rightEntry : rightData.entrySet()) {
+                            String key = rightEntry.getValue().getDataGrids().get(cacheColIdx).toString();
+                            if (x.containsKey(key)) {
+                                x.get(key).add(rightEntry.getKey());
+                            } else {
+                                x.put(key, new HashSet<>(Arrays.asList(rightEntry.getKey())));
+                            }
+                        }
+                        cache = x;
+                    }
+                    // joining data with cache
                     if (join.isFull()) {
                         //full join
                         Set<String> notJoinedRow = new HashSet<>(rightTable.getData().keySet());
@@ -392,7 +414,7 @@ public class Database extends ExecuteEngine implements Serializable {
                             joinedData.put("#" + s,
                                     new DataRow(new DataRow(leftPaddingSize), rightTable.getData().get(s)));
                         }
-                    } else if (join.isInner() ||join.isSimple()|| (!join.isOuter()  && !join.isNatural() &&
+                    } else if (join.isInner() || join.isSimple() || (!join.isOuter() && !join.isNatural() &&
                             !join.isCross() && !join.isSemi() && !join.isStraight() && !join.isApply())) {
                         //inner join
                         for (Map.Entry<String, DataRow> leftEntry : leftData.entrySet()) {
