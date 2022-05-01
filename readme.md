@@ -5,6 +5,52 @@ Authors:
 - Haoyang Zhang
 - Kevin Qi
 
+# Checklist
+- [x] jit preheat
+- [x] Database
+  - [x] create table -yc
+    - [x] create foreign key -yc
+    - [ ] as -yc
+  - [x] drop table -yc
+- [x] Tables
+  - [x] insert -hy
+  - [x] update -hy
+  - [x] delete -hy
+  - [x] select -cr
+    - [x] where -cr
+      - [x] or -cr
+      - [x] and -cr
+      - [x] equals to -cr
+      - [x] not equals to -cr
+      - [x] minor than -cr
+      - [x] minor than equals -cr
+      - [x] greater than -cr
+      - [x] greater than equals -cr
+      - [x] add -cr
+      - [x] subtract -cr
+      - [x] multiply -cr
+      - [x] divide -cr
+    - [x] join -cr //on onley support one sub statement.
+      - [x] join/inner join -cr
+      - [x] left join/left outer join -cr
+      - [x] right join/right outer join -cr
+      - [x] full join/full outer join -cr
+      - [x] on (with optimization) -cr
+      - [ ] and
+      - [ ] or
+      - [x] equals to
+    - [x] distinct -hy int√ string?
+    - [x] order by () -hy
+    - [x] limit () -hy
+  - [x] Indexing -hy
+    - [x] create -hy
+    - [x] delete -hy
+  - [x] check foreign key -hycr
+    - [x] on insert -hy
+    - [x] on update
+    - [x] on delete
+      - [x] on dependence
+
 # Preloaded Data
 
 ```SQL
@@ -206,13 +252,13 @@ select * from table31 full join test on test.col1=table31.col1 order by table31.
 ##### COST-BASED
 
 ```sql
-select * from table11 join table1i on table11.col1=table1i.col1;
+select * from table11 join table1i on table11.col1=table1i.col1 limit 10;
 ```
 
 Normally, without `indexing`, this statement would have the same speed as below:
 
 ```sql
-select * from table11 join table1i;
+select * from table11 join table1i limit 10;
 ```
 
 And it's slow. But the first one is fast in our program. That's because our program can dynamically select join algorithm.
@@ -386,4 +432,5 @@ select * from table4i order by col1 limit 5;
 ```
 
 # Citation
-[JSQL parser](https://github.com/JSQLParser/JSqlParser)
+[JSQL parser](https://github.com/JSQLParser/JSqlParser
+
