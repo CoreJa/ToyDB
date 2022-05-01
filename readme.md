@@ -10,7 +10,6 @@ Authors:
 - [x] Database
   - [x] create table -yc
     - [x] create foreign key -yc
-    - [ ] as -yc
   - [x] drop table -yc
 - [x] Tables
   - [x] insert -hy
@@ -36,8 +35,6 @@ Authors:
       - [x] right join/right outer join -cr
       - [x] full join/full outer join -cr
       - [x] on (with optimization) -cr
-      - [ ] and
-      - [ ] or
       - [x] equals to
     - [x] distinct -hy int√ string?
     - [x] order by () -hy
@@ -432,5 +429,5 @@ select * from table4i order by col1 limit 5;
 ```
 
 # Citation
-[JSQL parser](https://github.com/JSQLParser/JSqlParser
+[JSQL parser](https://github.com/JSQLParser/JSqlParser)
 
