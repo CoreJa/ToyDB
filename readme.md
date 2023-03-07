@@ -1,4 +1,4 @@
-﻿﻿﻿# ToyDB: Implementation of Relational Database Management System
+﻿﻿﻿﻿# ToyDB: Implementation of Relational Database Management System
 
 *Rui Chen, Haoyang Zhang, Kevin Qi*
 
@@ -498,7 +498,7 @@ select distinct col2 from table4i;
 Drop the index:
 
 ```sql
-stmts.add("drop index table4i.index4i;");
+drop index table4i.index4i;
 ```
 
 Update again:
